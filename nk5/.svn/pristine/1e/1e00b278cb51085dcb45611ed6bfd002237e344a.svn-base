@@ -1,0 +1,6 @@
+<tr>
+  <th><%- pack.get('name') %></th>
+  <th><%- Type %></th>
+  <th><%- State %></th>
+  <th><button type="button" class="remove btn">-<%_Remove%></button></th>
+</tr>

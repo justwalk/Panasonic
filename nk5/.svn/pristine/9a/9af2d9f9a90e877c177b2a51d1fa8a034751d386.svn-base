@@ -1,0 +1,57 @@
+#ifndef Pack_H
+#define Pack_H
+
+#include "route.h"
+#include "commonJSON.h"
+
+void deletePack(ULONG pid);
+
+class PackResource : public Route::SubResource{
+public:
+	PackResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+class DeletePackResource : public Route::SubResource{
+public:
+	DeletePackResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+class UUIDPackResource : public Route::ParameterResource{
+public:
+	UUIDPackResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+class CreatePackResource : public Route::SubResource{
+public:
+	CreatePackResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+class UpdatePackResource : public Route::SubResource{
+public:
+	UpdatePackResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+//xiong panan add start 2016/4/22
+class UpdateBootMenuPackResource : public Route::SubResource{
+public:
+	UpdateBootMenuPackResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+//xiong panan add end 2016/4/22
+
+//xiong panan add start 2016/4/19
+class SetPackResource : public Route::SubResource{
+public:
+	SetPackResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+//xiong panan add end 2016/4/19
+JSON::Value* PackToJSON(const PACK_OBJ& info);
+JSON::Value* ExtendedPackToJSON(ULONG pid);
+JSON::Array* PackEnumToJSON(ULONG mid);
+
+#endif

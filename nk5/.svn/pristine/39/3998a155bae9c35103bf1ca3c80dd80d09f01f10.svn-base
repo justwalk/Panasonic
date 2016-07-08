@@ -1,0 +1,11 @@
+define(['underscore', 'backbone'], function(_, Backbone) {
+  var Home = Backbone.Model.extend({
+    urlRoot: 'home',
+    noIoBind: false,
+    defaults:{
+        'homeData':'1234567890'
+        }
+  });
+
+  return Home;
+});

@@ -1,0 +1,169 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/storages/storage_form.html',
+  'models/base_disk',
+  'collection/base_disks',
+  'collection/directories',
+  'modelBinder'
+], function($, _, Backbone, storageFormTemplate, BaseDisk, BaseDiskCollection, DirectoriesCollection, ModelBinder){
+  var StorageFormView = Backbone.View.extend({
+    id:'add-storage-modal',
+    className: 'modal fade',
+    template: _.template(underi18n.template(storageFormTemplate, msgFactory)),
+	
+    events:{
+      'submit .storage-form ': 'saveModel',
+      'hidden' : 'close', //the 'hidden' event is from bootstrap modal dismiss
+	  'click #virtual_check' : 'virtual_check',
+    'click #differencing_check' : 'differencing_check',
+	  'click #physical_check' : 'physical_check',
+	  'click #existing_check' : 'existing_check',
+	  'click #proxy_check' : 'proxy_check',
+    },
+    _modelBinder: undefined,
+    
+    initialize: function() {
+      _.bindAll(this);
+      var self = this;
+      this.model = this.options.model || new BaseDisk();
+      // this.model.group_id = this.options.seleced_id;
+      this._modelBinder = new Backbone.ModelBinder();
+      this.parentDisks = new BaseDiskCollection();
+      this.baseDirectories = new DirectoriesCollection();
+      this.baseDirectories.fetchWithServerId(this.model.get('IOServer'));
+      this.parentDisks.bind('add remove reset', this.renderParentDisks);
+      this.baseDirectories.bind('add remove reset', self.renderBaseDirectories);
+    },
+    
+    saveModel: function(e) {
+      var self = this;
+      $('input[type=submit]', self.el).attr('alt',$('input[type=submit]',self.el).val());
+      $('input[type=submit]', self.el).attr('disabled', 'disabled').val(App.msgFactory('Please wait...'));
+      this.model.set('Path', this.$('#Path').val());
+      this.model.save({}, {
+        success: function(model, response) {
+          self.$el.modal('hide');
+        }
+      });
+      return false;
+    },
+    
+    renderParentDisks: function(collection) {
+      options = '<option value="0">' + App.msgFactory('No parent') + '</option>';
+      collection.each(function(server) {
+        _(server.get('disks')).each(function(disk) {
+          options += '<option value="'+disk.ID+'">'+server.get('IP')+' | '+disk.Name+'</option>';
+        });
+      });
+      this.$('#Parent').html(options);
+    },
+
+    renderBaseDirectories: function(collection) {
+      var options = '';
+      collection.each(function(directory) {
+        options += '<option>'+directory.get('Path')+'</option>';
+      });
+      this.$('#BaseDirectory').removeAttr('disabled');
+      this.$('#BaseDirectory').html(options);
+      this.resetPath();
+    },
+	
+	virtual_check: function() {
+		$('#Name').prop('disabled', false);
+    $('#NameControl').show();
+    $('#Parent').prop('disabled', true);
+    $('#ParentControl').hide();
+		$('#Size').prop('disabled', false);
+    $('#SizeControl').show();
+		$('#Path').prop('disabled', false);
+    $('#PathControl').show();
+		$('#SyncControls').hide();
+		this.model.set('Type', 'BaseDisk');
+	},
+
+  differencing_check: function() {
+    $('#Name').prop('disabled', false);
+    $('#NameControl').show();
+    $('#Parent').prop('disabled', false);
+    $('#ParentControl').show();
+    $('#Size').prop('disabled', false);
+    $('#SizeControl').show();
+    $('#Path').prop('disabled', false);
+    $('#PathControl').show();
+    $('#SyncControls').hide();
+    this.model.set('Type', 'BaseDisk');
+  },
+
+	physical_check: function() {
+		$('#Name').prop('disabled', false);
+    $('#NameControl').show();
+    $('#Parent').prop('disabled', false);
+    $('#ParentControl').show();
+		$('#Size').prop('disabled', true);
+    $('#SizeControl').hide();
+		$('#Path').prop('disabled', false);
+    $('#PathControl').show();
+		$('#SyncControls').hide();
+		this.model.set('Type', 'BaseDisk');
+	},
+	
+	existing_check: function() {
+		$('#Name').prop('disabled', true);
+    $('#NameControl').hide();
+		$('#Parent').prop('disabled', true);
+    $('#ParentControl').hide();
+		$('#Size').prop('disabled', true);
+    $('#SizeControl').hide();
+		$('#Path').prop('disabled', false);
+    $('#PathControl').show();
+		$('#SyncControls').hide();
+		this.model.set('Type', 'Existing');
+	},
+	
+	proxy_check: function() {
+		$('#Name').prop('disabled', false);
+    $('#NameControl').show();
+    $('#Parent').prop('disabled', false);
+    $('#ParentControl').show();
+		$('#Size').prop('disabled', true);
+    $('#SizeControl').hide();
+		$('#Path').prop('disabled', true);
+    $('#PathControl').hide();
+		$('#SyncControls').show();
+		this.model.set('Type', 'Proxy');
+	},
+            
+    render: function() {
+      var self = this;
+      this.delegateEvents();
+      $(this.el).html(this.template({model:this.model}));
+      this._modelBinder.bind(this.model, this.el);
+      this.model.bind('error', function(object, message) {
+        self.$('input[type=submit]').removeAttr('disabled').val("Save");
+        var errorContainer = $('.storage-form .errors', this.el);
+        errorContainer.html(JSON.stringify(message));
+        errorContainer.show();
+      });
+      this.$('#Name').on('input', self.resetPath);
+      this.$('#Name').bind('keyup', self.resetPath);
+      this.$('#BaseDirectory').change(self.resetPath);
+      this.parentDisks.fetch();
+      return this;
+    },
+
+    resetPath: function() {
+      var name = this.$('#Name').val();
+      var path = this.$('#BaseDirectory option:selected').text();
+
+      this.$('#Path').val(path+name+'.vhd');
+    },
+    
+    close: function() {
+      this.unbind();
+      this.remove();
+    }
+  });
+  return StorageFormView;
+});

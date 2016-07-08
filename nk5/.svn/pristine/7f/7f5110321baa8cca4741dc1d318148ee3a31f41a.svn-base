@@ -1,0 +1,102 @@
+
+    
+    <!-- Page content -->
+    <div class="container-fluid min_width min_height">
+        <div class="row-fluid">
+        
+            <div class="container min_width">
+
+               <!--  <div style="position: relative;top:26px;left: 511px;">
+                 <input type="checkbox"  class="select-schedule" style="height: 15px;width: 15px" /><%_Display Schedule Task Only%>
+               </div> -->
+                <!-- Servers container -->
+                <div id="main" class="span12" >
+                
+                    Server elements go here
+                   
+                    
+                </div>
+                <!-- END Servers container -->
+                
+            </div><!-- page container -->
+            <div style="height: 70px;"></div>
+        </div><!-- row-fluid -->
+    </div>
+    
+    <div id="bottom-navbar" class="navbar navbar-fixed-bottom bottom-navbar min_width">
+        <div class="navbar-inner">
+            <div class="container">
+              <ul class="nav">
+               <!--  <li><button class="add-server edge-margin"><i class="icon-white icon-plus"></i> <%_Create%></button></li>
+                  <li class="divider-vertical"></li> -->
+                    <% if(App.menu['22']) { %>
+                       <li><button class="add_user"> <%_Add%></button></li>
+                    <% } %>
+                    <% if(App.menu['24']) { %>
+                      <li><button class="remove_user"> <%_Remove%></button></li>
+                    <% } %>
+                    <% if(App.menu['23']) { %>
+                      <li><button class="edit_user"> <%_Edit%></button></li>
+                    <% } %>
+                    <% if(App.menu['25']) { %>
+                      <li><button class="edit_user_menu"> <%_EditAuthority%></button></li>
+                    <% } %>
+                 <!--  <li><button class="remove-server"> <%_Remove%></button></li>
+                  <li><button class="start-servers"><%_Start%></button></li>
+                  <li><button class="restart-servers"><%_Restart%></button></li>
+                  <li><button class="stop-server"><%_Stop%></button></li>
+                  <li><button class="bootrestart-server"><%_BootRestart%></button></li> -->
+              </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!--modal  -->
+          <div class="modal fade" id="add_modal">
+           <form id="add-user-form" class="form-horizontal no-margins edit-server-form" action="assaa/sacccc">
+    <div class="modal-header">
+        <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+        <h3><%_Add%></h3>
+    </div>
+    <p class="errors"></p>
+    
+    <div class="modal-body">
+        <div class="control-group">
+          <label class="control-label" for="ip"><%_UserName%></label>
+            <div class="controls">
+                <input type="text"   name="username"/>
+            </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="port"><%_PassWord%></label>
+            <div class="controls">
+                <input type="password"   name="password"/>
+            </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="type"><%_Confim PassWord%></label>
+            <div class="controls">
+                 <input type="password"   name="repassword"/>
+            </div>
+        </div>  
+   
+        <div class="control-group">
+          <label class="control-label" for="type"><%_name%></label>
+            <div class="controls">
+                 <input type="text"  name="name"/>
+            </div>
+        </div> 
+        
+    </div>
+    
+    <div class="modal-footer">
+      <a href="#" class="btn" title="Close" data-dismiss="modal"><%_Close%></a>
+      <input type="button" value="<%_Save%>" class="submit btn btn-primary" class="span12">
+    </div>
+</form>
+
+         </div><!-- /.modal-content -->
+
+    <!--modal  -->

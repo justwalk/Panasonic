@@ -1,0 +1,35 @@
+<!-- The Element Which will be put inside <div class="storage-logo pull-left"> -->
+<div id="1" class="select"></div>
+<div class="name span12" name="Name"></div>
+<div class="description pull-left hide">
+  <dl>
+    <dt><%_Identification number (ID)%></dt>
+    <dd name="ID"></dd>
+
+    <dt><%_Type%>:</dt>
+    <dd name="Type"></dd>
+
+    <dt><%_Path%></dt>
+    <dd name="Path"></dd>
+
+    <dt><%_Size%></dt>
+    <dd name="Size"></dd>
+
+    <dt><%_Parent%></dt>
+    <dd name="Parent"></dd>
+
+    <dt><%_Pack%></dt>
+    <dd name="Pack"></dd>
+
+    <dt><%_Version%></dt>
+    <dd name="Version"></dd>
+
+    <dt><%_Format%></dt>
+    <dd name="Format"></dd>
+  </dl>
+  <div class="clearfix"></div>
+
+  <!-- <a href="javascript:void(0)" class="pull-right" class="snapshots" title="Snapshots">Snapshots</a> -->
+</div>
+
+

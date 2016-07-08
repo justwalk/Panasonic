@@ -1,0 +1,30 @@
+<!-- Computer element -->
+<div class="select pull-right <%- model.isSelected ? 'selected' : '' %>"></div>
+
+<div class="<%- model.get('status') %> <%- model.get('online') ? 'Online' : 'Offline' %> pull-left ">                  
+	<h4 style="<%- model.get('update_mode') ? 'color: red;' : '' %>"><%- model.get('name') %></h4>
+</div>
+
+<div class="status">
+  <%- model.statusBadges() %>
+</div>
+
+
+<div class="description pull-left hide">
+  <dl>
+    <dt><%_IP%> :</dt><dd><%- model.get("ip") %></dd>
+    <dt><%_MAC%> :</dt><dd><%- model.get("mac_address") %></dd>
+   <!--xiongpanan change start 20160322-->
+    <dt><%_Update mode%> :</dt><dd><%- update_disk %></dd>
+   <!--xiongpanan change end 20160322-->
+  <!--  <% if(model.get("online") == true) { %>
+      <dt><%_IO-Servers%> :</dt>
+        <dd><% _(model.get("IOServers")).each(function(ioserver) { %>
+            <%- ioserver %>
+          <% }) %>
+        </dd>
+      <dt><%_Booted Menu%> :</dt><dd><%- model.get("Menu")%></dd>
+    <% } %> -->
+  </dl>
+</div>
+<!-- END Computer element -->

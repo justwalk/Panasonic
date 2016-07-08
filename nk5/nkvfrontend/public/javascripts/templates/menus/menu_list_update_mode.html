@@ -1,0 +1,6 @@
+<tr><th><%- menu.get('name') %></th></tr>
+<% menu.packs.each(function(pack){ %>
+  <tr>
+      <td><label><input type="radio" name="menu_pack_id" value="<%- menu.id %>|<%- pack.id %>"> <%- pack.get('name')%> : <%- pack.get('type') %> Disk </label></td>
+  </tr>
+<% }) %>

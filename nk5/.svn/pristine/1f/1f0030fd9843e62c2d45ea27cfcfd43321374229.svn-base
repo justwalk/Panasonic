@@ -1,0 +1,239 @@
+<!-- Room actions -->
+<div class="container-fluid min_width">
+  <div class="row-fluid">
+    <div class="container">
+
+      <div id="actions" class="navbar">
+        <div class="navbar-inner " style="width: 1170px;">
+            <div style="width:700px;;float:left;">
+                     <ul class="nav">
+              <% if(App.menu['31']) { %>
+              <li style="height:35px">
+                <form class="form-inline">
+                  <div class="styled select" style="width: 230px;">
+                    <select id="group-select">
+                      <%= groupOptions %>
+                    </select>
+                  </div>
+                </form>
+              </li>
+              <% } %>
+           <% if(App.menu['32']) { %>
+                <li class="group-actions" style="font-weight: bold; border-right-width: 5px;border-left-width: 5px;width: 130px;height: 19px;padding-left: 5px;padding-top: 10px; padding-right: 5px; color: #35b0f0;"> 
+                <input class="operate-group" type="checkbox" id="operate_group" name="operate_group" value="true"><%_Group Coperation%>
+                </li>
+             <% } %>
+             <% if(App.menu['33']) { %>
+                <li class="group-actions">
+                <button class="add-group">+<%_Add group%></button>
+                </li>
+                <% } %>
+            <% if(App.menu['34']) { %>
+                <li class="group-actions">
+                <button class="remove-group">-<%_Remove group%></button>
+                </li>
+                  <% } %>
+             <% if(App.menu['35']) { %>
+                <li class="group-actions">
+                <button class="reset-computers">-<%_Reset positions%></button>
+                </li>
+                  <% } %>
+            <!--  <% if(App.menu['36']) { %>
+            
+               <li class="group-actions">
+                   <button class="edit-computersT"><%_EditTemplate%></button>
+               </li>
+                 <% } %>
+            <% if(App.menu['37']) { %>
+               <li class="group-actions">
+                   <button class="edit-bootMenuT"><%_TemplateBootMenu%></button>
+               </li>
+                
+             <% } %> -->
+
+            </ul>
+            </div>
+            <ul class="nav pull-right">
+             <% if(App.menu['38']) { %>
+              <li ><a style="color:#000000;"><%_Select%>:</a></li>
+              <li><a href="javascript:void(0)" class="select-all"><%_All%></a></li>
+              <li><a href="javascript:void(0)" class="select-none" id="select-none"><%_None%></a></li>
+              <li><a href="javascript:void(0)" class="select-invert" id="select-invert"><%_Invert%></a></li>
+                <% } %>
+                <li class="list-view">
+                    <a id="switch-list" class="switch-view no_padding" href="javascript:void(0);" >
+                    <i class="icon-bar"></i>
+                    <i class="icon-bar"></i>
+                    <i class="icon-bar"></i>
+                    <i class="icon-bar"></i>
+                    </a>
+                </li>
+                <li class="list-view">
+                    <a id="switch-grid" class="switch-view  no_padding hide_item" href="javascript:void(0);">
+                    <i class="icon-square"></i>
+                    <i class="icon-square"></i>
+                    <i class="icon-square"></i>
+                    <br />
+                    <i class="icon-square"></i>
+                    <i class="icon-square"></i>
+                    <i class="icon-square"></i>    
+                    <div class="clearfix"></div>
+                    </a>
+                </li>
+                 <% if(App.menu['40']) { %>
+                <li><a href="javascript:void(0)" class="select-Refresh"style="width:41px;height:35px;padding-top:5px; "><img src="../../images/Refresh.png" style="margin-bottom:10px;"></a></li>
+                  <% } %>
+            </ul>
+        </div>
+      </div>
+
+    </div><!-- page container -->
+  </div><!-- row-fluid -->
+</div>
+<!-- END Room actions -->
+
+<div class="container-fluid min_width">
+  <div class="row-fluid">
+    <div class="container">
+      <div id="main" class="container-fluid" style="margin-left:-23px; width:1170px;">
+      </div>
+    </div>
+  </div>
+</div>
+<div style="height: 130px;"></div>
+<!-- Boottom menu -->
+<div id="bottom-top-navbar" class="navbar navbar-fixed-bottom min_width">
+  <div class="navbar-inner">
+    <div class="container">
+      <ul class="nav" id="context-commands">
+       <% if(App.menu['41']) { %>
+        <li class="start edge-margin"><button><%_Start%></button></li>
+          <% } %>
+         <% if(App.menu['42']) { %>
+        <li class="stop"><button><%_Stop%></button></li>
+          <% } %>
+         <% if(App.menu['43']) { %>
+        <li class="restart"><button><%_Restart%></button></li>
+          <% } %>
+         <% if(App.menu['44']) { %>
+        <li class="send-cmd"><button><%_Send Cmd%></button></li>
+          <% } %>
+         <% if(App.menu['45']) { %>
+        <li class="send-msg"><button><%_SendMessage%></button></li>
+          <% } %>
+         <% if(App.menu['46']) { %>
+        <!-- <li class="auto-login"><button><%_Auto Login%></button></li> -->
+        <li class="logout"><button><%_Logout%></button></li>
+          <% } %>
+      
+
+        <!--<li class="change-mac"><button><%_Change Mac%></button></li> -->
+        <!--<li class="naming-pattern"><button><%_Naming Pattern%></button></li> -->
+       <!--  <% if(user === 'admin') { %>
+		    
+        <li class="lock-position"><button><%_Lock Position%></button></li>
+        <li class="unlock-position"><button><%_Unlock Position%></button></li>
+		    <% } %> -->
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- CRUD Actions -->
+<div id="bottom-navbar" class="navbar navbar-fixed-bottom min_width">
+  <div class="navbar-inner">
+    <div class="container">
+		<ul class="nav" id="computer-commands">
+           <% if(App.menu['51']) { %>
+          <li class="add-computer edge-margin">
+          <button><i class="icon-white icon-plus"></i><%_Add%></button>
+          </li>
+          <li class="divider-vertical"></li>
+           <% } %>
+           <li class="edit-computersT"><button><%_EditTemplate%></button></li>
+           <li class="edit-bootMenuT"><button><%_TemplateBootMenu%></button></li>
+        <% if(App.menu['52']) { %>
+          <li class="update-mode">
+          <button><%_Update Mode%></button>
+          </li>
+           <% } %>
+           <% if(App.menu['53']) { %>
+          <li class="save-update-mode">
+          <button><%_Save Update%></button>
+          </li>
+           <% } %>
+
+        <% if(App.menu['54']) { %>
+          <li class="edit-computer">
+          <button><%_Edit computer%></button>
+          </li>
+           <% } %>
+         <% if(App.menu['55']) { %>
+          <li class="delete-computer">
+          <button><%_Delete computer%></button>
+          </li>
+           <% } %>
+         <% if(App.menu['56']) { %>
+          <li class="boot-menu"><button><%_Boot Menu%></button></li>
+           <% } %>
+         <% if(App.menu['57']) { %>
+        <li class="lock-position"><button><%_Lock Position%></button></li>
+         <% } %>
+         <% if(App.menu['58']) { %>
+        <li class="unlock-position"><button><%_Unlock Position%></button></li>
+         <% } %>
+        <% if(App.menu['59']) { %>
+        <li class="menuOperation">
+            <button ><%_T)MenuOperation%></button>
+        </li>
+        <% } %>
+         <% if(App.menu['72']) { %>
+        <li class="diskOperation">
+        <button ><%_T)DiskOperation%></button>
+        </li>
+        <% } %>
+        <% if(App.menu['73']) { %>
+        <li class="poweron">
+        <button ><%_PowerOn%></button>
+        </li>
+        <% } %>
+
+        <% if(App.menu['74']) { %>
+        <li class="restartAction">
+        <button ><%_RestartAction%></button>
+        </li>
+        <% } %> 
+         <% if(App.menu['47']) { %>
+         <li class="start-update"><button><%_StartUpdate%></button></li>
+           <% } %>
+          <% if(App.menu['48']) { %>
+          <li class="end-update"><button><%_EndUpdate%></button></li>
+            <% } %>
+           <% if(App.menu['49']) { %>
+          <li class="power-off"><button><%_PowerOff%></button></li>
+            <% } %>
+           <% if(App.menu['50']) { %>
+          <li class="start-device"><button><%_StartDevice%></button></li>
+            <% } %>
+             <% if(App.menu['75']) { %>
+            <li class="action-exam">
+                <button ><%_Action Exam%></button>
+            </li>
+              <% } %>
+             <% if(App.menu['76']) { %>
+          <li class="option-settings"><button><%_MenuSwitch%></button></li>
+            <% } %>
+
+            <% if(App.menu['77']) { %>
+            <li class="auto-update"><button><%_AutoUpdate%></button></li>
+            <% } %>
+        </ul>
+
+<!--        <ul class="nav pull-right">
+          <li class=""><a href="#" title="Update Mode">Allow clients to automaticaly join</a></li>
+        </ul>
+-->        
+    </div>
+  </div>
+</div><!-- CRUD Actions -->
+<!-- END Boottom menu -->

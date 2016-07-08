@@ -1,0 +1,63 @@
+<form id="add-server-form" class="form-horizontal no-margins add-server-form">
+    <div class="modal-header">
+        <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+        <h3><%_Add Server%></h3>
+    </div>
+    <p class="errors"></p>
+    
+    <div class="modal-body">
+        <div class="control-group">
+          <label class="control-label" for="ip"><%_Ip address%></label>
+            <div class="controls">
+                <input type="text" id="ip" class="span10" name="IP"/>
+            </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="port"><%_Port%></label>
+            <div class="controls">
+                <input type="text" id="port" class="span10" name="Port"/>
+            </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="password">PASSWD</label>
+            <div class="controls">
+                <input type="password" id="password" class="span10" name="Password"/>
+            </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="type"><%_Type%></label>
+            <div class="controls">
+                <select id="type" class="span10" name="Type">
+                  <option value="Primary"><%_Primary%></option>
+                  <option value="Secondary"><%_Secondary%></option>
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ip"><%_Base Disk Folder%></label>
+            <div class="controls">
+                <input type="text" id="base" class="span10" name="base"/>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ip"><%_Export Disk Folder%></label>
+            <div class="controls">
+                <input type="text" id="export" class="span10" name="export"/>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ip"><%_Storage Disk Folder%></label>
+            <div class="controls">
+                <input type="text" id="storage" class="span10" name="storage"/>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-footer">
+      <a href="#" class="btn" title="Close" data-dismiss="modal"><%_Close%></a>
+      <input type="submit" value="<%_Add%>" class="submit btn btn-primary" class="span12">
+    </div>
+</form>

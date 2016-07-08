@@ -1,0 +1,24 @@
+var Restore = require('../models/rollback').RestoreDisk;
+
+module.exports = function(socket) {
+	socket.on('restore:read', function(req, res) {
+		require('../../config/config').checkPass('admin', req, res, function() {
+			Restore.getRestore(req,function(err, data) {
+				res(err, data);
+			});
+		});
+	});
+
+	socket.on('restore:create', function(req, res) {
+		require('../../config/config').checkPass('admin', req, res, function() {
+			Restore.create(req, function(error, data) {
+				if (!error) {
+					socket.emit('restore:create', data);
+					socket.broadcast.emit('restore:create', data);
+				}
+				res(error, data);
+			});
+		});
+	});
+
+}

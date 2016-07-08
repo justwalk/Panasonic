@@ -1,0 +1,98 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/computers/computer_form_templete.html',
+  'models/computer',
+  'modelBinder',
+  'collection/menus'
+], function($, _, Backbone, computerFormTemplateT, Computer, ModelBinder, MenuCollection){
+  var ComputerFormView = Backbone.View.extend({
+    id:'add-computer-modal',
+    className: 'modal fade',
+    template: _.template(underi18n.template(computerFormTemplateT, msgFactory)),
+    
+    events:{
+      'submit .computer-form ': 'saveModel',
+      'hidden' : 'remove' //the 'hidden' event is from bootstrap modal dismiss
+    },
+    _modelBinder: undefined,
+    initialize: function(options) {
+      var self = this;
+      this.model = this.options.model || new Computer();
+      this.models = this.options.models;
+      this._modelBinder = new Backbone.ModelBinder();
+      this.disabledAttributes = ['name', 'mac_address', 'ip'];
+      var index;
+      var groups = '';
+      //     注释
+      //alert("this.options.groups=="+JSON.stringify(this.options.groups));
+      //this.options.groups.collection.forEach(function(el){
+      // groups += '<option value="' + el.get('id') + '">' + el.get('name') + '</option>';
+      //});
+
+      this.groups = groups;
+      var menus = '<option value="0">'+ App.msgFactory('None') +'</option>';
+      var menuCollection = this.model.menus;
+
+      // var a=this.model.Id;
+      if (this.model.get('Id')) {
+       // alert("menuCollection==="+JSON.stringify(menuCollection));
+        menuCollection.fetchWithComputerId(this.model.get('Id'));
+        menuCollection.forEach( function (menu) {
+          menus += '<option value"' + menu.get('Id') + '">' + menu.get('Name') + '</option>';
+        });
+      }
+      this.menus = menus;
+      _.bindAll(this);
+    },
+    
+    setupMultipleEdit: function() {
+      var self = this;
+      _(self.disabledAttributes).forEach(function(attribute) {
+        $('[name="'+attribute+'"]', self.el).attr('disabled', 'disabled');
+      });
+    },
+
+    saveModel: function(e) {
+      var self = this;
+      $('input[type=submit]', self.el).attr('alt',$('input[type=submit]',self.el).val());
+      $('input[type=submit]', self.el).attr('disabled', 'disabled').val(App.msgFactory('Please wait...'));
+      this._modelBinder.bind(this.model, this.el);
+      if (this.models) {
+        alert("this.models  aaa   编辑 ==="+JSON.stringify(this.model));
+        _(this.disabledAttributes).each(function(attr) {self.model.unset(attr);});
+        saved = this.models.length;
+        _(this.models).each(function(model) {
+          model.save(self.model.attributes, {
+            success: function() {saved--;
+              if (!saved) {self.$el.modal('hide');}
+            },
+            error:function(model, error){
+              self.$('.computer-form .errors').append('Failed to save '+ model.get('name')+' \n ');
+            }
+          });
+        });
+      } else {
+        alert("this.models  aaa   添加 ==="+JSON.stringify(this.model));
+        this.model.save({}, {
+          success: function(model, response) {
+            self.$el.modal('hide');
+          }
+        });
+      }
+      
+      return false;
+    },
+
+    render: function() {
+      this.delegateEvents();
+      $(this.el).html(this.template({model:this.model, menus: this.menus, groups: this.groups}));
+
+      this._modelBinder.bind(this.model, this.el);
+      if (this.models) {this.setupMultipleEdit();}
+      return this;
+    }
+  });
+  return ComputerFormView;
+});

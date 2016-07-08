@@ -1,0 +1,58 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/users/user.html',
+  'modelBinder'
+], function($, _, Backbone, tableItem, ModelBinder){
+    TaskView = Backbone.View.extend({
+      tagName: 'tr',
+      className:'select',
+      _modelBinder: undefined,
+	  
+	   events: {
+            'click .removeTask': 'removeTask',
+            'click .context':'toggleSelectUser'
+        },
+		
+		template: _.template(underi18n.template(tableItem, msgFactory)),
+
+
+      initialize: function() {
+        var self=this;
+         App.vent.on('user:change:unselect', function(msg) {
+          self.toggleSelected(false);
+          self.isSelected=false;
+          });
+        this.task = this.options.task;
+        this.task.on('toggleSelected', this.toggleSelected, this);
+        this._modelBinder = new ModelBinder();
+        _.bindAll(this, 'render');
+      },
+	  
+	  removeTask: function() {
+		  this.task.serverDelete();
+		  this.task.destroy();
+	  },
+      render: function() {
+        console.log(this.task.get('lastlogintime'))
+		var html = this.template({
+			task: this.task
+		  });
+        $(this.el).html(html);
+        this._modelBinder.bind(this.task, this.el);
+        return this;
+      },
+      toggleSelectUser: function() {
+         App.vent.trigger('user:change:unselect');
+        this.isSelected=!this.isSelected;
+        this.toggleSelected(this.isSelected);
+     },
+    
+    toggleSelected: function(selected) {
+      $('.context', this.el).toggleClass('selected', selected);
+    },
+
+    });
+    return TaskView;
+});

@@ -1,0 +1,420 @@
+#include "group.h"
+
+#include "login.h"
+#include "error.h"
+#include "output.h"
+
+#include <iostream>
+#include <sstream>
+
+#include "computer.h"
+
+UUIDGroupResource::UUIDGroupResource(){
+	param = "id";
+	validator = &numberRegex;
+	
+	children.push_back(new PoweronCommandGroup());
+	children.push_back(new AddCommandGroupResource());
+	children.push_back(new UpdateGroupResource());
+	children.push_back(new DestroyGroupResource());
+	children.push_back(new StartGroupResource());  //byt add start 20160321
+	children.push_back(new StopGroupResource());  //byt add start 20160322
+	children.push_back(new RestartGroupResource());  //byt add start 20160322
+	children.push_back(new SendMsgGroupResource());  //byt add start 20160330
+	children.push_back(new SendCmdGroupResource());  //byt add start 20160331
+	children.push_back(new LogoutGroupResource());  //byt add start 20160331
+}
+
+void UUIDGroupResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG id;
+	
+	std::istringstream(params.find("id")->second) >> id;
+	
+	JSON::Value* data = ExtendedGroupToJSON(id);
+
+	if(data == NULL) return;
+	
+	printHeaders();
+	data->render();
+
+	delete data;
+}
+
+GroupResource::GroupResource(){
+	prefix = "groups";
+	children.push_back(new CreateGroupResource());
+	children.push_back(new UUIDGroupResource());
+}
+
+void GroupResource::run(const std::map<std::string, std::string>& params) const{
+	JSON::Value* data = GroupEnumToJSON();
+
+	printHeaders();
+	data->render();
+
+	delete data;
+}
+
+//byt add start 20160331
+LogoutGroupResource::LogoutGroupResource(){
+	prefix = "logout";
+}
+void LogoutGroupResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG id;
+
+	std::istringstream(params.find("id")->second) >> id;
+
+	ULONG error;
+	ENUM_HANDLE EnumObj = GetFirstComputer(id);
+
+	OBJ_COMP info;
+
+	while((GetNextComputer(EnumObj, &info))){
+		if(!(LogoutComputer(info.nID)))
+			return SDKError("LogoutComputer", EBLIB_UNKNOWN);
+	}
+	FreeEnumObject(EnumObj);
+
+	printDone();
+	
+}
+
+
+SendCmdGroupResource::SendCmdGroupResource(){
+	prefix = "cmd";
+}
+void SendCmdGroupResource::run(const std::map<std::string, std::string>& params) const{
+	if(params.find("COM") == params.end())
+		missingParameter("COM");
+
+	ULONG id;
+
+	std::istringstream(params.find("id")->second) >> id;
+
+	ULONG error;
+	ENUM_HANDLE EnumObj = GetFirstComputer(id);
+
+	OBJ_COMP info;
+
+	while((GetNextComputer(EnumObj, &info))){
+		if(!(SendCmdToComputer(info.nID, params.find("COM")->second.c_str())))
+			return SDKError("SendCmdToComputer", EBLIB_UNKNOWN);
+	}
+	FreeEnumObject(EnumObj);
+
+	printDone();
+}
+//byt end start 20160331
+
+//byt add start 20160330
+SendMsgGroupResource::SendMsgGroupResource(){
+	prefix = "msg";
+}
+void SendMsgGroupResource::run(const std::map<std::string, std::string>& params) const{
+	if(params.find("MSG") == params.end())
+		missingParameter("MSG");
+	
+	ULONG id;
+
+	std::istringstream(params.find("id")->second) >> id;
+
+	ULONG error;
+	ENUM_HANDLE EnumObj = GetFirstComputer(id);
+
+	OBJ_COMP info;
+
+	while((GetNextComputer(EnumObj, &info))){
+		if(!(SendMsgToComputer(info.nID, params.find("MSG")->second.c_str())))
+			return SDKError("SendMsgToComputer", EBLIB_UNKNOWN);
+	}
+	FreeEnumObject(EnumObj);
+
+	printDone();
+
+}
+//byt end start 20160330
+
+//byt add start 20160321
+StartGroupResource::StartGroupResource(){
+	prefix = "start";
+}
+
+void StartGroupResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG id;
+
+	std::istringstream(params.find("id")->second) >> id;
+
+	ULONG error;
+	ENUM_HANDLE EnumObj = GetFirstComputer(id);
+
+	OBJ_COMP info;
+
+	while((GetNextComputer(EnumObj, &info))){
+		if(!(customWakeOnLanComputer(info.pchMac, info.nIP4, info.nNetMask4)))
+			return SDKError("WakeOnLanComputer", EBLIB_UNKNOWN);
+	}
+	FreeEnumObject(EnumObj);
+
+	printDone();
+
+}
+//byt add end 20160321
+
+//byt add start 20160322
+StopGroupResource::StopGroupResource(){
+	prefix = "stop";
+}
+
+void StopGroupResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG id;
+
+	std::istringstream(params.find("id")->second) >> id;
+
+	ULONG bootMenuValue;
+	ULONG bootDeviceValue;
+	ULONG error;
+	ENUM_HANDLE EnumObj = GetFirstComputer(id);
+
+	OBJ_COMP info;
+	if(strcmp(params.find("COMID")->second.c_str(), "group_power_off") == 0) {
+		// #####################poower off  分组 电源切断
+		while((GetNextComputer(EnumObj, &info))){
+			if(IsPcAlive(info.nID, 1)){
+				if(!(ShutdownComputer(info.nID)))
+					return SDKError("ShutdownComputer", EBLIB_UNKNOWN);
+			}
+		}
+	}if(strcmp(params.find("COMID")->second.c_str(), "group_start_device") == 0) {
+		// #########################开闭计算机启动菜单,设置计算机的启动设备
+		std::istringstream(params.find("bootMenuValue")->second )>> bootMenuValue;
+		std::istringstream(params.find("bootDeviceValue")->second )>> bootDeviceValue;
+
+		BOOL bEnable = TRUE;
+		if(bootMenuValue==1){
+			bEnable=false;
+		}else if(bootMenuValue==2){
+			bEnable = TRUE;
+		}
+		// bootMenu
+		if(bootMenuValue != 3){
+			while((GetNextComputer(EnumObj, &info))){
+				if(!(EnableBootMenuForComputer(info.nID,bEnable)))
+					return SDKError("ShutdownComputer", EBLIB_UNKNOWN);
+			}
+		}
+
+		// device  ACNT_FLAG_BOOT_MASK 11
+		if(bootDeviceValue != 11){
+			while((GetNextComputer(EnumObj, &info))) {
+				if (!(SetStartBootDevice(info.nID,bootDeviceValue)))
+					return SDKError("ShutdownComputer", EBLIB_UNKNOWN);
+			}
+		}
+
+	}else{
+		//分组  关闭PC
+		while((GetNextComputer(EnumObj, &info))){
+			if(!(ShutdownComputer(info.nID)))
+				return SDKError("ShutdownComputer", EBLIB_UNKNOWN);
+		}
+	}
+	FreeEnumObject(EnumObj);
+
+	printDone();
+
+}
+
+RestartGroupResource::RestartGroupResource(){
+	prefix = "restart";
+}
+
+void RestartGroupResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG id;
+
+	std::istringstream(params.find("id")->second) >> id;
+
+	ULONG error;
+	ENUM_HANDLE EnumObj = GetFirstComputer(id);
+
+	OBJ_COMP info;
+
+	while((GetNextComputer(EnumObj, &info))){
+		if(!(RebootComputer(info.nID)))
+			return SDKError("RebootComputer", EBLIB_UNKNOWN);
+	}
+	FreeEnumObject(EnumObj);
+
+	printDone();
+
+}
+//byt add end 20160322
+
+CreateGroupResource::CreateGroupResource(){
+	prefix = "create";
+}
+
+void CreateGroupResource::run(const std::map<std::string, std::string>& params) const{
+	if(params.find("Name") == params.end())
+		missingParameter("Name");
+	
+	ADD_GRP_OBJ group;
+	group.nType = 0;
+	strcpy(group.pchName, clamp(params.find("Name")->second, sizeof(group.pchName)).c_str());
+	
+	ULONG id;
+	
+	ULONG error;
+	if(!(AddGroup(&group, &id, &error)))
+		return SDKError("AddGroup", error);
+	
+	printID(id);
+}
+
+DestroyGroupResource::DestroyGroupResource(){
+	prefix = "delete";
+}
+
+void DestroyGroupResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG id;
+	
+	std::istringstream(params.find("id")->second) >> id;
+	
+	ULONG error;
+	if(!(DelComputerGroup(id, &error)))
+		return SDKError("DelComputerGroup", error);
+
+	printDone();
+}
+
+AddCommandGroupResource::AddCommandGroupResource(){
+	prefix = "add";
+}
+
+void AddCommandGroupResource::run(const std::map<std::string, std::string>& params) const{
+	if(params.find("Computer") == params.end())
+		missingParameter("Computer");
+	
+	ULONG id, cid;
+	
+	std::istringstream(params.find("id")->second) >> id;
+	std::istringstream(params.find("Computer")->second) >> cid;
+	
+	ULONG error;
+	if(!(MoveComputerToSpecifyGroup(cid, id, &error)))
+		return SDKError("MoveComputerToSpecifyGroup", error);
+		
+	printDone();
+}
+
+UpdateGroupResource::UpdateGroupResource(){
+	prefix = "update";
+}
+
+void UpdateGroupResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG id;
+	
+	std::istringstream(params.find("id")->second) >> id;
+	
+	if(params.find("Name") == params.end())
+		missingParameter("Name");
+
+	ULONG error;
+	if(!(EditGroup(id, params.find("Name")->second.c_str(), &error)))
+		return SDKError("EditGroup", error);
+		
+	printDone();
+}
+
+
+JSON::Value* GroupToJSON(const GRP_OBJ& info){
+	JSON::Object* data = new JSON::Object();
+
+	data->add(new JSON::String("ID"), new JSON::Integer(info.nID));
+	data->add(new JSON::String("Name"), new JSON::String(info.pchName));
+
+	return data;
+}
+
+JSON::Array* GroupEnumToJSON(){
+	JSON::Array* array;
+
+	ENUM_HANDLE EnumObj = GetFirstComputerGroup();
+
+	array = enumToJSON<GRP_OBJ, GroupToJSON, GetNextComputerGroup>(EnumObj);
+
+	return array;
+}
+
+JSON::Value* ExtendedGroupToJSON(ULONG id){
+	GRP_OBJ info;
+	
+	JSON::Object* data = new JSON::Object();
+	
+	{
+		ENUM_HANDLE EnumObj = GetFirstComputerGroup();
+		
+		JSON::Array* array = new JSON::Array();
+
+		GRP_OBJ info;
+
+		bool found = false;
+		
+		while((GetNextComputerGroup(EnumObj, &info))){
+			if(info.nID == id) {
+				found = true;
+				break;
+			}
+		}
+
+		FreeEnumObject(EnumObj);
+		
+		if(!found) {
+			die("Group id is invalid");
+			delete data;
+			delete array;
+			return NULL;
+		}
+		
+		data->add(new JSON::String("ID"), new JSON::Integer(info.nID));
+		data->add(new JSON::String("Name"), new JSON::String(info.pchName));
+	}
+	
+	{
+		ENUM_HANDLE EnumObj = GetFirstComputer(id);
+		
+		JSON::Array* computers = enumToJSON<OBJ_COMP, ComputerToJSON, GetNextComputer>(EnumObj);
+
+		data->add(new JSON::String("Computers"), computers);
+	}
+	
+	return data;
+}
+
+//wangxin add start 20160428
+PoweronCommandGroup::PoweronCommandGroup(){
+	prefix = "poweron";
+}
+
+void PoweronCommandGroup::run(const std::map<std::string, std::string>& params) const{
+
+	ULONG id = GetInt(id);
+	ULONG timeout = GetInt(timeout);
+
+	ULONG error;
+
+	ENUM_HANDLE EnumObj = GetFirstComputer(id);
+
+	OBJ_COMP info;
+
+	while((GetNextComputer(EnumObj, &info))){
+		if(WakeOnLanComputer(info.pchMac,&error)){
+			if(!(IsPcAlive(id, timeout))){
+				return SDKError("IsPcAlive", EBLIB_UNKNOWN);
+			}
+		}
+	}
+	FreeEnumObject(EnumObj);
+	printDone();
+}
+
+//wangxin add end 20160428

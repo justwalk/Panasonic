@@ -1,0 +1,135 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/base_disks/grid_item.html',
+  'text!templates/base_disks/list_item.html',
+  'modelBinder'
+], function($, _, Backbone, gridItem, tableItem, ModelBinder){
+   BaseDiskView = Backbone.View.extend({
+
+    events:{
+      'click .select': 'toggleSelectDisk',
+      'click': 'showDescription'
+    },
+
+    initialize: function(){
+      var self = this;
+      _.bindAll(this);
+      self.list = self.options.list;
+      self._modelBinder = new Backbone.ModelBinder();
+      
+      self.DescriptionOn = false;
+      self.isSelected = false;
+      
+      self.hideAllTable();
+
+      App.vent.on('basedisks:change:description', function(id) {
+        self.changeDescription(id);
+      });
+
+      App.vent.on('basedisks:change:selection:invert', function(msg) {
+        self.toggleSelectDisk();
+      });
+
+      App.vent.on('basedisks:change:selection:none', function(msg) {
+        self.changeSelection(false);
+      });
+
+      App.vent.on('basedisks:change:selection:all', function(msg) {
+        self.changeSelection(true);
+      });
+      this.model.on('remove', this.close);
+
+      if (self.list) {
+        self.template = _.template(underi18n.template(tableItem, App.msgFactory));
+      }else{
+        self.template = _.template(underi18n.template(gridItem, App.msgFactory));
+      }
+    },
+    
+    getIsSelected: function() {
+      return this.isSelected;
+    },
+    
+    showSnapshots: function() {
+      var snapshotsView = new SnapshotsView({disk: this.model});
+      snapshotsView.$el.appendTo($('#modal-container')).modal();
+      return false;
+    },
+    
+    showDescription: function() {
+      if(this.list)
+        return false;
+      App.vent.trigger('basedisks:change:description', this.model.get('ID'));
+        $('.storage-logo').attr('no-hide', true);
+        window.setTimeout(function(){
+        $('.storage-logo').attr('no-hide', false);
+        }, 10);
+    },
+
+    showAllTable : function(){
+      $('.nav li button').each(function(){
+          $(this).css("display","block");
+        });
+    },
+
+    hideAllTable : function(){
+      $('.differencing-image').css("display","none");
+      $('.rollBack-image').css("display","none");
+      $('.diskMerge-image').css("display","none");
+      $('.displayImageComputers-images').css("display","none");
+    },
+
+    toggleSelectDisk: function(e) {
+      $('.selected').removeClass('selected');
+      this.changeSelection(true);
+      //var append-image = $('.append-image').parent().detach();
+      //$('.append-image').css("display","none");
+      var myType = $('.selected').next().next().find("dd").filter(function(index){
+        return $(this).attr("name") == "Type";
+      }).text();
+      if( myType == "Cache" || myType == "BaseDisk"){
+        //当磁盘类型是cache和basedisk时
+        this.showAllTable();
+        $('.diskMerge-image').css("display","none");
+      }
+      else{
+        //当类型是proxy,显示
+        this.showAllTable();
+      };
+      
+      return false;
+    },
+
+    changeSelection: function(selected){
+      $('.select', this.el).toggleClass('selected', selected);
+      this.isSelected = selected;
+    },
+
+    changeDescription: function(uuid){
+      var newUUID = this.model.get('ID') !== uuid;
+      if(newUUID || this.$el.hasClass('detailed')){
+        this.$el.removeClass('detailed');
+      }else{
+        this.$el.addClass('detailed');
+        this.$el.attr('title', 'click to hide details');
+      }
+    },
+
+    render: function(){
+      var self = this;
+      var renderContent = self.template({model: self.model});
+      $(self.el).html(renderContent);
+      self._modelBinder.bind(self.model, self.el);
+      return self;
+    },
+    close: function() {
+      this.unbind();
+      this.remove();
+    }
+    
+  });
+
+  return BaseDiskView;
+});

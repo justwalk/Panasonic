@@ -1,0 +1,114 @@
+define(['underscore', 'backbone','collection/menus'], function(_, Backbone, Menus) {
+    var Computer = Backbone.Model.extend({
+        urlRoot: 'computer',
+        
+        defaults: {
+            // status: 'Online',
+            photo: '/images/placeholder.png',
+            elapsed_time: function() {return this.uptimeInMinutes();},
+            '8021X': false,
+            'ad': false,
+            'boot_rename': false,
+            'disable': false,
+            'disable_usb_devices': false,
+            'disable_usb_storage': false,
+            'enable_menu': false,
+            'ldc_sync': false,
+            'multi_ad': false,
+            'persist_files': false,
+            'persist_registry': false,
+            'persist_ssid': false,
+            'private': false,
+            'seclude_network': false,
+            'sync_time': false,
+            'updt_boot': false,
+            'update_mode': false,
+            'wmemch': false,
+            'group_id':0,
+            'update_disk':" ",
+            //xiongpanan add start 20160324
+            'update_default':"None ",
+             //xiongpanan add end 20160324
+
+        },
+        
+        initialize: function() {
+          var self = this;
+          this.menus = new Menus();
+          this.menus.bind('all', function(event, menus) {
+
+            self.set('active_menu', self.activeMenuString());
+          
+          });
+          if (!this.isNew()) {
+		    if(App.user == 'admin') {
+				this.menus.fetchWithComputerId(this.get('id'));
+			}
+          }
+          _.bindAll(this, 'activeMenuString');
+        },
+        
+        activeMenu: function() {
+    		  if(App.user == 'admin'){
+           
+            return this.menus.get(this.get('default_menu'));
+          }
+            
+    	     else
+    		    return null;
+            },
+        
+        activeMenuString: function() {
+
+          return this.activeMenu() ? this.activeMenu().get('name') : 'None';
+        },
+
+        toggleSelected: function(bool) {
+          if (typeof bool === 'undefined'){
+            this.isSelected = !this.isSelected;
+          }else{
+            this.isSelected = bool;
+          }
+          this.trigger('toggleSelected', this.isSelected);
+          return this.isSelected;
+        },
+        
+        statusBadges: function() {
+          var badges = '';
+          if (this.get('unknown')){ badges += '<div class="update pull-left"></div>';}
+          if (this.get('update')) { badges += '<div class="unknown pull-left"></div>';}
+          if (this.get('warning')){ badges += '<div class="warning pull-left"></div>';}
+          if (this.get('failed')) { badges += '<div class="failed pull-left"></div>' ;}
+          // if (this.get('elapsed_time') && this.get('status')=="Online") { badges += '<div class="uptime pull-left">&nbsp;<sub>'+this.uptimeInMinutes()+'</sub></div>'}
+          return badges;
+        },
+        
+        startedDate: function() {
+          if (this.get('uptime')) {
+            return new Date(this.get('uptime')*1000);
+          }
+          return false;
+        },
+        
+        startedDateString: function() {
+          date = this.startedDate();
+
+          if (date) {
+            return date.getFullYear()+'/'+(date.getMonth()+1)+'/'+date.getDate()+' '+date.getHours()+':'+date.getMinutes();
+          }else{
+            return '-';
+          }
+        },
+        
+        uptimeInMinutes: function() {
+          if (this.startedDate()) {
+            var elapsed = (new Date() - this.startedDate())/1000;
+            var hours = Math.floor(elapsed / (60*60));
+            var minutes = Math.floor((elapsed - (hours*3600))/60);
+            return hours+':'+minutes;
+          }
+          return '-';
+        }
+    });
+    return Computer;
+});

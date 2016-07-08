@@ -1,0 +1,150 @@
+define([
+  'require',
+  'jquery',
+  'underscore',
+  'backbone',
+  'rsvp',
+  'views/loading_screen',
+  'views/commands/start_computer',
+  'views/commands/stop_computer',
+  'views/commands/restart_computer',
+  'views/commands/send_command',
+  'views/commands/logout',
+  'views/commands/change_mac',
+  'views/commands/naming_pattern'
+], function(require, $, _, Backbone, RSVP, LoadingView){
+  var ContextCommands = Backbone.View.extend({
+    events:{
+      'click .start': 'startComputers',
+      'click .stop': 'stopComputers',
+      'click .restart': 'restartComputers',
+      'click .send-cmd': 'sendCommand',
+      // 'click .auto-login': 'autoLogin',
+      'click .logout': 'logoutComputers',
+      'click .change-mac': 'changeMac',
+      'click .naming-pattern': 'namingPattern',
+      'click .lock-position': 'lockComputers',
+      'click .unlock-position': 'unlockComputers'
+    },
+    initialize: function() {
+      this.parentView = this.options.parentView;
+      this.clickedComputer = this.options.clickedComputer;
+      this.clickedComputer.bind('reset', this.toggleCommandAvailability, this);
+      this.bind('recheck', this.toggleCommandAvailability, this);
+      this.collection.bind('toggleSelected', this.toggleCommandAvailability, this);
+    },
+
+    lockComputers: function() {
+      var self = this;
+      _(this.getActiveComputers()).forEach(function (computer) {
+        if (computer.get('locked') == false) {
+          computer.set('locked', true);
+          computer.trigger('rerender');
+          computer.save({},{
+            success: function(model,response) {
+              self.trigger('recheck');
+            }
+          });
+        }
+      });
+    },
+
+    unlockComputers: function() {
+      var self = this;
+      _(this.getActiveComputers()).forEach(function (computer){
+        if (computer.get('locked') == true) {
+          computer.set('locked', false);
+          computer.save({},{
+            success: function(model,response) {
+              self.trigger('recheck');
+              computer.trigger('rerender');
+            }
+          });
+        }
+      });
+    },
+    
+    startComputers: function() {
+      var startComputerView = new (require('views/commands/start_computer'))({computers: this.getActiveComputers()});
+      startComputerView.render().$el.appendTo($('#modal-container')).modal();
+      $('#task_name', startComputerView.el).focus();
+    },
+    
+    stopComputers: function() {
+      var stopComputerView = new (require('views/commands/stop_computer'))({computers: this.getActiveComputers()});
+      stopComputerView.render().$el.appendTo($('#modal-container')).modal();
+      $('#task_name', stopComputerView.el).focus();
+    },
+
+    restartComputers: function() {
+      var restartComputerView = new (require('views/commands/restart_computer'))({computers: this.getActiveComputers()});
+      restartComputerView.render().$el.appendTo($('#modal-container')).modal();
+      $('#task_name', restartComputerView.el).focus();
+    },
+
+    sendCommand: function() {
+      var sendCommandView = new (require('views/commands/send_command'))({computers: this.getActiveComputers()});
+      sendCommandView.render().$el.appendTo($('#modal-container')).modal();
+      $('#task_name', sendCommandView.el).focus();
+    },
+
+    autoLogin: function() {
+    },
+
+    logoutComputers: function() {
+      var logoutView = new (require('views/commands/logout'))({computers: this.getActiveComputers()});
+      logoutView.render().$el.appendTo($('#modal-container')).modal();
+      $('#task_name', logoutView.el).focus();
+    },
+
+    changeMac: function() {
+      var changeMacView = new (require('views/commands/change_mac'))({computers: this.getActiveComputers()});
+      changeMacView.render().$el.appendTo($('#modal-container')).modal();
+      $('#task_name', changeMacView.el).focus();
+    },
+
+    namingPattern: function() {
+      var namingPatternView = new (require('views/commands/naming_pattern'))({computers: this.getActiveComputers()});
+      namingPatternView.render().$el.appendTo($('#modal-container')).modal();
+      $('#task_name', namingPatternView.el).focus();
+    },
+
+   
+
+    getActiveComputers: function() {
+      if (this.collection.selectedComputers().length) {
+        return this.collection.selectedComputers();
+      }else if(this.clickedComputer.length) {
+        return this.clickedComputer.models;
+      }else{
+        return false;
+      }
+    },
+
+    toggleCommandAvailability: function(computer,collection,currentIndex) {
+      var activeComputers = this.getActiveComputers();
+      var filterActiveComputers = _(activeComputers).filter(function (computer) {
+        return computer.get('locked') == true;
+      });
+
+      $('.lock-position',this.el).show();
+      $('.unlock-position',this.el).show();
+      if (activeComputers.length == filterActiveComputers.length) {
+        $('.lock-position', this.el).hide();
+      }
+      else {
+        if (filterActiveComputers.length === 0) {
+          $('.unlock-position', this.el).hide();
+        }
+      }
+      if (activeComputers){
+        $('button', this.el).removeAttr('disabled');
+      }else{
+        $('button', this.el).attr('disabled', 'disabled');
+      }
+    }
+    
+  });
+
+  return ContextCommands;
+});

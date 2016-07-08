@@ -1,0 +1,1 @@
+<div class="container" style="position: relative; left: 100px"><h1><%- "Computers总数：" + this.collection.length%></h1></div>

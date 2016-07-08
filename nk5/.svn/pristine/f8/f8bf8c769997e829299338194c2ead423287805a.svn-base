@@ -1,0 +1,26 @@
+{
+  "name": "nkv",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "2.5.8",
+    "express-resource": "0.2.4",
+    "ejs": ">= 0.0.1",
+    "jugglingdb": "",
+    "pg": ">= 0.7.0",
+    "backbone.io": ">=0.2.7",
+    "socket.io": ">=0.9.10",
+    "request": "",
+    "amqp": "",
+    "cron": "",
+    "each": "",
+    "iconv": "",
+    "byline": "<4",
+    "jugglingdb-postgres": "0.0.4"
+  },
+  "devDependencies": {
+    "mocha": "~1.0.1",
+    "grunt": "",
+    "grunt-contrib-requirejs": ""
+  }
+}

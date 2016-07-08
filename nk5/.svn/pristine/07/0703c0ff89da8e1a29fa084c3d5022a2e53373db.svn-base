@@ -1,0 +1,195 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'rsvp',
+  'modelBinder',
+  'views/home/serverlist',
+  'views/home/tasklist',
+  'views/home/clientlist',
+  'views/home/clientFootList',
+  'text!templates/home/home.html',
+  'collection/servers',
+  'collection/logfile',
+  'collection/groups',
+  'collection/computers'
+], function($, _, Backbone,RSVP,ModelBinder, ServerListView,TaskList, ClientList,ClientFootList, HomeTemplate,ServerCollection,LogFileCollection,GroupsCollection,ComputersCollection){
+    var HomeView = Backbone.View.extend({
+      template: _.template(underi18n.template(HomeTemplate, msgFactory)),
+
+      initialize: function(options) {
+        var self = this;
+        _.bindAll(this);
+        self.router = self.options.router;
+        self.list = 0;
+        this.serverCollection = new ServerCollection();
+        this.serverCollection.fetch();
+        this.serverCollection.bind('add reset', function(){
+          //self.render();
+        });
+
+        this.logFileCollection = new LogFileCollection();
+        this.logFileCollection.fetch();
+        this.logFileCollection.bind('add reset', function(){
+          //self.render();
+        });
+
+         
+
+        this.groupsCollection = new GroupsCollection();
+        this.groupsCollection.fetch();
+        this.groupsCollection.bind('add reset', function(){
+          self.render();
+        });
+
+      },
+
+      render: function() {
+        var self = this;
+        self.$el.html(self.template());
+        this.serverCollection.each(function(server) {
+            var serverListView = new ServerListView({
+                model: server
+            });
+            self.$('#server-container').append(serverListView.render().el);
+        });
+
+        this.logFileCollection.each(function(logfile) {
+            var taskList = new TaskList({
+                model: logfile
+            });
+            self.$('#logfile-container').append(taskList.render().el);
+        });
+
+        var count=0;
+        this.groupsCollection.forEach(function(groupModel) {
+            self.computersCollection = new ComputersCollection();  
+            self.computersCollection.fetch({
+              data: {group_id: groupModel.id},
+              success: function(data) {
+                data.forEach(function(computer){
+                  computer.set('groupname',groupModel.get('name'));
+                  computer.set('groupLength',data.length);
+                  computer.set('groupAliveLength',count);
+                  setTimeout((function(){
+                    if(computer.get('online')){
+                      count++;
+                      computer.set('groupAliveLength',count);
+                    };
+                    var clientList = new ClientList({
+                      model: computer
+                    })
+
+                    while(data.length > 1){
+                      data.length--;
+                      if(data.length == 1){
+                        self.$('#client-container').append(clientList.render().el);
+                      }
+
+                    }
+                    
+                  }), 2000)  
+                });
+ 
+              },
+              error:function(data){
+                console.log(data);
+              }
+            })
+        });
+
+     
+
+ /*        var promisesArray = [];
+         var gname = [];
+        this.groupsCollection.forEach(function(groupModel) {
+          promisesArray.push(new RSVP.Promise(function(resolve,reject){
+            self.computersCollection = new ComputersCollection();
+            gname.push(groupModel.get('name'));
+            self.computersCollection.fetch({
+              data: {group_id: groupModel.id},
+              success: function(data) { 
+                resolve(data);
+              },
+              error:function(data){
+                reject(data);
+              }
+            })
+          }))
+        });
+      
+        RSVP.all(promisesArray).then(function(collectionArr){
+          collectionArr.forEach(function(groupCollection){
+            //console.log(groupCollection.length,'===============');
+             console.log(gname,'===============');
+            groupCollection.forEach(function(computer){
+              //console.log(computer.get('id'),'-------------------');
+              computerAliveAccount.then(function(data){
+                var count=0;
+                console.log('99999999999999999');
+                for(var i=0;i<data.length;i++){
+                  var nowDate = new Date();
+                  var aliveDate = new Date(data[i].update_time);
+                  if(nowDate - aliveDate < 300000){
+                    if(computer.get('id') == data[i].cid){
+                      console.log(data[i].cid);
+                      count++;
+                    }
+                  }
+                }
+                var clientList = new ClientList({
+                    groupAliveLength: count,
+                    groupLength:groupCollection.length,
+                    //groupname:groupCollection.name
+                  })
+                 self.$('#client-container').append(clientList.render().el);
+
+              });
+            });
+          });
+        });
+*/
+
+
+
+
+
+
+
+        var computerAccount = new RSVP.Promise(function(resolve,reject) {
+          socket.emit('computers:read', {group_id: '0'}, function(err,data) {
+            resolve(data);
+          });
+        });
+
+        var computerAliveAccount = new RSVP.Promise(function(resolve,reject) {
+          socket.emit('computerInfos:read', {}, function(err,data) {
+            resolve(data);
+          });
+        });
+
+        computerAccount.then(function(computers){
+          computerAliveAccount.then(function(data){
+          var acc= data.length;
+          for(var i=0;i<data.length;i++){
+            var nowDate = new Date();
+            var aliveDate = new Date(data[i].update_time);
+            if(nowDate - aliveDate > 300000){
+              acc--;
+            }
+          }
+          var clientFootList = new ClientFootList({
+             computersLength:computers.length,
+             aliveLength:acc
+           })
+
+          self.$('#clientFoot-container').append(clientFootList.render().el);
+        });
+        })
+        
+        return self;
+      },
+
+    });
+    return HomeView;
+});

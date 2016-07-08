@@ -1,0 +1,31 @@
+<form class="storage-form form-vertical" method="post" accept-charset="utf-8" id="add-computer-form ">
+  <div class="modal-header">
+    <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+    <h3><%_computers%></h3>
+  </div>
+
+  <div class="modal-body computers-images">
+  	<div class="control-group">
+      <table id="table-computers-images" width="100%">
+        <thead>
+        <tr>
+            <th><%_Name%></th>
+            <th><%_IP%></th>
+         </tr>
+        </thead>
+        <tbody>
+          <% var data = model.get('Data');for(var i=0;i<data.length ;i++){%>
+            <tr>
+              <td><%=data[i].Name%></td>
+              <td><%=data[i].IPAddress%></td>
+            </tr>
+          <%}%>
+        </tbody>
+      </table>
+  	</div>
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" title="Close" data-dismiss="modal"><%_OK%></a>
+  </div>
+</form>

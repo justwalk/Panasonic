@@ -1,0 +1,65 @@
+<div class="modal-dialog modal-sm">
+<div class="form-horizontal no-margins " >
+  <div class="modal-header">
+    <button class="close">&times;</button>
+    <h3><%_EditAuthority%></h3>
+  </div>
+    <form action="" id='edit-menus-form'>
+      <div class="modal-body " >
+        <!-- <div class="accordion" id="accordion2"> -->
+        <h5>&nbsp;</h5>
+          <div class="accordion-group">
+          <% for(var i in model) { %>
+            <% if(model[i].superior=='0') { %>
+            <div class="accordion-heading">
+              <div class="accordion-inner" >
+              
+                <label class="checkbox" for="disable_usb_storage">
+                   <% if(menu[model[i].id]) { %>
+                      <input type="checkbox" value="true" id="disable_usb_storage" checked='checked' name="<%- model[i].id%>">
+                   <% }else{%>
+                      <input type="checkbox" value="true" id="disable_usb_storage"  name="<%- model[i].id%>">
+                   <% }%>
+                        <span style="font-weight: 600;font-size: 16px;display: block;"><a data-toggle="collapse" data-parent="#accordion2" href="#mena-<%- model[i].name%>"><%- App.msgFactory(model[i].name)%></a></span> 
+                </label>
+              </div>
+              <div id="mena-<%- model[i].name%>" class="panel-collapse collapse">
+                <div class="control-group" style="margin: 10px 50px;" style="text-align: center;">
+               <% for(var x in model) { %>
+                <% if(model[i].id==model[x].superior ) { %>
+                      <label class="checkbox" for="disable_usb_storage">
+                        <% if(menu[model[x].id]) { %>
+                              <input type="checkbox" value="true" id="disable_usb_storage" checked='checked' name="<%- model[x].id%>">
+                        <% }else{%>
+                              <input type="checkbox" value="true" id="disable_usb_storage"  name="<%- model[x].id%>">
+                          <% }%>
+                       <%- App.msgFactory(model[x].name)%>
+                      </label>
+                 <% }%>
+                <% }%>
+                 </div>
+                  </div> 
+            </div> 
+              <% }%>
+            <% }%>
+          </div>
+         
+       <!--    </div> -->
+          
+        </div>
+          
+      <div class="modal-footer">
+        <a href="#" class="btn" title="Close" data-dismiss="modal"><%_Cancel%></a>
+        <input type="submit" value="<%_Save%>" class="submit btn btn-primary" class="span12">
+      </div>
+  </form>
+</div>
+</div>
+<style type="text/css">
+  .modal-lg{
+    width: 560px;
+  }
+  .max-height{
+    max-height: none;
+  }
+</style>

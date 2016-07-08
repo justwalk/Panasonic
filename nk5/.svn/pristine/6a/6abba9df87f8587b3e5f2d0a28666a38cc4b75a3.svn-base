@@ -1,0 +1,741 @@
+var db = require('../../config/db.js');
+var Task = db.Task;
+var Computer = require('./computer.js').Computer;
+var rest   = require('../helpers/rest_helper');
+var config = require('../../config/config.js');
+var computersURL = config.restHost()+'/computers/';
+var diskURL = config.restHost()+'/ioservers/';
+var cron = require('cron');
+var nodemailer = require('nodemailer');
+var fs = require('fs'); 
+var client= db.Schema.client;
+var TaskLogFile=db.TaskLogFile;
+
+Task.validatesPresenceOf('name');
+Task.cronSchedules = {};
+
+var getFileContent =  function(){
+  var content = fs.readFileSync(config.confPath(),'utf-8');
+  var regexjing = /\s*(#+)/;   //#start
+  var regexkong = /\s*=\s*/;
+    var keyvalue = {};
+  var arr_case = null;
+  var regexline = /.+/g;
+  while(arr_case=regexline.exec(content)) { //检索content是否包含#符号
+    if (!regexjing.test(arr_case))        //只要不包含#，赋值对象
+      keyvalue[arr_case.toString().split(regexkong)[0]] = arr_case.toString().split(regexkong)[1];
+  }
+  return keyvalue;
+}
+
+
+
+
+
+
+
+
+// Filters
+// beforeValidate
+// afterValidate
+// beforeCreate  
+// beforeSave  c
+// db.....
+// afterSave  c
+// afterCreate c
+// callback
+// beforeValidate
+// afterValidate
+// beforeSave u
+// beforeUpdate 
+// db.....
+// afterUpdate
+// afterSave
+// callback
+
+Task.beforeSave = function(next) {
+  this.setNextExecDate();
+  next();
+};
+
+Task.afterSave = function(next) {
+  this.scheduleTask();
+  next();
+};
+
+Task.afterCreate = function(next) {
+  if (this.execute == 'now') {this.executeTask();}
+  next();
+};
+Task.afterInitialize = function() {
+  this.setNextExecDate();
+  console.log('next exec date', this.next_execution_date);
+};
+
+// Task execution
+
+Task.prototype.scheduleTask = function() {
+  console.log('scheduleTask', this.id, this.cronTime());
+  var self = this;
+  //Kill previous schedule for this task
+  if (Task.cronSchedules[self.id]) {
+    Task.cronSchedules[self.id].stop();
+  }
+  if (this.available()) {
+    console.log('sheduled', this.id)
+    var cronJob = new cron.CronJob(this.cronTime(), function() {return self.executeTask(self);}, null, true, null);
+    Task.cronSchedules[self.id] = cronJob;
+  }else{
+    console.log('task expired', this.id);
+  }
+};
+
+Task.prototype.available = function() {
+  console.log('task available? ', 
+    this.enable!==false&&this.execute!=='now' && this.cronTime(), "|", 
+    this.execute!=='now' && this.cronTime() && cron.sendAt(this.cronTime()), 
+  "|", new Date());
+  
+  return (this.enable!==false)&&(this.execute!=='now') && this.cronTime() && cron.sendAt(this.cronTime()) > new Date();
+};
+
+
+Task.prototype.executeTask = function(){
+  console.log('executeTask', this.id);
+  this.writeFile(this.currentDate()+" ||    TASK   "+this.id+"      execute-start"+"\r\n");//log
+  var self = this;
+ /* this.last_run_date = new Date((new Date()).getTime() - (new Date()).getTimezoneOffset() * 60000);*/
+ this.last_run_date = new Date();
+
+  try{
+    self.executeCommand();
+  }catch(err){
+    self.taskComplete(err);
+  }
+
+      var a=this.id;
+    TaskLogFile.all({where: {taskid:a,folder:currentDate2()}},function(error, date) {
+             if(date.length<1){
+                  var taskLogfile = new TaskLogFile({taskid:a,folder:currentDate2()});
+                  taskLogfile.save(function(error, taskCopy) {
+    
+                  });
+             }
+             
+          });
+};
+
+// 修改  ioServer,bootServer重启；ioServer关闭
+Task.prototype.executeCommand = function() {
+  var self = this;
+  var url;
+  var params;
+  this.writeFile(this.currentDate()+" ||    DATA   "+JSON.stringify(self)+"\r\n");//log
+  if (self.action=='start' || self.action=='stop' || self.action == 'logout' || self.action == 'restart') {
+    url = computersURL+self.computer_uuid+'/command';
+    params = { COMID: self.action , iMsg:"Logoff", jMsg:"ログオフ"};
+  }else if (self.action=='poweroff'||self.action=='restart_action') {
+      var aUuid=[];
+      if(self.computer_uuid.indexOf("|")>-1){
+          self.computer_uuid.split('|').forEach(function(id){
+              aUuid.push(id);
+          });
+      }else{
+          aUuid.push(self.computer_uuid);
+      }
+      url = computersURL+self.computer_uuid+'/command/cmd';
+
+      //add by xuchang 20160524  start
+      var comm = self.command.split(' ');
+
+      var act;
+      if(comm[1] == "S"){
+        act = "STOP";
+      } else if(comm[1] == "R") {
+        act = "REST";
+      }
+      var enableCancle;
+      if(comm[3] == "Y"){
+        enableCancle = "1";
+      }else{
+        enableCancle = "0";
+      }
+      var msg = "";
+      for(i=4; i < comm.length; i++){
+        msg += comm[i];
+        if(i != comm.length -1 ){
+          msg += " ";        
+        }
+      }
+      params = { COMID: self.action , REQ : act, TIMEOUT: comm[2], TIMEOUTFLAG: enableCancle, MSG: msg ,BUUID:aUuid};
+      //add by xuchang 20160524 end 
+
+      //params = {  COM:self.command,BUUID:aUuid};
+
+
+  }else if (self.action=='poweron') {
+      var cUuid=[];
+      if(self.computer_uuid.indexOf("|")>-1){
+          self.computer_uuid.split('|').forEach(function(id){
+              cUuid.push(id);
+          });
+      }else{
+          cUuid.push(self.computer_uuid);
+      }
+      url = computersURL+self.computer_uuid+'/command/poweron';      
+      params = {  COM:self.action,CUUID:cUuid,timeout:getFileContent().StartUpCheckTime};
+  }
+
+  else if (self.action=='start_device') {
+      var aUuid=[];
+      if(self.computer_uuid.indexOf("|")>-1){
+          self.computer_uuid.split('|').forEach(function(id){
+              aUuid.push(id);
+          });
+      }else{
+          aUuid.push(self.computer_uuid);
+      }
+      url = computersURL+self.computer_uuid+'/command';
+      var menuDevice=self.command.split('|');
+      var menuValue= menuDevice[0];
+      var deviceValue= menuDevice[1];
+      params = { COMID: self.action,AUUID:aUuid,bootDeviceValue:deviceValue,bootMenuValue:menuValue};
+  }else if (self.action=='disk_copy') {
+      url = config.restHost()+'/ioservers/'+self.command+'/disks/copy';
+      var aCopyId=self.computer_uuid.split('|');
+      var isCopyType=aCopyId[0];
+      var sourceCopyValue=aCopyId[1];
+      var targetCopyValue=aCopyId[2];
+      var aComputerName=self.computer_name.split('|');
+      var oComputerName=aComputerName[1];
+      var arrayName=self.name.split('|');
+      var sourceCopyIP=arrayName[0].trim();
+      var targetCopyIP=arrayName[1].trim();
+      params = {COMID:self.action,typeCopyValue:isCopyType,sourceValue:sourceCopyValue,targetValue:targetCopyValue,computerName:oComputerName,sourceIP:sourceCopyIP,targetIP:targetCopyIP};
+  }else if (self.action=='disk_backup') {
+      url = config.restHost()+'/ioservers/'+self.command+'/disks/backup';
+      var diskId=self.computer_uuid;
+      var serverIP=self.computer_name;
+      var derectory=self.prefix;
+      var backNumber=self.start_number;
+      params = {COMID:self.action,diskId:diskId,serverIP:serverIP,derectory:derectory,backNumber:backNumber};
+  }else if(self.action=='action_exam'){
+      url = computersURL+self.computer_uuid+'/command';
+      var command=self.command.split('|');
+         var confirmStatus=command[0];
+         var confirmShutdown=command[1];
+         var forceShutdown=command[2];
+         var diskShutdown=command[3];
+         var second=command[4];
+         var menuId=1;
+         var packId=1;
+      if(null != self.menu_pack_id && self.menu_pack_id !=''){
+          var menu_pack_id=self.menu_pack_id.split('|');
+          menuId=menu_pack_id[0];
+          packId=menu_pack_id[1];
+      }
+      params = { COMID:self.action,confirmStatus:confirmStatus,confirmShutdown:confirmShutdown,forceShutdown:forceShutdown,
+          diskShutdown:diskShutdown,second:second,menuId:menuId,packId:packId,timeOut:getFileContent().StartUpCheckTime};
+  }else if(self.action=='auto_update'){
+      var menuId=1;
+      var packId=1;
+      if(null != self.menu_pack_id && self.menu_pack_id !=''){
+          var menu_pack_id=self.menu_pack_id.split('|');
+          menuId=menu_pack_id[0];
+          packId=menu_pack_id[1];
+      }
+      var url = computersURL +self.computer_uuid +'/menus/'+menuId+'/packs/'+packId+'/autoUpdate';
+      var command=self.command.split('|');
+      var forceShutdown=command[0];
+      var diskShutdown=command[1];
+      var operation=command[2];
+      var second=command[3];
+      params = { COMID:self.action,forceShutdown:forceShutdown,diskShutdown:diskShutdown,operation:operation, second:second, menuId:menuId,packId:packId,
+          computerId:self.computer_uuid,timeOut:getFileContent().StartUpCheckTime,Description:self.snapshot_comment,Mode:self.update_mode};
+  }else if (self.action=='send_command') {
+    url = computersURL+self.computer_uuid+'/command/cmd';
+    params = { COMID: self.command };
+  }else if (self.action=='send_message') {
+
+ var mUuid=[];
+      if(self.computer_uuid.indexOf("|")>-1){
+          self.computer_uuid.split('|').forEach(function(id){
+              mUuid.push(id);
+          });
+      }else{
+          mUuid.push(self.computer_uuid);
+      }
+      url = computersURL+self.computer_uuid+'/command/msg';      
+      params = {  COM:self.action,MUUID:mUuid,MSG: self.memo};
+
+// //byt add start 20160328
+// 	if(self.computer_uuid.indexOf("|")>-1){
+// 	  self.computer_uuid.split('|').forEach(function(id){
+// 		url = computersURL+id+'/command/msg';
+// 	    params = { MSG: self.memo };	
+
+
+// 	  });
+// 	}else{
+// 	  url = computersURL+self.computer_uuid+'/command/msg';
+// 	  params = { MSG: self.memo };
+// 	}	                            //byt add end 20160328
+  }else if(self.action=='group_start'){//byt add start 20160321
+	url = config.restHost()+'/groups/'+self.computer_uuid+'/start';
+	params = { COMID: self.action };
+  }else if(self.action=='group_stop' ){
+	url = config.restHost()+'/groups/'+self.computer_uuid+'/stop';
+	params = { COMID: self.action };
+  }else if(self.action=='group_start_device'){
+      url = config.restHost()+'/groups/'+self.computer_uuid+'/stop';
+      var groupMenuDevice=self.command.split('|');
+      var groupMenuValue= groupMenuDevice[0];
+      var groupDeviceValue= groupMenuDevice[1];
+      params = { COMID: self.action,bootDeviceValue:groupDeviceValue,bootMenuValue:groupMenuValue};
+  }else if(self.action=='group_restart'){
+	url = config.restHost()+'/groups/'+self.computer_uuid+'/restart';
+	params = { COMID: self.action };
+  }else if(self.action=='group_send_message'){
+	url = config.restHost()+'/groups/'+self.computer_uuid+'/msg';
+	params = { MSG: self.memo };//byt add end 20160321
+  }else if(self.action=='group_send_command' || self.action=='group_poweroff'||self.action=='group_restart_action'){//byt add start 20160331
+  	url = config.restHost()+'/groups/'+self.computer_uuid+'/cmd';
+    var comm = self.command.split(' ');
+    console.log("comm",comm[0] + "||" +comm[1] + "||" +comm[2] + "||" +comm[3] + "||" +comm[4]);
+    var act;
+    if(comm[1] == "S"){
+      act = "STOP";
+    } else if(comm[1] == "R") {
+      act = "REST";
+    }
+    var enableCancle;
+    if(comm[3] == "Y"){
+      enableCancle = "1";
+    }else{
+      enableCancle = "0";
+    }
+    var msg = "";
+    for(i=4; i < comm.length; i++){
+      msg += comm[i];
+      if(i != comm.length -1 ){
+        msg += " ";        
+      }
+    }
+  	params = { COMID: self.command , REQ : act, TIMEOUT: comm[2], TIMEOUTFLAG: enableCancle, MSG: msg};
+  }else if(self.action=='group_poweron'){
+  url = config.restHost()+'/groups/'+self.computer_uuid+'/poweron';
+  params = { COM:self.action,timeout:getFileContent().StartUpCheckTime};
+  }
+  else if(self.action=='group_logout'){
+	url = config.restHost()+'/groups/'+self.computer_uuid+'/logout';
+	params = { COMID: self.action };	  //byt add end 20160331
+  }else if(self.action=='ioserver_restart'){
+    //computersURL = config.restHost()+'/ioservers/';
+    url = config.restHost()+'/ioservers/'+self.computer_uuid+'/restart';
+    params = { COMID: self.action };
+  }else if(self.action=='bootserver_restart'){
+    //computersURL = config.restHost()+'/ioservers/';
+    url = config.restHost()+'/ioservers/'+'bootRestart';
+    params = { COMID: self.action };
+  }else if(self.action=='ioserver_stop'){
+    //computersURL = config.restHost()+'/ioservers/';
+    url = config.restHost()+'/ioservers/'+self.computer_uuid+'/stop';
+    params = { COMID: self.action };
+  }else if(self.action=='disk_resynchronize'){
+    url = diskURL + self.IOServer + '/disks/' + self.computer_uuid + '/resync';
+    
+    params = { COMID: self.action };
+  }else if(self.action=='disk_recheck'){
+    url = diskURL + self.IOServer + '/disks/' + self.computer_uuid + '/recheck';
+    params = { COMID: self.action };
+  }else if(self.action=='script_exe'){
+  url = config.restHost()+'/ioservers/script';
+  params = { COMID: self.action,cmd:self.command };
+  }
+
+  if (self.action=='update_mode' || self.action=='save_update_mode') {
+    var menu_id = self.menu_pack_id.split('|')[0];
+    var pack_id = self.menu_pack_id.split('|')[1];
+    var url = computersURL + self.computer_uuid +'/menus/'+menu_id+'/packs/'+pack_id+'/update';
+    params = {};
+    params.Mode = self.update_mode;
+    params.ExitUpdateMode = false;
+    if (self.action == 'save_update_mode') {
+      params.ExitUpdatkeMode = true;
+      params.Description = self.snapshot_comment;
+    }
+    // console.log('url',url);
+    // rest.postData(url, params, function(err, resp, body) {
+    //   console.log('update_complete', err,'--', body);
+    //   var status = err || body;
+    //   self.taskComplete(status);
+    // });
+  }
+//xiong panan add start 2016/4/29
+  if (self.action=='start_update') {
+    var menu_id = self.menu_pack_id.split('|')[0];
+    var pack_id = self.menu_pack_id.split('|')[1];
+     var url = computersURL +self.computer_uuid +'/menus/'+menu_id+'/packs/'+pack_id+'/startUpdate';
+    params = {};
+    params.computerId = self.computer_uuid; 
+    params.menu_id = menu_id;
+    params.timeOut = getFileContent().StartUpCheckTime;
+    params.Mode = self.update_mode;
+
+  // rest.postData(url, params, function(err, resp, body) {
+  //     console.log('update_complete', err,'--', body);
+  //    var status = err || body;
+  //     self.taskComplete(status);
+  //   });
+  }
+//xiong panan add end 2016/4/29
+
+
+  if (self.action=='end_update') {
+
+    var menu_id = self.menu_pack_id.split('|')[0];
+    var pack_id = self.menu_pack_id.split('|')[1];
+     var url = computersURL +self.computer_uuid +'/menus/'+menu_id+'/packs/'+pack_id+'/closureUpdateResource';
+    params = {};
+    params.computerId = self.computer_uuid; 
+    params.Description = self.snapshot_comment;
+    params.timeOut = getFileContent().StartUpCheckTime;
+    params.second = getFileContent().WaittingTime;
+    params.Mode = self.update_mode;
+    params.checkval = self.checkval;
+
+  // rest.postData(url, params, function(err, resp, body) {
+  //     console.log('update_complete', err,'--', body);
+  //    var status = err || body;
+  //     self.taskComplete(status);
+  //   });
+  }
+//xiongpanan add start 2016/05/09
+if (self.action=='menu_switch') {
+          params = {};
+          params.menu_name = self.menu_name;
+//if(self.computer_uuid.indexOf("|")>-1){
+    self.computer_uuid.split('|').forEach(function(id){
+         var menusURL = computersURL+id+'/compuetrMenus/';
+         
+          rest.postData(menusURL, params, function(err, resp, body) {
+              var status = err || body;
+                  self.taskComplete(status);
+          });
+    });
+
+
+  }
+
+if(self.action=='group_menu_switch'){
+          params = {};
+          params.menu_name = self.menu_name;
+          var computerUrl = config.restHost()+'/groups/'+self.computer_uuid+'/groupCompuetrMenus/';
+           rest.postData(computerUrl, params, function(err, resp, body) {
+              var status = err || body;
+                  self.taskComplete(status);
+          });
+        
+}
+
+//xiongpanan add end 2016/05/09
+
+
+
+  if (url && params) {
+      if(params.AUUID){
+          // 开闭计算机启动菜单,设置计算机的启动设备
+          params.AUUID.forEach(function(id){
+              url = computersURL+id+'/command';
+              //self.writeFile(self.currentDate()+" ||    遍历 url=== "+url+"\r\n");
+              self.writeFile(self.currentDate()+" ||    URL   "+url+"\r\n");//log
+              self.writeFile(self.currentDate()+" ||    PARAMS   "+JSON.stringify(params)+"\r\n");//log
+              rest.postData(url, params, function(err, resp, body) {
+                  var status = err || body;
+                  self.taskComplete(status);
+                  //console.log('execresponse', err, body, self.action, self.computer_uuid, url, params);
+              });
+          });
+      }else if(params.BUUID){
+          //  电源断开遍历
+
+          params.BUUID.forEach(function(id){
+              url = computersURL+id+'/command/cmd';
+              self.writeFile(self.currentDate()+" ||    URL   "+url+"\r\n");//log
+              self.writeFile(self.currentDate()+" ||    PARAMS   "+JSON.stringify(params)+"\r\n");//log
+ 
+              //self.writeFile(self.currentDate()+" ||    遍历 url=== "+url+"\r\n");
+              rest.postData(url, params, function(err, resp, body) {
+                  var status = err || body;
+                  //console.log('execresponse11', err, body, self.action, self.computer_uuid, url, params);
+                  self.taskComplete(status);
+              });
+          });
+      }else if(params.CUUID){
+          //  电源断开遍历
+          params.CUUID.forEach(function(id){
+              url = computersURL+id+'/command/poweron';
+              self.writeFile(self.currentDate()+" ||    URL   "+url+"\r\n");//log
+              self.writeFile(self.currentDate()+" ||    PARAMS   "+JSON.stringify(params)+"\r\n");//log
+ 
+              rest.postData(url, params, function(err, resp, body) {
+                  var status = err || body;
+                  //console.log('execresponse11', err, body, self.action, self.computer_uuid, url, params);
+                  self.taskComplete(status);
+              });
+          });
+      }else if(params.MUUID){
+         params.MUUID.forEach(function(id){
+              url = computersURL+id+'/command/msg';
+              self.writeFile(self.currentDate()+" ||    URL   "+url+"\r\n");//log
+              self.writeFile(self.currentDate()+" ||    PARAMS   "+JSON.stringify(params)+"\r\n");//log
+ 
+              rest.postData(url, params, function(err, resp, body) {
+                  var status = err || body;
+                  //console.log('execresponse11', err, body, self.action, self.computer_uuid, url, params);
+                  self.taskComplete(status);
+              });
+          });
+
+
+      }else{
+        console.log("url",url);
+        this.writeFile(this.currentDate()+" ||    URL   "+url+"\r\n");//log
+        this.writeFile(this.currentDate()+" ||    PARAMS   "+JSON.stringify(params)+"\r\n");//log
+ 
+          rest.postData(url, params, function(err, resp, body) {
+              var status = err || body;
+              self.taskComplete(status);
+            // console.log('execresponse', err, body, self.action, self.computer_uuid, url, params);
+          });
+      }
+  }
+  
+  
+};
+
+Task.prototype.updateDisks = function(type, params, callback) {
+  var self = this;
+  var menu_id = this.menu_pack_id.split('|')[0];
+  var pack_id = this.menu_pack_id.split('|')[1];
+  var disksURL = computersURL + self.computer_uuid +'/menus/'+menu_id+'/packs/'+pack_id+'/disks/';
+  console.log('disksURL', disksURL);
+  
+  var error = '';
+
+  
+  //Get all disks of the menu  
+  rest.getJSON(disksURL, function(err, resp, disks) {
+    var waiting = disks.length;
+        
+    disks.forEach(function(disk) {
+      var diskURL = disksURL+disk.ID+'/'+type;
+      console.log('diskURL', diskURL, params);
+      //Update each disk and set update type
+      rest.postData(diskURL, params, function(err, resp, body) {
+        console.log('disk updated'+ err + body);
+        waiting--;
+        if (body!='done' && body.error) {error+=body.error;}
+        if (!waiting) {
+          callback(error);
+        }
+      });
+    });
+  });
+  
+};
+
+Task.prototype.taskComplete = function(status) {
+  console.log('taskComplete', this.id, status, this.last_run_date);
+  this.writeFile(this.currentDate()+" ||    STATUS   "+JSON.stringify(status)+"\r\n");//log
+  this.setNextExecDate();
+  
+  this.last_run_log = status;
+  this.last_run_status = (this.last_run_log=='done') ? 'success' : 'failed';
+  this.save();
+  this.writeFile(this.currentDate()+" ||    TASK   "+this.id+"      execute-end   ||   status   "+this.last_run_status+"\r\n\r\n");//log
+  this.writeLog("{\"executeTime\":\""+this.currentDate()+"\",\"runstatus\":\""+this.last_run_status+"\",\"action\":\""+this.action+"\",\"status\":"+JSON.stringify(status)+"}\r\n");
+    if(this.last_run_status=='failed'){
+        // ###########################Send mail
+        // send out mail
+        var mailFrom=getFileContent().MailFrom;
+        // receive mail
+        var mailTo=getFileContent().MailTo;
+        // port
+        var Port=getFileContent().Port;
+        // username
+        var UserName=getFileContent().UserName;
+        // password
+        var Password=getFileContent().Password;
+        // SMTP Server
+        var SMTPServer=getFileContent().SMTPServer;
+        // send content
+        var content="executeTime="+this.currentDate()+",runstatus="+this.last_run_status+",action="+this.action+",status="+JSON.stringify(status);
+        // START SMTP
+        var smtpTransport = nodemailer.createTransport('SMTP',{
+            host: SMTPServer,
+            secureConnection: true, // use SSL
+            port: Port, // port
+            auth: {
+                user: UserName,
+                pass: Password
+            }
+        });
+        // SET MAIL CONTENT
+        var mailOptions = {
+            from: "<"+mailFrom+">", // send out address
+            to: mailTo, // receive list
+            subject: "task error", // title
+            html: content
+        };
+        // send mail
+        smtpTransport.sendMail(mailOptions, function(error, response){
+            console.log("#################################");
+            if(error){
+                console.log("error#########:  "+error+" #####");
+            }else{
+                console.log("Message sent#######:  " + response.message);
+            }
+            smtpTransport.close(); // 如果没用，关闭连接池
+        });
+    }
+};
+// Utility functions
+
+Task.prototype.setNextExecDate = function() {
+  var nextDate;
+  if (this.cronTime()) {
+    nextDate = cron.sendAt(this.cronTime());
+  }
+  this.next_execution_date = (nextDate && (nextDate > new Date())) ? nextDate : null;
+};
+
+Task.prototype.cronTime = function() {
+  var cronTime = '00 ';
+  if (!this.time || this.execute=='now') {
+    return false;
+  }
+  var time = this.time.split(':').reverse().join(' '); // mm hh
+
+  if (this.cycle=='once') {
+    cronTime = this.onceDate();
+  }else if (this.cycle=='daily') {
+    cronTime += time+' * * *';
+  }else if (this.cycle=='weekly') {
+    cronTime += time + ' * * ' + this.weekdays;
+  }else if (this.cycle=='monthly') {
+    cronTime += time + ' ' +this.month_days+ ' * * ';
+  }
+  return cronTime;
+};
+
+Task.prototype.onceDate = function() {
+  var date = this.date.split('/');  //  dd/mm/yyyy
+  var time = this.time.split(':');  //  hh:mm
+  return new Date(date[2], date[1]-1, date[0], time[0], time[1], time[2]); // new Date(year, month, day, hours, minutes, seconds, milliseconds)
+};
+
+Task.startScheduler = function(callback) {
+  console.log('Starting scheduler');
+  this.all(function(err, tasks) {
+    tasks.forEach(function(task) {
+      task.scheduleTask();
+    });
+    console.log('Tasks scheduled', Task.cronSchedules);
+  });
+};
+Task.prototype.writeFile=function(str){
+
+    config.createExistsPath();
+
+    fs.appendFile(config.createLogPath("Task-"+this.id), str, function(err){  
+        if(err)  
+            console.log("fail " + err);  
+    }); 
+ }
+
+ Task.prototype.writeLog=function(str){
+    fs.appendFile(config.logPath("executeLog"), str, function(err){  
+        if(err)  
+            console.log("fail " + err);  
+    }); 
+ }
+ Task.readFile=function(task,callback){
+    var content="";
+   var a=task.id;
+    TaskLogFile.all({where: {taskid:a},order:'folder ASC'},function(error, date) {
+        if(date.length>0){
+           date.forEach(function(taskLogfile){
+            if(fs.existsSync(config.readlogPath(taskLogfile.folder,"Task-"+task.id))) {
+              content += fs.readFileSync(config.readlogPath(taskLogfile.folder,"Task-"+task.id),'utf-8'); 
+            }
+          }); 
+           callback(null,content);
+        }
+      });        
+ }
+
+ Task.deleteFile  = function(task,callback){
+    TaskLogFile.all({where:{taskid:task.id}},function(err,data){
+      if(data.length > 0){
+        data.forEach(function(taskLogFile){
+          if(fs.existsSync(config.readlogPath(taskLogFile.folder,"Task-"+task.id))){
+            fs.unlink(config.readlogPath(taskLogFile.folder,"Task-"+task.id),function(err){
+              if(err){
+                console.log(err);
+              }
+            })
+          }
+        })
+        callback();
+      }
+    })
+ }
+
+ Task.queryDeleteByDate=function(dateStr,rc){
+     if(dateStr){
+        strs=dateStr.split('/')
+       var  dataformat= strs[2]+"-"+strs[1]+"-"+strs[0];
+        var sql="DELETE FROM" +'"'+this.modelName+'"'+ "WHERE to_timestamp(date,'dd/mm/yyyy') < '"+dataformat+"'";
+            client.query(sql,function(err,a){
+              rc(err,a);
+            })
+      }else{
+       rc({error : "date is not null"},null);
+      }
+ }
+ Task.prototype.currentDate=function() {
+    var date = new Date();
+    var seperator1 = "-";
+    var seperator2 = ":";
+    var month = date.getMonth() + 1;
+    var strDate = date.getDate();
+    if (month >= 1 && month <= 9) {
+        month = "0" + month;
+    }
+    if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+    }
+    var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate
+            + " " + date.getHours() + seperator2 + date.getMinutes()
+            + seperator2 + date.getSeconds();
+    return currentdate;
+}
+
+
+
+currentDate2=function() {
+    var date = new Date();
+
+    var month = date.getMonth() + 1;
+    var strDate = date.getDate();
+    if (month >= 1 && month <= 9) {
+        month = "0" + month;
+    }
+    if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+    }
+    var currentdate = date.getFullYear() + month +strDate;
+    return currentdate;
+}
+module.exports.Task = Task;

@@ -1,0 +1,618 @@
+#pragma once
+
+#include "idef.h"
+//#include <IPTypes.h>
+
+namespace eblib_struct
+{
+
+	typedef struct _EDIT_COMP_OBJ
+	{
+		ULONG	nFlag;
+		ULONG	nMTimeO;
+		ULONG	nTBlk;
+		ULONG	nMemCh;
+		ULONG	nDskCh;
+		ULONG	nCpTimeO;
+		ULONG	nRLmt;
+		ULONG	nWLmt;
+		ULONG	nScrX;
+		ULONG	nScrY;
+		CHAR	pchMac[32];
+		CHAR	pchName[64];
+		CHAR	pchBootF[32];
+		IN_ADDR	nIP4;
+		IN_ADDR	nNetMask4;
+		IN_ADDR	nGateWay4;
+		CHAR    pchDomain[64];
+	}EDIT_COMP_OBJ, *PEDIT_COMP_OBJ;
+
+	typedef struct _ADD_COMP_OBJ: public _EDIT_COMP_OBJ
+	{
+		ULONG	nGrpID;
+	}ADD_COMP_OBJ, *PADD_COMP_OBJ;
+
+	typedef struct _OBJ_COMP
+	{
+		ULONG	nID;
+		ULONG	nGrpID;
+		ULONG	nFlag;
+		ULONG	nMTimeO;
+		ULONG	nDfltMenu;
+		ULONG	nTBlk;
+		ULONG	nMemCh;
+		ULONG	nDskCh;
+		ULONG	nCpTimeO;
+		ULONG	nRLmt;
+		ULONG	nWLmt;
+		ULONG	nScrX;
+		ULONG	nScrY;
+		IN_ADDR	nIP4;
+		IN_ADDR	nNetMask4;
+		IN_ADDR	nGateWay4;
+		CHAR	pchName[64];
+		CHAR	pchMac[32];
+		CHAR	pchBootF[32];
+		CHAR	pchDomain[64];
+	}OBJ_COMP, *POBJ_COMP;
+
+	struct _MENU_N
+	{
+		ULONG	nID;
+		CHAR	pchName[32];
+	};
+	typedef struct _NOTIFY_NEW_COMP: public _OBJ_COMP
+	{
+		_MENU_N Menu;
+	}NOTIFY_NEW_COMP, *PNOTIFY_NEW_COMP;
+
+	typedef struct _NOTIFY_CHANGE_PACK_MODE
+	{
+		ULONG	nID;
+		ULONG	nMode;
+	}NOTIFY_CHANGE_PACK_MODE, *PNOTIFY_CHANGE_PACK_MODE;
+
+	typedef struct _NOTIFY_DELETE_DISK
+	{
+		ULONG	nID;
+		ULONG	nType;
+	}NOTIFY_DELETE_DISK, *PNOTIFY_DELETE_DISK;
+
+	typedef struct _ADD_EXPORT_DISK
+	{
+		ULONG	nPID;
+		ULONG	nSrvID;
+		ULONG	nPackID;
+		ULONG	nType;
+		ULONG	nSizeMb;
+		CHAR	pchName[MAX_PATH];
+	}ADD_EXPORT_DISK, *PADD_EXPORT_DISK;
+
+	typedef struct _NOTIFY_NEW_DISK: public _ADD_EXPORT_DISK
+	{
+		ULONG	nID;
+	}NOTIFY_NEW_DISK, *PNOTIFY_NEW_DISK;
+
+	typedef struct _NOTIFY_RENAME_COMP
+	{
+		ULONG		nID;
+		IN_ADDR		nIP4;
+		CHAR		pchName[32];
+	}NOTIFY_RENAME_COMP, *PNOTIFY_RENAME_COMP;
+
+	typedef struct _MSG_IO_STATUS_BLOCK
+	{
+		ULONG		nMemNodes;
+		ULONG		nSsdNodes;
+		ULONG64		nSectorsRead;
+		ULONG64		nSectorsWrite;
+		ULONG64		nSectorsReadDsk;
+		ULONG64		nSectorsWriteDsk;
+	}MGC_IO_STATUS_BLOCK, *PMGC_IO_STATUS_BLOCK;
+
+	typedef struct _IO_ALIVE
+	{
+		ULONG					nID;
+		ULONG					nDiskIDs[IO_ALIVE_IO_STATUS_COUNT];
+		MGC_IO_STATUS_BLOCK		IoStatus[IO_ALIVE_IO_STATUS_COUNT];
+		CHAR					pchMsg[64];
+	}IO_ALIVE, *PIO_ALIVE;
+
+	typedef struct _PROCESS_PACKET
+	{
+		ULONG		nType;
+		ULONG		nProcess;
+
+		union
+		{
+			struct 
+			{
+				ULONG		nDiskID;
+				ULONG		nNewVer;
+			}Disk;
+			struct
+			{
+				ULONG		nSrvID;
+			}DbSync;
+		};
+	}PROCESS_PACKET, *PPROCESS_PACKET;
+
+	typedef struct _CLIENT_DISK
+	{
+		ULONG	nID;
+		ULONG	nParentID;
+	} CLIENT_DISK, *PCLIENT_DISK;
+
+	//typedef struct _CLIENT_INFO
+	//{
+	//	ULONG		nCompID;
+	//	ULONG		nUserID;
+	//	ULONG		nMenuID;
+	//	ULONG		nIpAddr;
+	//	//UCHAR		pchMacAddr[6];
+	//}CLIENT_INFO, *PCLIENT_INFO;
+
+	typedef struct _CLIENT_ALIVE
+	{
+		ULONG		nType;
+	//	ULONG		nFlag;
+		ULONG		nCompID;
+		ULONG		nUserID;
+		ULONG		nMenuID;
+		ULONG		nIpAddr;
+		UCHAR		pchMacAddr[6];
+		WCHAR		pwcTotalRead[30];
+		ULONG		nFlag;
+		WCHAR		pwcTotalWrite[32];
+		WCHAR		pwcReadSpeed[16];
+		WCHAR		pwcWriteSpeed[16];
+		WCHAR		szTime[16];
+		ULONG		pIOIps[MAX_IO_SERVERS_PER_CLIENT];
+		ULONG		nDiskCount;
+		CLIENT_DISK	pDisk[49];
+	}CLIENT_ALIVE, *PCLIENT_ALIVE;
+
+	typedef struct _CLIENT_ALIVE_TCP_MSG
+	{
+		CLIENT_ALIVE ClientAlive;
+	}CLIENT_ALIVE_TCP_MSG, *PCLIENT_ALIVE_TCP_MSG;
+
+	typedef struct _STREAM_DATA
+	{
+		ULONG	nOffset;
+		ULONG	nLength;
+		UCHAR	pchData[1024];
+	}STREAM_DATA, *PSTREAM_DATA;
+
+
+	typedef struct _ABOUT_INFO_OBJ
+	{
+		ULONG	nLicenseType;
+		union
+		{
+			ULONG	nClientCount;
+			ULONG	nErrorCode;
+		};
+		CHAR	pchSerialNo[64];
+		union
+		{
+			struct 
+			{
+				INT	nDaysLeft;
+			}Trial;
+			struct 
+			{
+				CHAR	pchName[64];
+				CHAR	pchCompName[256];
+				union
+				{
+					INT	nDaysLeft;
+				}TimeLimit;
+				union
+				{
+				}Infinite;
+			}Registed;
+		};
+
+	} ABOUT_INFO_OBJ, *PABOUT_INFO_OBJ;
+
+	typedef struct _CONFIG_INFO_OBJ
+	{
+		IN_ADDR		nStartIP4;
+		IN_ADDR		nEndIP4;
+		IN_ADDR		nNetmask4;
+		IN_ADDR		nGateway4;
+		IN_ADDR		nDns4;
+		IN_ADDR		nDns5;
+		ULONG		nDhcpStatus;
+		ULONG		nDhcpProxy;
+		ULONG		nAutoJoinStatus;
+		CHAR		pchBootF[32];
+		CHAR		pchBootSrv4[128];
+
+		ULONG		nAutoBackupStatus;
+		ULONG		nAutoBackupDays;
+		ULONG		nAutobackupLevels;
+		ULONG		nAutobackupHour;
+		ULONG		nAuSchd;
+	}CONFIG_INFO_OBJ, *PCONFIG_INFO_OBJ;
+
+	typedef struct _IO_DRIVE_INFO
+	{
+		WCHAR	szDrive[64];
+		ULONG	nDeviceID;
+		ULONG	nCacheDeviceID;
+		ULONG	nMemChMb;
+		ULONG	nDskChGb;
+	}DRIVE_INFO_OBJ, *PDRIVE_INFO_OBJ;
+
+	typedef struct _COMP_INFO_OBJ: public _OBJ_COMP
+	{
+		BOOL    bOnline;
+		ULONG	pIOIps[MAX_IO_SERVERS_PER_CLIENT];
+	}COMP_INFO_OBJ, *PCOMP_INFO_OBJ;
+
+	typedef struct _ADD_IOSRV_OBJ
+	{
+		ULONG nPort4;
+		ULONG nType;  //0: IO server 1:Secondary boot server
+		CHAR	pchAddr4[128];
+		CHAR	pchPasswd[32];
+	}ADD_IOSRV_OBJ, *PADD_IOSRV_OBJ;
+
+	typedef	struct _IOSRV_OBJ: public _ADD_IOSRV_OBJ
+	{
+		ULONG	nID;
+	}IOSRV_OBJ, *PIOSRV_OBJ;
+
+	typedef struct _ADD_CHANNEL_OBJ
+	{
+		ULONG   nPort4;
+		ULONG   nSrvID;
+		CHAR	pchAddr4[128];
+	}ADD_CHANNEL_OBJ, *PADD_CHANNEL_OBJ;
+
+	typedef struct _CHANNEL_OBJ: public _ADD_CHANNEL_OBJ
+	{
+		ULONG   nID;
+	}CHANNEL_OBJ, *PCHANNEL_OBJ;
+
+	typedef struct _ADD_BASE_DISK_OBJ
+	{
+		ULONG	nPID;
+		ULONG	nSrvID;
+		ULONG	nType;
+		ULONG	nSizeMb;
+		CHAR	pchName[MAX_PATH];
+
+		ULONG	nFmt;
+		ULONG	nVer;
+		ULONG	nXID;
+		ULONG	nSyncSchd;
+		CHAR	pchPath[MAX_PATH]; 
+	}ADD_BASE_DISK_OBJ, *PADD_BASE_DISK_OBJ;
+
+	typedef struct _DISK_INFO_OBJ: public _NOTIFY_NEW_DISK
+	{
+		ULONG	nFmt;
+		ULONG	nVer;
+		ULONG	nXID;
+		ULONG	nSyncSchd;
+		CHAR	pchPath[MAX_PATH];
+
+	}DISK_INFO_OBJ, *PDISK_INFO_OBJ;
+
+	typedef struct _ADD_GRP_OBJ
+	{
+		ULONG nType;
+		CHAR  pchName[128];
+	}ADD_GRP_OBJ, *PADD_GRP_OBJ;
+
+	typedef struct _GRP_OBJ: public ADD_GRP_OBJ
+	{
+		ULONG nID;
+	}GRP_OBJ, *PGRP_OBJ;
+
+	typedef struct _ADD_DIR_OBJ
+	{
+		ULONG nType;
+		CHAR  pchPath[MAX_PATH];
+		ULONG nSrvID;
+	}ADD_DIR_OBJ, *PADD_DIR_OBJ;
+
+	typedef struct _DIR_OBJ: public _ADD_DIR_OBJ
+	{
+		ULONG nID;
+	}DIR_OBJ, *PDIR_OBJ;
+
+	typedef struct _EDIT_USER_OBJ
+	{
+		ULONG nFlag;
+		ULONG nMTime0;
+		CHAR  pchPasswd[64]; 
+		CHAR  pchPasspt[64]; 
+	}EDIT_USER_OBJ, *PEDIT_USER_OBJ;
+
+	typedef struct _ADD_USER_OBJ: public _EDIT_USER_OBJ
+	{
+		ULONG nGrpID;
+	}ADD_USER_OBJ, *PADD_USER_OBJ;
+
+	typedef struct _USER_OBJ: public _ADD_USER_OBJ
+	{
+		ULONG nID;
+		ULONG nDfltMenu;
+	}USER_OBJ, *PUSER_OBJ;
+
+	typedef struct _RENEW_PACK_OBJ
+	{
+		ULONG nMID;
+		ULONG nType;
+		ULONG nMode;
+		ULONG nFlag;
+		ULONG nDate;
+	}RENEW_PACK_OBJ, *PRENEW_PACK_OBJ;
+
+	typedef struct _PACK_OBJ: public RENEW_PACK_OBJ
+	{
+		ULONG nID;
+		ULONG nActvDsk;	
+	}PACK_OBJ, *PPACK_OBJ;
+
+	typedef struct _PACK_MODE_OBJ
+	{
+		ULONG nCompOrUserID;
+		ULONG nAcntType;
+		ULONG nID;
+		ULONG nPackMode;
+	}PACK_MODE_OBJ, *PPACK_MODE_OBJ;
+
+	typedef struct _PACK_CACHE_FLAG
+	{
+		ULONG nCacheMode;         //(1:disable, 2:file, 3:unpartitioned,, 4:disk)
+		ULONG nCacheAccessMode;   //(1:read and write, 2:write only 3:read only)
+	}PACK_CACHE_FLAG, *PPACK_CACHE_FLAG;
+
+
+	typedef struct _ADD_MENU_OBJ
+	{
+		ULONG nAcntID;
+		ULONG nAcntType;
+		CHAR pchName[MAX_PATH];
+	}ADD_MENU_OBJ, *PADD_MENU_OBJ;
+
+	typedef struct _MENU_OBJ: public _ADD_MENU_OBJ
+	{
+		ULONG nID;
+	}MENU_OBJ, *PMENU_OBJ;
+
+	typedef struct _GET_IO_FILE_OBJ
+	{
+		CHAR pchPath[MAX_PATH];
+	}GET_FILE_OBJ, *PGET_FILE_OBJ;
+
+	typedef struct _SHOW_REST_POINT
+	{
+		ULONG nVer;
+		CHAR pchDesc[512];
+		CHAR pchTime[256];
+
+	}SHOW_REST_POINT, *PSHOW_REST_POINT;
+
+	typedef struct _SHOW_PHY_DISK
+	{
+		CHAR pchPath[MAX_PATH];
+		ULONG nSectors;
+
+	}SHOW_PHY_DISK, *PSHOW_PHY_DISK;
+
+	typedef struct _SHOW_CACHE_DISK
+	{
+		ULONG nDeviceID;
+		ULONG nSizeMb;
+		CHAR  pchFriendlyName[64];
+	}SHOW_CACHE_DISK, *PSHOW_CACHE_DISK;
+
+	typedef struct _SHOW_CACHE_DISK_INFO
+	{
+		ULONG	nDeviceID;
+		ULONG	nVolumeCount;
+		struct
+		{
+			CHAR	pchVolume[128];
+			UCHAR	chLetter;
+			ULONG	nTotalSizeMb;
+			ULONG	nFreeSizeMb;
+		} VOLUME[16];
+	}SHOW_CACHE_DISK_INFO, *PSHOW_CACHE_DISK_INFO;
+
+	typedef struct _SHOW_VHD_INFO
+	{
+		ULONG nSizeMb;
+		ULONG nVer;
+
+	}SHOW_VHD_INFO, *PSHOW_VHD_INFO;
+
+	typedef struct _SERVICE_INFO_LIST
+	{
+		ULONG	nCount;
+		struct _SERVICE_INFO
+		{
+			//ULONG   nType;
+			ULONG	nServiceType;
+			USHORT	nPort;
+			CHAR	pchAddress[128];
+		}SERVICE_INFO[256];
+	}SERVICE_INFO_LIST, *PSERVICE_INFO_LIST;
+
+	typedef struct _ADAPTER_LIST
+	{
+		ULONG				nNetAdaptInfoCount;
+		struct _ADAPTER_INFO
+		{
+			CHAR	pchFriendlyName[128];
+			ULONG	nMacAddrLen;
+			UCHAR	pchMacAddr[8];
+			ULONG	nIP4Count;
+			CHAR	pchIP4[8][16];
+		}Adapter[8];
+		
+	}ADAPTER_LIST, *PADAPTER_LIST;
+
+	typedef struct _HARD_DISK_LIST
+	{
+		ULONG nCount;
+		struct HARD_DISK_
+		{
+			ULONG	nDeviceID;
+			ULONG	nSizeMb;
+			CHAR	pchFriendlyName[128];
+		}Head_Disk[32];
+
+	}HARD_DISK_LIST, *PHARD_DISK_LIST;
+
+	typedef struct _DISK_INFO_LIST
+	{
+		ULONG	nVolumeCount;
+		struct
+		{
+			CHAR	pchVolume[128];
+			UCHAR	chLetter;
+			ULONG	nTotalSizeMb;
+			ULONG	nFreeSizeMb;
+		} VOLUME[16];
+	}DISK_INFO_LIST, *PDISK_INFO_LIST;
+	
+	typedef DISK_INFO_LIST DISK_VOLUME_INFO;
+
+	typedef struct _COMP_USAGE_LIST
+	{
+		ULONG nCountComputer;
+		struct COMP_USAGE 
+		{
+			CHAR	szIP4[32];
+			CHAR	szMAC[32];
+			CHAR	szCompName[64];
+		}compUsage[256];
+	}COMP_USAGE_LIST, *PCOMP_USAGE_LIST;
+
+
+	typedef struct _COMP_USAGE_
+	{
+		CHAR	szIP4[32];
+		CHAR	szMAC[32];
+		CHAR	szCompName[64];
+	}COMP_USAGE;
+
+	typedef struct _GENERAL
+	{
+		bool bAutoJoinStatus;				//Allowed to join the new computer
+		char szCompPrieFix[256];			//Computer name prefix
+		char szSrvDomain[256];				
+		unsigned int nComputerStartNumber;	
+		unsigned int nComputerNameLength;   
+	}GENERAL;
+
+	typedef struct _DHCP
+	{
+		bool bDhcpStatus;           
+		bool bDhcpProxy;            
+		char szDhcpSIP4[16];        
+		char szDhcpEIP4[16];        
+		char szDhcpNetmask[16];    
+		char szDhcpGetway[16];      
+		char szDhcpDns1[16];        
+		char szDhcpDns2[16];        
+		char szBootSrv[16];         
+		char szBootFile[64];        
+	}DHCP;
+
+	typedef struct _STORAGEDISK
+	{
+		bool		 bStorageStatus;        
+		unsigned int nAutoBackupDays;      
+		unsigned int nAutoBackupHour;       
+		unsigned int nAutoBackupLevels;     
+	}STORAGEDISK;
+
+	typedef struct _ACTIVEUPDATE
+	{
+		bool bOnlyMergeActiveUpdate;		
+		unsigned int nDate;					
+		unsigned int nTime;					
+
+	}ACTIVEUPDATE;
+
+	typedef struct _ACTIVEDIRECTORY
+	{
+		char szDomain[128];					//Domain
+		char szPassPT[128];					//User name
+		char szPassWD[128];					//Password
+	}ACTIVEDIRECTORY;
+
+	typedef struct _SETUP
+	{
+		_GENERAL         general;
+		_DHCP            dhcp;
+		_STORAGEDISK     storagedisk;
+		_ACTIVEUPDATE	 activeUpdate;
+		_ACTIVEDIRECTORY activeDirectory;
+	}SETUP, *PSETUP;
+
+
+	typedef struct _DISK_SYNC
+	{
+		unsigned int nSyncType;  // schedule type: 0 immediately, 1 check schedule
+		unsigned int nCurSel;    // 0:Every day, 1:Sunday, 2:Monday, 3:Tuesday, 4:Wednesday, 5:Thursday, 6:Friday, 7:Saturday
+		unsigned int nClock;     // 0 - 23
+		unsigned int nSpeed;	 // sync. transfer speed limit
+	}DISK_SYNC, *PDISK_SYNC;
+
+	typedef struct _IMSG
+	{
+		union
+		{
+			eblib_struct::NOTIFY_NEW_COMP				newComputer;
+			eblib_struct::NOTIFY_DELETE_DISK			delDisk;
+			eblib_struct::NOTIFY_NEW_DISK				newDisk;
+			eblib_struct::NOTIFY_CHANGE_PACK_MODE		chagePackMode;
+			eblib_struct::NOTIFY_RENAME_COMP			reNameComputer;
+			eblib_struct::IO_ALIVE						ioAlive;
+			eblib_struct::PROCESS_PACKET				processPacket;
+			eblib_struct::CLIENT_ALIVE_TCP_MSG			clientAliveTcpMsg;
+			eblib_struct::STREAM_DATA					streamData;
+		};
+
+	}IMSG, *PIMSG;
+
+
+	enum
+	{
+		NEW_COMP_MSG,
+		DELETE_DISK_MSG,
+		NEW_DISK_MSG,
+		CHANGE_PACK_MODE_MSG,
+		RENAME_COMP_MSG,
+		ALIVE_MSG,
+		PROCESS_MSG,
+		CLIENT_ALIVE_MSG,
+		CLIENT_ALIVE_TYPE_COMP_MSG,
+		CLIENT_ALIVE_TYPE_USER_MSG,
+		DATABASE_STREAM_MSG
+	};
+	struct COMP_INFO_EX
+	{
+		ULONG nOfflineLicDays; //Offline License(Days)
+		CHAR  szDomainOrg[512];//Domain Organizational
+		CHAR  szOfficeAct[256];//Office Activation Parameter
+		BOOL  bShutdownAfterSync;//Shutdown After Sync.Complete
+		INT	  nPageFileDrive; //[0~26] [Default,A~Z], 0 for Default
+		INT   nCacheDrive;//[0~26] [Default,A~Z],0 for Default
+	};
+
+	struct OSV_OPTIONS
+	{
+		ULONG nSecondaryBootServerAliveTicks;
+	};
+}
+typedef	VOID (CALLBACK *ProcMsgFun)(const eblib_struct::PIMSG, const ULONG);

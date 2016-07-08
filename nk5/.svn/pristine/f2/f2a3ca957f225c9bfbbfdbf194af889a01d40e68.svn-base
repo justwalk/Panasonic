@@ -1,0 +1,154 @@
+var User = require('../models/User').User;
+var UserMenu =require('../../config/db.js').UserMenu;
+var Menu =require('../../config/db.js').MenuTable;
+var fs =require('fs');
+var config = require('../../config/config.js');
+
+
+module.exports = function(socket) {
+  
+  socket.on('user:check', function (req, res) {
+        if(req.user&&req.pass){
+          User.all({where: {username: req.user,password: req.pass}},function(error, user) { 
+            if(user.length>0&&!error){
+            user[0].updateAttributes({lastlogintime:new Date()},function(error,a){ 
+            });
+            UserMenu.all({where: {userid: user[0].id}},function(error, memus){
+                 res(error, {means:memus,user:user[0]});
+              })
+            }else{
+              res({'error': 'user or password not find'}, null);
+            }
+          });
+        }else{
+          res({'error': 'user or password is null'}, null);
+        }
+  });
+
+  socket.on('users:read', function (req, res) { 
+    fs.appendFile(config.logPath("login-2"), JSON.stringify(req), function(err){ }) 
+    User.checkAuthorization('admin', req, res, function() {
+      User.all(function(err, users) {
+         res(err, users);
+      });
+    });
+  });   
+
+  socket.on('user:create', function(req, res) {
+    User.create(req,function(error, taskCopy) {
+      res(taskCopy.errors, taskCopy);
+    });
+  });
+
+   socket.on('user:delete', function(req, res) {
+    User.checkAuthorization('admin', req, res, function() {
+        User.find(req.id, function(error, user) {
+            user.destroy(function(error) {
+            res(error);
+              }
+            );
+          });
+  });
+  });
+
+   socket.on('editmenus:read', function (req, res) {
+    User.checkAuthorization('admin', req, res, function() {
+       UserMenu.all({where: {userid: req.id}},function(error, usermemus){
+         Menu.all(function(err, menus) {
+            res(err, {usermemus:usermemus,menus:menus});
+         });
+      })
+     
+    });
+  });   
+
+    socket.on('editmenus:update', function (req, res) {
+    User.checkAuthorization('admin', req, res, function() {
+      if(req.add.length>0){
+        for(var i in req.add){
+          var userMenu=UserMenu({userid:req.id,menuid:req.add[i]})
+          userMenu.save(function(error,date){
+
+          })
+        }
+      }
+       if(req.remove.length>0){
+        for(var i in req.remove){
+          UserMenu.all({where: {userid: req.id,menuid:req.remove[i]}},function(error,data){
+            data[0].destroy(function(e,d){
+
+            });
+          })
+        }
+      }
+     
+    });
+  });   
+
+    /*User.all({where: {username: req.user,password: req.pass}}function(error, user) {
+      console.log("-------------------------"+req)
+      if(!error){
+        UserMenu.all({where: {userid: user.id}},function(error, memus){
+           res(error, memus);
+        })
+      }
+    });*/
+  
+  /*socket.on('task:create', function(req, res) {
+  require('../../config/config').checkPass('teacher', req, res, function() {
+    var task = new Task(req);
+    console.log('task---', task.computer_uuid);
+    task.save(function(error, taskCopy) {
+      if (!error) {
+        socket.emit('task:create', taskCopy);
+        socket.broadcast.emit('tasks:create', taskCopy);
+      }
+      res(taskCopy.errors, taskCopy);
+    });
+  });
+  });
+
+  socket.on('task:delete', function(req, res) {
+    require('../../config/config').checkPass('admin', req, res, function() {
+	Task.find(req.id, function(error, task) {
+      task.destroy(function(error) {
+        if (!error) {
+         socket.emit('task/' + task.id + ':delete', task);
+         socket.broadcast.emit('task/' + task.id + ':delete', task);
+         res(null, task);
+        } else {
+			res(error);
+		}
+      });
+    });
+  });
+  });
+
+  socket.on('task:update', function(req, res) {
+   require('../../config/config').checkPass('admin', req, res, function() {
+    var task = new Task(req);
+      task.updateAttributes(req, function(err, data) {
+        res(err, data);
+      });
+    });
+  });
+  
+    socket.on('task:removeBydate', function(req, res) {
+      require('../../config/config').checkPass('admin', req, res, function() {
+          if(req.date){
+           Task.queryDeleteByDate(req.date,function(err,date){
+             res(err, date);
+           })
+          }
+            
+        });
+    });
+
+     socket.on('task:log', function(req, res) {
+      require('../../config/config').checkPass('admin', req, res, function() {
+        Task.readFile(req.task,function(err,log){
+          res(null,log);
+        })  
+      });
+    });*/
+};

@@ -1,0 +1,21 @@
+<td class="select <%- model.isSelected ? 'selected' : '' %>" ><%- model.get('name') %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>" style="width:80px;"><%- update_disk %></td>
+<% if(model.get("online") == true) { %>
+<td class="select <%- model.isSelected ? 'selected' : '' %>" style="width:80px;"><%_ON%></td>
+<% } else{%>
+<td class="select <%- model.isSelected ? 'selected' : '' %>" style="width:80px;"><%_OFF%></td>
+<% }%>
+<td class="select <%- model.isSelected ? 'selected' : '' %>" ><%- model.get('ip') %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>" style="width:120px;"><%- model.get('boot_menu_name')||'' %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>" >    <select name="default_menu" id="default_menu" class="" style="width:150px;">
+            <%= menus %>
+   </select></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>"  style="width:80px;"><%- model.get('boot_image_name')||'' %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>"  style="width:80px;"><%- model.get('os')||'' %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>" style="width:80px;"><%- model.get('logon_user')||'' %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>" style="width:80px;"><%- model.get('boot_time')||'' %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>" style="width:80px;"><%- model.get('logon_time')||'' %></td>
+
+
+
+

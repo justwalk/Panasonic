@@ -1,0 +1,90 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'models/settings',
+  'text!templates/servers/settings.html',
+  'modelBinder'
+    ], function($, _, Backbone, Settings, settingsTemplate, ModelBinder) {
+    
+      ServerSettingsView = Backbone.View. extend({
+        id: 'server-settings-modal',
+        className: 'modal fade modal-lg ',
+        model: Settings,
+        template: _.template(underi18n.template(settingsTemplate, msgFactory)),
+
+        events: {
+          'submit form': 'updateModel',
+          'click .close': 'closeModal'
+        },
+
+        initialize: function(settings) {
+          this.model = settings || new Settings();
+          var self=this;
+          this.model.bind("change:DhcpProxy",function(){  
+                if(self.model.get("DhcpProxy")){
+                  $('.proxym',this.el).attr('disabled',true);
+                }else{
+                   $('.proxym',this.el).attr('disabled',false);
+                }
+                
+            }); 
+             this.model.bind("change:Backup",function(){  
+                if(self.model.get("Backup")){
+                  $('.backup',this.el).attr('disabled',false);
+                }else{
+                   $('.backup',this.el).attr('disabled',true);
+                }
+                
+            }); 
+             this.model.bind("change:ActiveUpdate",function(){  
+                if(self.model.get("ActiveUpdate")){
+                  $('.activeUpdate',this.el).attr('disabled',true);
+                }else{
+                   $('.activeUpdate',this.el).attr('disabled',false);
+                }
+                
+            });  
+          this.model.fetch({success: function(data){
+             self.model=data;
+             self.model.set('OldPassWD',self.model.get('PassWD'))
+          }});
+
+          this._modelBinder = new Backbone.ModelBinder();
+         
+        },
+
+        render: function() {
+          this.$el.html(this.template({model: this.model}));
+          this._modelBinder.bind(this.model, this.el);
+          return this;
+        },
+
+        updateModel: function(ev) {
+          var self =this;
+           self.closeModal();
+          ev.preventDefault(); 
+          $('input[type=submit]', self.el).attr('alt',$('input[type=submit]',self.el).val());
+          $('input[type=submit]', self.el).attr('disabled', 'disabled').val(App.msgFactory('Please wait...'));
+           this.model.set({'BootServer1':this.model.get('BootSrv')})
+          if(this.model.get('PassWD')==this.model.get('rePassword')&&this.model.get('PassWD')&&this.model.get('rePassword')){
+            
+          }else{
+            if(this.model.get('PassWD')&&this.model.get('rePassword')&&this.model.get('PassWD')!=this.model.get('rePassword')){
+
+            }
+            this.model.set('PassWD',this.model.get('OldPassWD'));
+          }
+          this.model.save();
+           self.closeModal();
+          return false;
+        },
+
+        closeModal: function() {
+          this.$el.modal('hide');
+        }
+      });
+
+      return ServerSettingsView;
+    });
+

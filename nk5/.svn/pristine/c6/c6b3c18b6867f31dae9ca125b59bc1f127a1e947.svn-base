@@ -1,0 +1,33 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'collection/servers',
+  'views/home/home'
+], function($, _, Backbone,HomeCollection, HomeView){
+    var homeRouter = Backbone.Router.extend({
+        routes:{
+            ''     : 'defaultRoute',
+            'home' : 'select',
+            'home/' : 'select'
+        },
+
+        initialize: function(){
+          var homecollection = new HomeCollection();
+          this.homeView = new HomeView({router:this, collection:homecollection});
+        },
+        
+        select: function(){
+          this.homeView.collection.fetch();
+          $('#content-body').html(this.homeView.el);
+          this.homeView.delegateEvents();
+        },
+
+        defaultRoute: function(){
+          window.location = '#home';
+          //Backbone.history.navigate('servers', true);
+        }
+    });
+    
+  return homeRouter;
+});

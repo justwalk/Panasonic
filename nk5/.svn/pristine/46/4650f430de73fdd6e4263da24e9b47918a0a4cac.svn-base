@@ -1,0 +1,58 @@
+
+<td><%- task.get('name') %><%- memo?"("+memo+")":"" %></td>
+<td><%- action %></td>
+<td><%- cycle %></td>
+<td><%- task.getDate('next_execution_date')||'-' %></td>
+<td><%- task.getDate('last_run_date')||'-' %></td>
+<td><%- last_run_status ||'-' %> <i class="pull-right status <%- task.get('last_run_status') %>"></i> </td>
+<td> 
+ <input type="button" value="<%_Remove%>"  class="removeTask btn btn-default" />
+		<% if(task.getDate('next_execution_date')&&task.get('enable')) { %>
+			<input type="button" value="<%_Disable%>"  class=" btn btn-default enable "/>
+			<% }else if(task.getDate('next_execution_date')&&task.get('disable')){ %>
+			<input type="button" value="<%_Enable%>"  class=" btn btn-default enable "/>
+		<% } %>
+	
+</td>
+<td><% if(task.getDate('next_execution_date')&&task.get('enable')&&task.get('action')!='bootserver_restart'&&task.get('action')!='script_exe'&&task.get('action')!='end_update'&&task.get('action')!='start_update'&&task.get('action')!='save_update_mode'&&task.get('action')!='update_mode'&&task.get('action')!='ioserver_stop') { %>
+        <input type="button" value="<%_Copy%>"  class="copy btn btn-default"/> 
+        <input type="button" value="<%_EditTarget%>" class="edit btn btn-default" />
+<% } %>     
+<% if(task.getDate('next_execution_date')&&task.get('enable')&&task.get('action')!='end_update'&&task.get('action')!='start_update'&&task.get('action')!='save_update_mode'&&task.get('action')!='update_mode'&&task.get('action')!='ioserver_stop') { %>   
+        <input type="button" value="<%_EditContent%>" class="edit-content btn btn-default" />
+<% } %>
+    <div class="modal fade copy_modal" tabindex="-1" role="dialog" 
+           aria-labelledby="myModalLabel" aria-hidden="true">
+           <div class="modal-dialog">
+              <div class="modal-content">
+                 <div class="modal-header">
+                    <button type="button" class="close" 
+                       data-dismiss="modal" aria-hidden="true">
+                          &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                     <%_Copy%>
+                    </h4>
+                 </div>
+                 <div class="modal-body form-horizontal">
+                    <div id ="servers-container"></div>
+                    <div id ="storages-container" ></div>
+                    <div id ="clients-container" > </div> 
+                    <div id ="groups-container"></div>
+                    <div id ="diskcopy-container"></div>
+                  </div>
+                 <div class="modal-footer">
+                    <button type="button" class="btn " 
+                       data-dismiss="modal"><%_Cancel%>
+                    </button>
+                     <input type="button" value="<%_Enter%>" id='submit'  class="btn btn-primary copy_save" />
+                 </div>
+              </div>
+        </div>
+      </div>
+
+</td>
+	<td><% if(App.menu['27']) { %><input type="button" value="<%_Log%>" class="btn btn-default logTask" /> <% } %>
+</td>
+<td style="display: none;" ><%- task.get('id') %></td>
+<td  style="display: none;"><%- date %></td>

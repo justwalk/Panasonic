@@ -1,0 +1,42 @@
+<form class="task-form form-horizontal no-margins" method="post" accept-charset="utf-8">
+    <div class="modal-header">
+        <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+        <h3><%_Edit%></h3>
+    </div>
+    <p class="errors"></p>
+    
+    <div class="modal-body">
+        <div class="control-group">
+            <label class="control-label" for="ip"><%_UserName%></label>
+            <div class="controls">
+                <input type="text"  class="span10" name="username"  disabled="disabled" />
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ip"><%_PassWord%></label>
+            <div class="controls">
+                <input type="password" class="span10" name="rpassword"   />
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="ip"><%_Confim PassWord%></label>
+            <div class="controls">
+                <input type="password" class="span10" name="repassword"   />
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="memo"><%_name%></label>
+            <div class="controls">
+                <input type="text"  class="span10" name="name"/>
+            </div>
+        </div>
+       
+        
+        
+    </div>
+    
+    <div class="modal-footer">
+      <a href="#" class="btn" title="Close" data-dismiss="modal"><%_Cancel%></a>
+      <input type="submit" value="<%_Save%>" class="btn btn-primary">
+    </div>
+</form>

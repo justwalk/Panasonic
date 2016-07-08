@@ -1,0 +1,85 @@
+#include "home.h"
+
+#define NO_FCGI_DEFINES
+
+#include <fcgi_stdio.h>
+
+#include "output.h"
+
+#include "computer.h"
+
+#include <Windows.h>
+#include <string.h>
+
+#include <sstream>
+#include <fstream>
+#include <cstdlib>
+#include <regex>
+#include <Ws2tcpip.h>
+
+#include "vhd.h"
+
+#include "error.h"
+#include "login.h"
+
+#include "commonJSON.h"
+
+#include "menu.h"
+
+#include "bitmap.h"
+
+
+
+extern char **FCGI_environ;
+
+HomeResource::HomeResource(){
+	prefix = "home";
+}
+ULONG nid;
+void HomeResource::run(const std::map<std::string, std::string>& params) const{
+	
+	printDone();
+	/*
+	JSON::Value* data1 = ComputerEnumToJSON1();
+	int a = sizeof(data1);
+
+	JSON::Object* data = new JSON::Object();
+
+	data->add(new JSON::String("Id"), new JSON::Integer(a));
+
+	printHeaders();
+	data->render();
+
+	delete data;
+	*/
+
+	//printHomeData(nid);
+}
+
+
+JSON::Array* ComputerEnumToJSON1(){
+	JSON::Array* array = new JSON::Array();
+
+	ENUM_HANDLE EnumObj = GetFirstComputerGroup();
+
+	GRP_OBJ info;
+
+	while((GetNextComputerGroup(EnumObj, &info))){
+		ENUM_HANDLE EnumObj = GetFirstComputer(info.nID);
+
+		{
+			OBJ_COMP info;
+
+			while((GetNextComputer(EnumObj, &info))){
+				JSON::Object* data = new JSON::Object();
+
+				if(data == NULL)
+					return NULL;
+
+				array->add(data);
+			}
+		}
+	}
+
+	return array;
+}

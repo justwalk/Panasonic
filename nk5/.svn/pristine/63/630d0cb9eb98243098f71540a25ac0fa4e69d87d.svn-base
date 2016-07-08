@@ -1,0 +1,19 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'models/directory'
+], function($, _, Backbone, directoryModel) {
+  var Directories = Backbone.Collection.extend({
+    model: directoryModel,
+    url: 'directories',
+    noIoBind: false,
+
+    fetchWithServerId: function(server_id) {
+      this.fetch( {data: {server_id: server_id}, success: function(models) {
+        this.models = models;
+      }});
+    }
+  });
+  return Directories;
+});

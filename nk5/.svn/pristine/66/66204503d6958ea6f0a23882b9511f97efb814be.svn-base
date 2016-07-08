@@ -1,0 +1,19 @@
+<td class="select <%- model.isSelected ? 'selected' : '' %>"><%- model.get('name') %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>"><%- update_disk %></td>
+<% if(model.get("online") == true) { %>
+<td class="select <%- model.isSelected ? 'selected' : '' %>"><%_ON%></td>
+<% } else{%>
+<td class="select <%- model.isSelected ? 'selected' : '' %>"><%_OFF%></td>
+<% }%>
+<td class="select <%- model.isSelected ? 'selected' : '' %>"><%- model.get('ip') %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>"><%- model.get('boot_menu_name')||'' %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>"><select id="menu_detail" name="menu_detail">
+	
+</select></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>"><%- model.get('boot_image_name')||'' %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>"><%- model.get('os')||'' %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>"><%- model.get('logon_user')||'' %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>"><%- model.get('logon_on_time')||'' %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>"><%- model.get('boot_time')||'' %></td>
+
+

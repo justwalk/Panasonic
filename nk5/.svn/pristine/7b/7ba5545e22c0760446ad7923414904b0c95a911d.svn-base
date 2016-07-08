@@ -1,0 +1,271 @@
+<form class="computer-form form-vertical no-margins" method="post" accept-charset="utf-8" id="add-computer-form ">
+  <div class="modal-header">
+    <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+    <h3><%- model.isNew() ? '<%_Add%>' : '<%_Edit%>' %> <%_computer%></h3>
+  </div>
+  <p class="errors"></p>
+
+  <div class="modal-body">
+    <div class="span4">
+      <legend><%_Computer Information%></legend>
+
+      <div class="control-group">
+        <label class="control-label" for="name"><%_Computer Name%></label>
+        <div class="controls">
+          <input type="text" name="name" value="" id="name" class="span12">
+        </div>
+      </div>    
+
+      <div class="control-group">
+        <label class="control-label" for="mac_address"><%_Mac address%></label>
+        <div class="controls">
+          <input type="text" name="mac_address" id="mac_address" class="span12">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="group_id"><%_Group%></label>
+        <div class="controls">
+		  <select name="group_id" id="group_id" class="">
+			<%= groups %>
+		  </select>
+          <!--<input type="text" name="group_id" value="" id="group_id" class="span12">-->
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="memory_cache"><%_Memory Cache%></label>
+        <div class="controls">
+          <input type="text" name="memory_cache" id="memory_cache" class="span12">
+        </div>
+      </div>          
+      <div class="control-group">
+        <label class="control-label" for="screen"><%_Screen resolution%></label>
+        <div class="controls">
+          <input type="text" id="screen_x" class="span6 pull-left" name="screen_x" />
+          <input type="text" id="screen_y" class="span6" name="screen_y" />
+        </div>
+      </div>    
+
+      <div class="control-group">
+        <label class="control-label" for="bootmenu_timeout"><%_BootMenu Timeout%></label>
+        <div class="controls">
+          <input type="text" name="bootmenu_timeout" value="" id="bootmenu_timeout" class="span12">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="default_menu"><%_Default Menu%></label>
+        <div class="controls">
+          <select name="default_menu" id="default_menu" class="">
+          <%= menus %>
+          </select>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="boot_file"><%_Boot File%></label>
+        <div class="controls">
+          <select name="boot_file" id="boot_file">
+            <option value=""></option>
+            <option value="boot.bin">boot.bin</option>
+            <option value="boot2.bin">boot2.bin</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="span4">
+      <legend><%_Advanced Setting%></legend>
+      <div class="control-group">
+        <label class="checkbox" for="8021X">
+          <input type="checkbox" id="8021X" name="8021X" value="true">
+          <%_Enable 8021X%>
+        </label>
+      </div>
+      <div class="control-group">
+        <label class="checkbox" for="ad">
+          <input type="checkbox" id="ad" name="ad" value="true">
+          <%_Enable AD%>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label class="checkbox" for="boot_rename">
+          <input type="checkbox" id="boot_rename" name="boot_rename" value="true">
+          <%_Boot Rename%>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label class="checkbox" for="disable_computer">
+          <input type="checkbox" id="disable_computer" name="disable_computer" value="true">
+          <%_Disable Computer%>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label class="checkbox" for="disable_usb_devices">
+          <input type="checkbox" value="true" id="disable_usb_devices" name="disable_usb_devices">
+          <%_Disable USB Devices%>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label class="checkbox" for="disable_usb_storage">
+          <input type="checkbox" value="true" id="disable_usb_storage" name="disable_usb_storage">
+          <%_Disable USB Storage%>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label class="checkbox" for="enable_menu">
+          <input type="checkbox" value="true" id="enable_menu" name="enable_menu">
+          <%_Enable Menu%>
+        </label>
+      </div>
+      <div class="control-group">
+        <label class="checkbox" for="ldc_sync">
+          <input type="checkbox" value="true" id="ldc_sync" name="ldc_sync">
+          <%_LDC SYNC%>
+        </label>
+      </div>
+      <div class="control-group">
+        <label class="checkbox" for="multi_ad">
+          <input type="checkbox" value="true" id="multi_ad" name="multi_ad">
+          <%_Multi AD%>
+        </label>
+      </div>
+
+
+      <div class="control-group">
+        <label class="checkbox" for="persist_files">
+          <input type="checkbox" value="true" id="persist_files" name="persist_files">
+          <%_Persist Files%>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label class="checkbox" for="persist_registry">
+          <input type="checkbox" value="true" id="persist_registry" name="persist_registry">
+          <%_Persist Registry%>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label class="checkbox" for="persist_ssid">
+          <input type="checkbox" value="true" id="persist_ssid" name="persist_ssid">
+          <%_Persist SSID%>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label class="checkbox" for="seclude_network">
+          <input type="checkbox" value="true" id="seclude_network" name="seclude_network">
+          <%_Seclude Network%>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label class="checkbox" for="sync_time">
+          <input type="checkbox" value="true" id="sync_time" name="sync_time">
+          <%_Sync Time%>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label class="checkbox" for="updt_boot">
+          <input type="checkbox" value="true" id="updt_boot" name="updt_boot">
+          <%_UPDT Boot%>
+        </label>
+      </div>
+
+      <div class="control-group">
+        <label class="checkbox" for="update_mode">
+          <input type="checkbox" value="true" id="update_mode" name="update_mode">
+          <%_Update Mode%>
+        </label>
+      </div>
+      
+    </div>
+    <div id="ip_settings" class="span4">
+      <legend><%_IP Settings%></legend>
+      <div class="control-group">
+        <label class="control-label" for="ip"><%_IP Address%></label>
+        <div class="controls">
+          <input type="text" id="ip" class="span12" name="ip" />
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="gateway"><%_Gateway%></label>
+        <div class="controls">        
+          <input type="text" name="gateway" id="gateway" class="span12">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="netmask"><%_Net Mask%></label>
+        <div class="controls">
+          <input type="text" name="netmask" value="" id="netmask" class="span12">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="disk_cache_sync_speed"><%_Disk Cache Sync Speed%></label>
+        <div class="controls">
+          <input type="text" name="disk_cache_sync_speed" value="" id="disk_cache_sync_speed" class="span12">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="max_data_transfer"><%_Maximum Data Transfer%></label>
+        <div class="controls">
+          <input type="text" name="max_data_transfer" value="" id="max_data_transfer" class="span12">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="concurrent_pack_timeout"><%_Concurrent Pack Timeout%></label>
+        <div class="controls">
+          <input type="text" name="concurrent_pack_timeout" value="" id="concurrent_pack_timeout" class="span12">
+        </div>
+      </div>
+
+
+      <div class="control-group">
+        <label class="control-label" for="read_limit"><%_ReadLimit%></label>
+        <div class="controls">
+          <input type="text" name="read_limit" value="" id="read_limit" class="span12">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="write_limit"><%_WriteLimit%></label>
+        <div class="controls">
+          <input type="text" name="write_limit" value="" id="write_limit" class="span12">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="boot"><%_Boot%></label>
+        <div class="controls">
+          <select name="boot" id="boot">
+            <option value=""></option>
+            <option value="Virtual"><%_Virtual%></option>
+            <option value="Local"><%_Local%></option>
+            <option value="Cache"><%_Cache%></option>
+            <option value="Select"><%_Select%></option>
+          </select>
+        </div>
+      </div>
+
+    </div>    
+
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" title="Close" data-dismiss="modal"><%_Cancel%></a>
+    <input type="submit" value="<%_Save%>" class="submit btn btn-primary" class="span12">
+  </div>
+</form>

@@ -1,0 +1,39 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'views/home/list',
+  'text!templates/home/home.html'
+], function($, _, Backbone, ServerView, serversGrid){
+    var ServersView = Backbone.View.extend({
+      template: _.template(underi18n.template(serversGrid, msgFactory)),
+     
+      initialize: function(options) {
+        var self = this;
+        _.bindAll(this);
+        self.router = self.options.router;
+        self.list = false;
+        self.collection.bind('add reset', function(servers){
+          self.render();
+        });
+        this.serverViews = [];
+      },
+
+      render: function() {
+        var self = this;
+        self.$el.html(self.template());
+        this.serverViews = [];
+        this.collection.each(function(server) {
+            var win=this;
+            var serverView = new ServerView({
+                model: server
+            });
+            win.$('#servers-container').append(serverView.render().el);
+            self.serverViews.push(serverView);
+
+        });
+        return self;
+      },
+    });
+    return ServersView;
+});

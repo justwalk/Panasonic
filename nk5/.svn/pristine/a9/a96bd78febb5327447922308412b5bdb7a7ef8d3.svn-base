@@ -1,0 +1,15 @@
+var rest = require('../helpers/rest_helper');
+var config = require('../../config/config.js');
+var base_disksURL = config.restHost() + '/ioservers/';
+
+
+var RestoreDisk = {};
+
+RestoreDisk.getRestore = function(params, callback) {
+	var restoreURL = base_disksURL + params.IOServer +'/disks/'+ params.ID;
+	rest.getJSON(restoreURL + '/restore', function(err, resp, body) {
+		callback(err, body);
+	});
+};
+
+module.exports.RestoreDisk = RestoreDisk;

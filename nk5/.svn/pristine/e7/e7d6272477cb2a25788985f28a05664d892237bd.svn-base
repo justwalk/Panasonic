@@ -1,0 +1,78 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/packs/pack.html',
+  'views/disks/disk',
+  'collection/disks',
+  'views/disks/disk_form'
+], function($, _, Backbone, tableItem, DiskView, DisksCollection, DiskForm){
+    PackView = Backbone.View.extend({
+      tagName: 'tbody',
+      _modelBinder: undefined,
+      template: _.template(underi18n.template(tableItem, msgFactory)),
+      events:{
+        'click th button.remove': 'destroy',
+      },
+      initialize: function() {
+        var self = this;
+        _.bindAll(this, 'render', 'renderDisks');
+        this.baseDisks = this.options.baseDisks;
+        this.ioservers = this.options.ioservers;
+        this.model.disks = new DisksCollection();
+        this.model.disks.bind('add remove reset change', self.renderDisks);
+        this.model.disks.fetchWithComputerIdAndMenuIdAndPackId(this.model.collection.computer_id, this.model.collection.menu_id, this.model.id);
+        this.model.diskForm = new DiskForm({el:$(this.el), computer_id:this.model.collection.computer_id, menu_id:this.model.collection.menu_id, pack_id:this.model.id,
+          baseDisks: this.baseDisks});
+        this.diskViews = [];
+      },
+      
+      destroy: function() {
+        this.model.set('computer_id', this.model.collection.computer_id);
+        
+        this.model.destroy({
+          success: function(model, response) {
+            alert('Pack '+model.get('name')+' was deleted.');
+          },
+          error: function(model, response) {
+            alert('Failed to delete pack. '+response.error);
+          },
+          wait: true
+        });
+      },
+      
+      renderDisks: function() {
+        var self = this;
+        _(self.diskViews).forEach(function(diskView) {
+          diskView.close();
+        });
+
+        this.model.disks.forEach(function(disk) {
+          var ioserver = _(self.ioservers).find(function(elem) {
+            //ioservers come from socket emit you do not have any 
+            return elem.ID == disk.get('io_server');
+          });
+
+          if (disk.get('pack') == self.model.id) {
+            var diskView = new DiskView({model: disk, ioserver: ioserver});
+            self.diskViews.push(diskView);
+            $('tr:last', self.el).before(diskView.render().el);
+          }
+        });
+      },
+
+      render: function() {
+        $(this.el).html(this.template({
+            pack: this.model,
+            Type: App.msgFactory(this.model.get('type')),
+            State: App.msgFactory(this.model.get('state'))
+          })
+        );
+        this.$el.append('<tr><td></td><td></td><td><select name="export_disk" class="disk-selection">'+'</select></td><td><button class="btn add-disk">+'+
+              App.msgFactory('Add disk') + '</button></td></tr>');
+        this.model.diskForm.render();
+        return this;
+      }
+    });
+    return PackView;
+});

@@ -1,0 +1,132 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/commands/settings_menu.html',
+  'models/computer',
+  'modelBinder',
+  'collection/menus'
+], function($, _, Backbone, SettingsMenuTemplate, Computer, ModelBinder, MenuCollection){
+  var SettingsMenuView= Backbone.View.extend({
+    id:'add-menu-modal',
+    className: 'modal fade',
+    template: _.template(underi18n.template(SettingsMenuTemplate, msgFactory)),
+    
+    events:{
+      'submit .computer-form ': 'saveModel',
+      'hidden' : 'remove', //the 'hidden' event is from bootstrap modal dismiss
+      'click .computer-form .checkbox': 'checkboxChangedConverter'
+    },
+    _modelBinder: undefined,
+    initialize: function(options) {
+      var self = this;
+      this.model = this.options.model || new Computer();
+      this.models = this.options.models;
+      this.model.set('group', this.computers[0].get('name'));
+      this._modelBinder = new Backbone.ModelBinder();
+     
+
+      var index;
+      
+
+      var menus = '<option value="0">'+ App.msgFactory('None') +'</option>';
+      this.menuCollection = new MenuCollection(this.model.menus.models);
+      if (this.model.get('id')) {
+        this.menuCollection.fetchWithComputerId(this.model.get('id'));
+        this.menuCollection.models.forEach( function (menu) {     
+          menus += '<option value="' + menu.get('id') + '">' + menu.get('name') + '</option>';
+        });
+      }
+      this.menus = menus;
+
+      _.bindAll(this);
+    },
+    
+    checkboxChangedConverter: function(){
+        var self = this;
+        //Display Boot Menu
+        var enableMenuOf=$('input[name=enable_menu]',self.el);
+        //Disable All USB
+        var usbDevicesOf=$('input[name=disable_usb_devices]',self.el);
+        //Support Windows Domain
+        var adOf=$('input[name=ad]',self.el);
+        //Enable Image Synchroniz
+        var ldcSyncOf=$('input[name=ldc_sync]',self.el);
+
+        if(enableMenuOf.is(':checked')){
+          $('#bootmenu_timeout',self.el).attr('disabled','disabled');
+        }else{
+          $('#bootmenu_timeout',self.el).attr('disabled',null);
+        }
+
+        if(usbDevicesOf.is(':checked')){
+          $('input[name=disable_usb_storage]',self.el).attr('disabled','disabled');
+        }else{
+          $('input[name=disable_usb_storage]',self.el).attr('disabled',null);
+        }
+
+        if(adOf.is(':checked')){
+          $('input[name=domainPath]',self.el).attr('disabled','disabled');
+        }else{
+          $('input[name=domainPath]',self.el).attr('disabled',null);
+        }
+
+        if(ldcSyncOf.is(':checked')){
+          $('input[name=disk_cache_sync_speed]',self.el).attr('disabled','disabled');
+        }else{
+          $('input[name=disk_cache_sync_speed]',self.el).attr('disabled',null);
+        }
+
+      },
+    
+    setupMultipleEdit: function() {
+      var self = this;
+      _(self.disabledAttributes).forEach(function(attribute) {
+        $('[name="'+attribute+'"]', self.el).attr('disabled', 'disabled');
+      });
+    },
+
+    saveModel: function(e) {
+      var self = this;
+      $('input[type=submit]', self.el).attr('alt',$('input[type=submit]',self.el).val());
+      $('input[type=submit]', self.el).attr('disabled', 'disabled').val(App.msgFactory('Please wait...'));
+      var groupId = this.$('#group_id').val();
+    this.model.set("group_id",parseInt(groupId));
+      this._modelBinder.bind(this.model, this.el);
+    console.log(this.model);
+      if (this.models) {
+        _(this.disabledAttributes).each(function(attr) {self.model.unset(attr);});
+        saved = this.models.length;
+        _(this.models).each(function(model) {
+          model.save(self.model.attributes, {
+            success: function() {saved--;
+              if (!saved) {self.$el.modal('hide');}
+            },
+            error:function(model, error){
+              self.$('.computer-form .errors').append('Failed to save '+ model.get('name')+' \n ');
+            }
+          });
+        });
+      } else {
+        this.model.save({}, {
+          success: function(model, response) {
+            self.$el.modal('hide');
+          }
+        });
+      }
+      
+      return false;
+    },
+            
+    render: function() {
+      this.delegateEvents();
+      $(this.el).html(this.template({model:this.model, menus: this.menus, groups: this.groups}));
+
+      this._modelBinder.bind(this.model, this.el);
+      if (this.models) {this.setupMultipleEdit();}
+      this.checkboxChangedConverter();
+      return this;
+    }
+  });
+  return SettingsMenuView;
+});

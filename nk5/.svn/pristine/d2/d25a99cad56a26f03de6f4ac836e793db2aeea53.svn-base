@@ -1,0 +1,30 @@
+var process = require('../../config/db.js').Process;
+var process_event = require('../../config/db.js').ProcessEvent;
+var session = require('../../config/db.js').Session;
+
+module.exports = function(socket) {
+	socket.on('logs:read', function (req, res) {
+		require('../../config/config').checkPass('admin', req, res, function() {
+			process.all(function(err, processes) {
+				if(err)
+					return res(err);
+				
+				process_event.all(function(err, events) {
+					if(err)
+						return res(err);
+						
+					session.all(function(err, user_events){
+						if(err)
+							return res(err);
+						else
+							res(null, {
+								processes: processes,
+								events: events,
+								user_events: user_events
+							});
+					});
+				});
+			});
+		});
+	});
+};

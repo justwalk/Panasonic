@@ -1,0 +1,67 @@
+var ComputerInfo = require('../../config/db.js').ComputerInfo;
+var rest   = require('../helpers/rest_helper');
+var config = require('../../config/config.js');
+
+var Computer = require('../models/computer').Computer;
+
+
+
+ComputerInfo.saveDB = function(data,callback){
+  data.mac=data.mac.replace(/\-/g, ":");
+  data.update_time = ComputerInfo.currentDate();
+
+   this.all({where:{mac:data.mac}},function(err, computerInfos) {
+        if(computerInfos.length>0){
+           	computerInfos[0].updateAttributes(data, function(err, data) {
+                  callback(err, data);
+            });
+        }else{
+        	ComputerInfo.create(data,function(error, data) {
+			    callback(error, data);	
+			});
+        }
+      });	
+};
+
+ComputerInfo.saveAlive = function(alive,callback){
+  alive.Parent=alive.Disks[0].Parent;
+    rest.postAlive(config.restHost()+'/computers/78/menus/alive',alive,function(error,resp,body){
+      if(!error){
+          var menuDetail="";
+          for (var i in body.menuDetail) {
+            if(i>0){
+              menuDetail += ",";
+            }
+              menuDetail += body.menuDetail[i].ID+"|"+body.menuDetail[i].PackType;
+          }
+          body.menu_detail = menuDetail;
+          body.update_time = ComputerInfo.currentDate();
+          ComputerInfo.saveDB(body,callback);
+      }else{
+        callback(error,null)
+      }
+     
+    });
+  };
+
+
+ComputerInfo.currentDate=function() {
+    var date = new Date();
+    var seperator1 = "-";
+    var seperator2 = ":";
+    var month = date.getMonth() + 1;
+    var strDate = date.getDate();
+    if (month >= 1 && month <= 9) {
+        month = "0" + month;
+    }
+    if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+    }
+    var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate
+            + " " + date.getHours() + seperator2 + date.getMinutes()
+            + seperator2 + date.getSeconds();
+    return currentdate;
+};
+
+
+module.exports.ComputerInfo = ComputerInfo;

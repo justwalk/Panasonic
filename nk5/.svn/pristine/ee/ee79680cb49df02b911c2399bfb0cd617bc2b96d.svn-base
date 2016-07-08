@@ -1,0 +1,42 @@
+<table class="table table-data table-striped table-bordered" id="schedules-table" style="max-width: 98%;">
+     <div style="position: relative;top:2px;right: 528px;">
+             <ul style="list-style-type: none;">
+              <li style="float: right;line-height: 29.5px;font-weight: bold;padding-left: 33px;"><a href="javascript:void(0)" class="select-schedule"><%_Schedule%></a></li>
+              <li style="float: right;line-height: 29.5px;font-weight: bold;padding-left: 33px;"><a href="javascript:void(0)" class="select-all"><%_All%></a></li>
+            </ul> 
+        </div>
+     <thead >
+    
+       <div style="float: right;"><img  class='refreshtask' src="../../images/Refresh.png" style="cursor: pointer;" title="refresh">
+       </div>
+      <th><%_Pc name%></th>
+      <th><%_Action%></th>
+      <th><%_Cycle%></th>
+      <th><%_Next Exec Date%></th>
+      <th><%_Last Run Date%></th>
+      <th><%_Last Run Status%></th>
+      <th><%_Settings%></th>
+    </tr>
+  </thead>
+  <div style="float: right;">
+      
+</div>
+  <tbody id="schedules-container"> </tbody>
+  <tfoot>
+   <tr>
+     <th></th>
+     <th></th>
+     <th></th>
+     <th></th>
+     <th></th>
+     <th></th>
+     <th></th>
+   </tr>
+  </tfoot>
+
+</table>
+<style type="text/css">
+  .disabled{
+    color: black;
+  }
+</style>

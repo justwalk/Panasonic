@@ -1,0 +1,11 @@
+<td><%- task.get('computer_name') %></td>
+<td><%- action %></td>
+<td><%- cycle %></td>
+<td><%- task.getDate('next_execution_date')||'-' %></td>
+<td><%- task.getDate('last_run_date')||'-' %></td>
+<td><%- last_run_status ||'-' %> <i class="pull-right status <%- task.get('last_run_status') %>"></i> </td>
+<td>
+	<% if(task.getDate('next_execution_date')) { %>
+		<button class="removeTask btn btn-default"><%_Remove%></button>
+	<% } %>
+</td>

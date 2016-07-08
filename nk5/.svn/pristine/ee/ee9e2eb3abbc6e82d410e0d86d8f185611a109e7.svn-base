@@ -1,0 +1,283 @@
+<form class="computer-form form-vertical no-margins" method="post" accept-charset="utf-8" id="add-computer-form ">
+  <div class="modal-header">
+    <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+    <h3><%- model.isNew() ? '<%_Add%>' : '<%_Edit%>' %> <%_computerTemplate%></h3>
+  </div>
+  <p class="errors"></p>
+
+  <div class="modal-body">
+    <div class="span4">
+      <!-- <legend><%_Computer Information%></legend> -->
+      <div class="control-group">
+        <label class="control-label" for="name"><%_Computer Name%></label>
+        <div class="controls">
+          <input type="text" name="name" value="" id="name" class="span12">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="mac_address"><%_MAC Address%></label>
+        <div class="controls">
+          <input type="text" name="mac_address" id="mac_address" class="span12">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="ip"><%_IP Address%></label>
+        <div class="controls">
+          <input type="text" id="ip" class="span12" name="ip" />
+        </div>
+      </div>
+
+      <div class="control-group" style="height: 51px;">
+        <label class="control-label" for="boot_file"><%_Boot File%></label>
+        <div class="controls">
+          <select name="boot_file" id="boot_file" style="width: 228px;">
+            <option value=""></option>
+            <option value="boot.bin">boot.bin</option>
+            <option value="boot2.bin">boot2.bin</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="netmask"><%_Net Mask%></label>
+        <div class="controls">
+          <input type="text" name="netmask" value="" id="netmask" class="span12">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="gateway"><%_Gateway%></label>
+        <div class="controls">
+          <input type="text" name="gateway" id="gateway" class="span12">
+        </div>
+      </div>
+
+      <div class="control-group" style="height: 51px;">
+        <label class="control-label" for="screen"><%_Image Resolution%></label>
+        <div class="controls">
+          <input type="text" id="screen_x" class="span5" name="screen_x" style="float: left;"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X
+          <input type="text" id="screen_y" class="span5" name="screen_y" style="float: right;" />
+        </div>
+      </div>
+      <!-- 娣囶喗鏁糹d  name  -->
+      <div class="control-group">
+        <label class="control-label" for="gatewayy"><%_Online License Session%></label>
+        <div class="controls">
+          <input type="text" name="gatewayy" id="gatewayy" class="span12">
+        </div>
+      </div>
+
+    </div>
+
+
+    <div id="ip_settings" class="span4">
+      <!-- <legend><%_IP Settings%></legend> -->
+
+      <div class="control-group">
+        <label class="control-label" for="memory_cache"><%_Memory(MB)%></label>
+        <div class="controls">
+          <input type="text" name="memory_cache" id="memory_cache" class="span12">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="bootmenu_timeout"><%_Boot Menu Timeout%></label>
+        <div class="controls">
+          <input type="text" name="bootmenu_timeout" value="" id="bootmenu_timeout" class="span12">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="max_data_transfer"><%_Transmit Block Size(KB)%></label>
+        <div class="controls">
+          <input type="text" name="max_data_transfer" value="" id="max_data_transfer" class="span12">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="read_limit"><%_Read Speed Limit(MB/S)%></label>
+        <div class="controls">
+          <input type="text" name="read_limit" value="" id="read_limit" class="span12">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="write_limit"><%_Write Speed Limit(MB/S)%></label>
+        <div class="controls">
+          <input type="text" name="write_limit" value="" id="write_limit" class="span12">
+        </div>
+      </div>
+      <!-- 娣囶喗鏁�id name  -->
+      <div class="control-group">
+        <label class="control-label" for="concurrent_pack_timeout"><%_Parallel Disk Timeout(S)%></label>
+        <div class="controls">
+          <input type="text" name="concurrent_pack_timeout" value="" id="concurrent_pack_timeout" class="span12">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label" for="disk_cache_sync_speed"><%_Disk Cache Sync Speed(MB/s)%></label>
+        <div class="controls">
+          <input type="text" name="disk_cache_sync_speed" value="" id="disk_cache_sync_speed" class="span12">
+        </div>
+      </div>
+      <!-- 娣囶喗鏁�id name  -->
+      <div class="control-group">
+        <label class="control-label" for="domainPath"><%_Domain OU Path%></label>
+        <div class="controls">
+          <input type="text" name="domainPath" value="" id="domainPath" class="span12">
+        </div>
+      </div>
+
+    </div>
+
+    <div class="span4">
+      <!-- <legend><%_Advanced Setting%></legend> -->
+      <!-- 娣囶喗鏁�id name  -->
+      <div class="control-group" style="margin-bottom: 2px;">
+        <label class="checkbox" for="disable">
+          <input type="checkbox" id="disable" name="disable" value="true">
+          <%_Disable Computer%>
+        </label>
+      </div>
+      <!-- 娣囶喗鏁�id name  -->
+      <div class="control-group" style="margin-bottom: 2px;">
+        <label class="checkbox" for="enable_menu">
+          <input type="checkbox" id="enable_menu" name="enable_menu" value="true">
+          <%_Display Boot Menu%>
+        </label>
+      </div>
+
+      <div class="control-group" style="margin-bottom: 2px;">
+        <label class="checkbox" for="boot_rename">
+          <input type="checkbox" id="boot_rename" name="boot_rename" value="true">
+          <%_Boot Rename%>
+        </label>
+      </div>
+      <!-- 娣囶喗鏁�id name  -->
+      <div class="control-group" style="margin-bottom: 2px;">
+        <label class="checkbox" for="wmemch">
+          <input type="checkbox" id="wmemch" name="wmemch" value="true">
+          <%_Memory Cache For Writing%>
+        </label>
+      </div>
+
+      <!-- 娣囶喗鏁�id name  -->
+      <div class="control-group" style="margin-bottom: 2px;">
+        <label class="checkbox" for="sync_time">
+          <input type="checkbox" value="true" id="sync_time" name="sync_time">
+          <%_Server Time Synchronization%>
+        </label>
+      </div>
+
+      <div class="control-group" style="margin-bottom: 2px;">
+        <label class="checkbox" for="disable_usb_devices">
+          <input type="checkbox" value="true" id="disable_usb_devices" name="disable_usb_devices">
+          <%_Disable All USB%>
+        </label>
+      </div>
+
+
+      <div class="control-group" style="margin-bottom: 2px;">
+        <label class="checkbox" for="disable_usb_storage">
+          <input type="checkbox" value="true" id="disable_usb_storage" name="disable_usb_storage">
+          <%_Disable USB Storage%>
+        </label>
+      </div>
+
+      <div class="control-group" style="margin-bottom: 2px;">
+        <label class="checkbox" for="persist_registry">
+          <input type="checkbox" value="true" id="persist_registry" name="persist_registry">
+          <%_Set Individual Registry%>
+        </label>
+      </div>
+
+      <div class="control-group" style="margin-bottom: 2px;">
+        <label class="checkbox" for="persist_files">
+          <input type="checkbox" value="true" id="persist_files" name="persist_files">
+          <%_Set Individual File%>
+        </label>
+      </div>
+
+      <div class="control-group" style="margin-bottom: 2px;">
+        <label class="checkbox" for="persist_ssid">
+          <input type="checkbox" value="true" id="persist_ssid" name="persist_ssid">
+          <%_Set WindowsSID%>
+        </label>
+      </div>
+      <!-- 娣囶喗鏁�id name  -->
+      <div class="control-group" style="margin-bottom: 2px;">
+        <label class="checkbox" for="ad">
+          <input type="checkbox" value="true" id="ad" name="ad">
+          <%_Support Windows Domain%>
+        </label>
+      </div>
+
+      <div class="control-group" style="margin-bottom: 2px;">
+        <label class="checkbox" for="seclude_network">
+          <input type="checkbox" value="true" id="seclude_network" name="seclude_network">
+          <%_Enable Network Separation%>
+        </label>
+      </div>
+      <!-- 娣囶喗鏁�id name  -->
+      <div class="control-group" style="margin-bottom: 2px;">
+        <label class="checkbox" for="ldc_sync">
+          <input type="checkbox" value="true" id="ldc_sync" name="ldc_sync">
+          <%_Enable Image Synchronize%>
+        </label>
+      </div>
+      <!-- 娣囶喗鏁�id name  -->
+      <div class="control-group" style="margin-bottom: 2px;">
+        <label class="checkbox" for="updt_boot">
+          <input type="checkbox" value="true" id="updt_boot" name="updt_boot">
+          <%_Update Image%>
+        </label>
+      </div>
+
+      <fieldset class="control-group" style="margin-bottom: 2px;margin-top: 30px;">
+        <legend>Startup Device</legend>
+        <label class="radio" for="network">
+          <input type="radio" value="Virtual" id="network" name="boot"><%_Network%>
+        </label>
+        <label class="radio" for="local_boot">
+          <input type="radio" value="Local" id="local_boot" name="boot"><%_Local Boot%>
+        </label>
+        <label class="radio" for="cached_os">
+          <input type="radio" value="Cache" id="cached_os" name="boot"><%_Cached OS%>
+        </label>
+        <label class="radio" for="user_select">
+          <input type="radio" value="Select" id="user_select" name="boot"><%_Selected By User%>
+        </label>
+      </fieldset>
+
+    </div>
+
+    <div class="span12" style="margin-left: 0px;">
+      <div class="span8">
+        <div class="control-group">
+          <label class="control-label" for="app_auth_param"><%_Application Authentication Parameter%></label>
+          <div class="controls">
+            <input type="text" name="app_auth_param" id="app_auth_param" class="span12">
+          </div>
+        </div>
+      </div>
+      <div class="span4">
+        <div class="control-group" style="margin-top: 22px;">
+          <%_Cache Drive%>
+          <select name="cache_drive" id="cache_drive" style="width: 110px;">
+            <option value=""></option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" title="Close" data-dismiss="modal"><%_Cancel%></a>
+    <input type="submit" value="<%_Save%>" class="submit btn btn-primary" class="span12">
+  </div>
+</form>

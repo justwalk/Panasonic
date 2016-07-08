@@ -1,0 +1,152 @@
+<form class="task-form form-horizontal no-margins" method="post" accept-charset="utf-8">
+    <div class="modal-header">
+        <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+        <h3><%_Action exam%></h3>
+    </div>
+    <p class="errors"></p>
+    
+    <div class="modal-body">
+        <div class="control-group">
+            <label class="control-label" for="name"><%_Name%></label>
+            <div class="controls">
+                <input type="text" id="task_name" class="span10" name="name"/>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label class="control-label" for="memo"><%_Memo%></label>
+            <div class="controls">
+                <input type="text" id="task_memo" class="span10" name="memo"/>
+            </div>
+        </div>
+
+        <div class="control-group" style="margin-bottom: 2px;">
+            <div class="controls">
+                <input type="checkbox" id="confirmStatus" name="confirmStatus" value="2" checked/>
+                <%_Confirm startup status%>
+            </div>
+        </div>
+
+        <div class="control-group" >
+            <div class="controls" style="margin-left: 200px;">
+                <input type="checkbox" id="confirmShutdown" name="confirmShutdown" value="2" checked/>
+                <%_Shutdown after Confirming%>
+            </div>
+        </div>
+        <div class="control-group" style="margin-bottom: 2px;">
+            <div class="controls" style="margin-left: 200px;">
+                <%_Waiting time%><input type="text" id="after_start" name="after_start" style="width: 150px;" value="120"/><%_seconds%>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="controls" for="boot_rename">
+                <input type="checkbox" id="forceShutdown" name="forceShutdown" value="2" checked/>
+                <%_Force to shutdown if clients are during startup%>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="controls" for="boot_rename">
+                <input type="checkbox" id="diskShutdown" name="diskShutdown" value="2" checked/>
+                <%_Shutdown if there are clents which use this startup disk%>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label"><%_When%></label>
+            <div class="controls">
+                <label class="radio inline">
+                    <input type="radio" id="task_execute_now" name="execute" value="now"/><%_Now%>
+                </label>
+                
+                <label class="radio inline">
+                    <input type="radio" id="task_execute_schedule" name="execute" value="schedule"/><%_Schedule%>
+                </label>
+            </div>
+        </div>
+        
+        <div id="schedule-details" class="control-group">
+            <label class="control-label"><%_Schedule details%></label>
+            <div class="controls">
+                <label class="radio inline">
+                    <input type="radio" id="task_cycle_once" name="cycle" value="once"/><%_Once%>
+                </label>
+                
+                <label class="radio inline">
+                    <input type="radio" id="task_cycle_daily" name="cycle" value="daily"/><%_Daily%>
+                </label>
+                
+                <label class="radio inline">
+                    <input type="radio" id="task_cycle_weekly" name="cycle" value="weekly"/><%_Weekly%>
+                </label>
+                
+                <label class="radio inline">
+                    <input type="radio" id="task_cycle_monthly" name="cycle" value="monthly"/><%_Monthly%>
+                </label>
+            </div>
+            
+            <div class="clearfix"></div>
+            
+            <div class="controls">
+                <div id="once" class="cycle">
+                    <input type="text" id="task_date" class="datepicker input-width" name="date"/>
+                </div>
+                
+                <div id="weekly" class="cycle">
+                    <label class="checkbox inline">
+                        <input type="checkbox" value="1" id="weekdays_1" name="weekdays"/><%_Mon%>
+                    </label>
+                    <label class="checkbox inline">
+                        <input type="checkbox" value="2" id="weekdays_2" name="weekdays"/><%_Tue%>
+                    </label>
+                    <label class="checkbox inline">
+                        <input type="checkbox" value="3" id="weekdays_3" name="weekdays"/><%_Wed%>
+                    </label>
+                    <label class="checkbox inline">
+                        <input type="checkbox" value="4" id="weekdays_4" name="weekdays"/><%_Thu%>
+                    </label>
+                    <label class="checkbox inline">
+                        <input type="checkbox" value="5" id="weekdays_5" name="weekdays"/><%_Fri%>
+                    </label>
+                    <label class="checkbox inline">
+                        <input type="checkbox" value="6" id="weekdays_6" name="weekdays"/><%_Sat%>
+                    </label>
+                    <label class="checkbox inline">
+                        <input type="checkbox" value="7" id="weekdays_7" name="weekdays"/><%_Sun%>
+                    </label>
+                    
+                    <br /><br />
+                </div>
+                
+                <div id="monthly" class="cycle">
+                    <select name="month_days" class="span10" multiple="multiple">
+                      <%= model.dayOptions() %>
+                    </select>
+                </div>
+                
+                <select name="time" id="time" class="input-width">
+                  <%= model.timeOptions() %>
+                </select>
+
+            </div>
+        </div>
+        <div class="control-group">
+          <table class="table table-bordered table-striped table-condensed" id="menus-table">
+            <thead>
+              <tr>
+                <th><%_Select disk%></th>
+              </tr> 
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+
+    </div>
+     <input type="hidden" id="verbose" class="span10" name="verbose"/>
+    <div class="modal-footer">
+      <a href="#" class="btn" title="Close" data-dismiss="modal"><%_Cancel%></a>
+      <input type="submit" value="<%_Save%>" class="btn btn-primary">
+    </div>
+</form>

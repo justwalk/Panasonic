@@ -1,0 +1,28 @@
+<div class=" form-horizontal no-margins" style="width:700px;">
+  <div class="modal-header">
+    <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+    <h3><%_Boot Menu%></h3>
+  </div>
+
+  <div class="modal-body">
+
+    <div class="control-group" id="packmenus">
+    </div>
+
+    <form class="form-inline pack-form">
+      <p class="errors"> </p>
+    </form>
+    </form>
+        <div class="control-group">
+          <table class="table table-bordered table-striped table-condensed" id="packs-table">
+          </table>
+
+        </div>
+    
+      <p class="errors"></p>
+    
+  </div>
+      <div class="modal-footer">
+        <a href="#" class="btn" title="Close" data-dismiss="modal" class="btn btn-primary"><%_Ok%></a>
+      </div>
+</div>

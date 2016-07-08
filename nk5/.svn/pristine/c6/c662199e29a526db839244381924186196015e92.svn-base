@@ -1,0 +1,221 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'views/storages/storage',
+  'datatable',
+  'text!templates/storages/grid_view.html',
+  'text!templates/storages/list_view.html',
+  'views/base_disks/base_disks',
+  'collection/base_disks',
+  'views/storages/storage_form',
+  'views/storages/delete_storage',
+  'models/base_disk',
+  'views/storages/rollback'
+], function($, _, Backbone, StorageView, datatable, gridTemplate, listTemplate, BaseDisksView, BaseDisksCollection, StorageForm, DeleteStorage, Storage,RollBackForm){
+    var StoragesView = Backbone.View.extend({
+      template: _.template(underi18n.template(gridTemplate, msgFactory)),
+      events: {
+        'change #servers-select' : 'selectionChanged',  //服务器选择
+        'click .switch-view': 'switchView',            //转换视图
+        'click .select-all':  'selectAll',
+        'click .select-none': 'selectNone',
+        'click .select-invert': 'selectInvert',
+        'click .add-image': 'addImage',
+        'click .edit-image' : 'editImage',
+        'click .delete-image': 'deleteImage',
+        'click .differencing-image': 'differencingImage',
+        'click .rollBack-image': 'rollBackImage',
+        'click .select-Refresh': 'selectRefresh'
+      },
+
+      initialize: function(options) {
+        var self = this;
+        _.bindAll(this);
+        self.router = self.options.router;
+        self.list = false;
+        self.disksView = new BaseDisksView({collection:new BaseDisksCollection()});
+        self.collection.comparator = function(storage) {return storage.get('ID');};
+        self.collection.bind('remove destroy reset', function(collection){
+        
+          self.render();
+
+          if (!self.selected_id) {
+            self.setSelectedId(collection.at(0).id);
+          }
+        });
+        self.collection.bind('add', function(collection) {
+
+          self.collection.fetchWithGroupId(this.selected);
+          self.render();
+        });
+      },
+      
+      switchView: function(e) {
+        this.list = !this.list;
+        if ($('#switch-list').hasClass("show_item")) {
+          // list mode
+          $('#switch-grid').removeClass('hide_item').addClass('show_item');
+          $('#switch-list').removeClass('show_item').addClass('hide_item');
+        } else {
+          // grid mode
+          $('#switch-grid').removeClass('show_item').addClass('hide_item');
+          $('#switch-list').removeClass('hide_item').addClass('show_item');
+        }
+        this.renderBaseDisks(this.list);
+      },
+      
+      selectAll: function() {
+        App.vent.trigger('basedisks:change:selection:all');
+      },
+
+      selectNone: function() {
+        App.vent.trigger('basedisks:change:selection:none');
+      },
+
+      selectInvert: function() {
+        App.vent.trigger('basedisks:change:selection:invert');
+      },
+
+      selectionChanged: function(){
+
+        localStorage.setItem("selectCookieServer",$('#servers-select', this.el).val());
+        this.setSelectedId($('#servers-select', this.el).val());
+      },
+        
+      setSelectedId: function(selected_id) {
+
+        var self = this;
+        this.selected_id = selected_id ? selected_id : '';
+        $('#servers-select', this.el).val(this.selected_id);
+        this.router.navigate('storages'+ (this.selected_id ? ('/'+this.selected_id) : ''));
+        this.renderBaseDisks(this.list);
+      },
+      
+      addImage: function() {
+        var storageForm = new StorageForm({model: new Storage({IOServer:this.selected_id})});
+        storageForm.render().$el.appendTo($('#modal-container')).modal();
+        $('input:visible:first', storageForm.el).focus();
+        return false;
+      },
+          
+      editImage: function() {
+     
+        var diskView = this.disksView.getSelectedViews()[0];
+        console.log(diskView.model,"----------------");
+        var ja = underi18n.MessageFactory(locale);
+        if (diskView) {
+          var storageForm = new StorageForm({model:diskView.model});
+
+          storageForm.render().$el.appendTo($('#modal-container')).modal();
+          $('input:visible:first', storageForm.el).focus();
+        }else{
+          alert(ja('Please select a disk to edit.'));
+        }
+        return false;
+      },
+
+      //wangxin change 20160329
+
+      rollBackImage: function(){
+        var diskView = this.disksView.getSelectedViews()[0];
+        console.log(diskView.model.get('ID'));
+        var rollbackForm = new RollBackForm();
+         socket.emit('restore:read', {ID:diskView.model.get('ID'),IOServer:diskView.model.get('IOServer')}, function(err, data) {
+          
+          /*for(var i = 0;i<data.length;i++){
+            rollbackForm.model.set('Time',data[i].Time)
+          } 
+
+          console.log(rollbackForm.model);*/
+          console.log(data.length);
+            if(data.length == 0){
+              alert("there is no restore");
+            }
+            else{
+              rollbackForm.model.set('Time',data[0].Time);
+              rollbackForm.model.set('Desc',data[0].Desc);
+              rollbackForm.model.set('Version',data[0].Version);
+              rollbackForm.render().$el.appendTo($('#modal-container')).modal();
+            };
+            
+        });
+        
+      },
+      //wangxin change 20160329
+      
+       deleteImage: function() {
+        // var ja = underi18n.MessageFactory(locale);
+        // var self = this;
+        // if (this.disksView.getSelectedViews().length > 0) {
+        //   var r=confirm(ja('Are you sure you want to delete it?'));
+        //   if (r===true){
+        //       _(this.disksView.getSelectedViews()).forEach(function(diskView) {
+        //         diskView.model.destroy({
+        //           wait:true
+        //         });
+        //         self.collection.fetchWithGroupId(this.selected);
+        //     });
+        //   }
+        // }
+        // else{
+        //     alert(ja('Please select a disk to delete.'));
+        // }
+        // return false;
+
+         var diskView = this.disksView.getSelectedViews()[0];
+        var ja = underi18n.MessageFactory(locale);
+        if (diskView) {
+          var deleteStorage = new DeleteStorage({model:diskView.model});
+          deleteStorage.render().$el.appendTo($('#modal-container')).modal();
+          $('input:visible:first', deleteStorage.el).focus();
+        }else{
+          alert(ja('Please select a disk to edit.'));
+        }
+        return false;
+
+      },
+
+ selectRefresh:function(e){
+        Backbone.history.loadUrl();
+      } ,
+
+      differencingImage: function () {
+        var storageForm = new StorageForm({model: new Storage({IOServer:this.selected_id})});
+        storageForm.render().$el.appendTo($('#modal-container')).modal();
+        $('input:visible:eq(1)', storageForm.el).attr("checked", "checked");
+        return false;
+      },
+
+      render: function() {
+        var self = this;
+        options = '';
+        var cookieServerValue=localStorage.getItem('selectCookieServer');
+        if(cookieServerValue!=='' && cookieServerValue!=null){
+          self.selected_id=cookieServerValue;
+        }
+        self.collection.each(function(server) {
+      
+          var storageView = new StorageView({model: server, selected:(server.get('ID')==self.selected_id)});
+          options += storageView.render();
+        });
+        this.$el.html(self.template({serversOptions: options}));
+        self.renderBaseDisks(self.list);
+        return false;
+      },
+
+      renderBaseDisks: function(listBool) {
+        console.log(this.collection.get(this.selected_id));
+        if (this.collection.get(this.selected_id)) {
+          this.disksView.collection.server_id = this.selected_id;
+          this.disksView.list = listBool;
+          this.$('#main').html(this.disksView.el);
+          this.disksView.delegateEvents();
+          
+          this.disksView.collection.reset(this.collection.get(this.selected_id).get('disks'));
+        }
+      }
+
+    });
+    return StoragesView;
+});

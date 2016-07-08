@@ -1,0 +1,80 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'models/server',
+  'text!templates/servers/add_server.html',
+  'modelBinder'
+], function($, _, Backbone, Server, addServer, ModelBinder){
+
+  var AddServerView = Backbone.View.extend({
+    id:'add-server-modal',
+    className: 'modal fade',
+    template: _.template(underi18n.template(addServer, msgFactory)),
+    
+    events:{
+      'submit #add-server-form': 'saveModel',
+      'hidden' : 'remove', //the 'hidden' event is from bootstrap modal dismiss
+      'change #type':"changeType"
+    },
+    
+    initialize: function() {
+      var self = this;
+      this.model = new Server();
+      this._modelBinder = new Backbone.ModelBinder();
+    },
+    
+changeType:function(){
+  var self=this;
+  var type=$("#type",self.el).val();
+  if(type=="Secondary"){
+    $('#channelAddress').attr("disabled","true");
+    $('#channelPort').attr("disabled","true");
+    $('#base').attr("disabled","true");
+    $('#export').attr("disabled","true");
+    $('#storage').attr("disabled","true");
+
+
+  }else{
+    $('#channelAddress').removeAttr("disabled");
+    $('#channelPort').removeAttr("disabled");
+    $('#base').removeAttr("disabled");    
+    $('#export').removeAttr("disabled");
+    $('#storage').removeAttr("disabled");
+  }
+},
+
+
+
+
+    saveModel: function(e) {
+      //alert(1111111);
+      var self = this;
+      $('input[type=submit]', self.el).attr('alt',$('input[type=submit]',self.el).val());
+      $('input[type=submit]', self.el).attr('disabled', 'disabled').val(App.msgFactory('Please wait...'));
+      this._modelBinder.bind(this.model, this.el);
+      var baseValue=$('input#base',this.el).val();
+      var exportValue=$('input#export',this.el).val();
+      var storageValue=$('input#storage',this.el).val();
+       var channelAddress=$('input#channelAddress',this.el).val();
+      var channelPort=$('input#channelPort',this.el).val();
+      //alert(channelPort);
+      this.model.set({base:baseValue,export:exportValue,storage:storageValue,channelAddress:channelAddress,channelPort:channelPort});
+      this.model.save({}, {
+        success: function(model, response) {
+          self.$el.modal('hide');
+        }
+      });
+      return false;
+    },
+    
+    render: function() {
+      this.delegateEvents();
+      $(this.el).html(this.template({model:this.model}));
+      this._modelBinder.bind(this.model, this.el);
+
+      return this;
+    }
+  });
+  return AddServerView;
+});

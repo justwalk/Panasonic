@@ -1,0 +1,19 @@
+
+<div class="name pull-left" style="height:70px !important; width:105px">
+	<h4 style="margin-top:15px"><%- model.get('IP') %>
+	</h4>
+</div>
+	<div id="server-<%- model.get('ID') %>" class="select pull-right"></div>
+
+
+
+<div class="description pull-left hide">
+  <dl>
+    <dt><%_Type%></dt>
+    <dd><%- Type %></dd>
+
+    <dt><%_Port%></dt>
+    <dd><%- model.get("Port") %></dd>
+
+  </dl>
+</div>

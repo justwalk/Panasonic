@@ -1,0 +1,19 @@
+<div class="container">
+
+<div class="row">
+  <div class="span6">
+  	<div class="panel panel-info">
+  		<div class="panel-heading panel-title">ServerStatus</div>
+  		 <div class="panel-body" id="servers-container" >
+   
+  		 </div>
+  	</div>
+  </div>
+  <div class="span6">
+  
+  </div>
+
+
+</div>
+
+</div>

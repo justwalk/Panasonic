@@ -1,0 +1,716 @@
+#include "computer.h"
+
+#include <sstream>
+#include <fstream>
+#include <cstdlib>
+#include <regex>
+#include <Ws2tcpip.h>
+
+#include "vhd.h"
+
+#include "error.h"
+#include "login.h"
+#include "output.h"
+
+#include "commonJSON.h"
+
+#include "menu.h"
+
+#include "bitmap.h"
+
+std::string getIps(){
+	std::ostringstream oss;
+
+	struct hostent *hst;
+
+	char szName[255];
+	DWORD ulLen;
+	GetComputerName(szName,&ulLen);
+	hst = gethostbyname(szName);
+
+	if(hst == NULL) {
+		log("Failed to get ip addresses");
+		return "";
+	}
+
+	struct in_addr addr;
+	ULONG i=0;
+	while (hst->h_addr_list[i] != 0) {
+		addr.s_addr = *(u_long *) hst->h_addr_list[i++];
+		oss << ' ' << inet_ntoa(addr) << ":3000";
+	}
+
+	return oss.str();
+}
+
+const EnumMap<ACNT_FLAG> ACNT_FLAG_MAP;
+const EnumMap<BOOT_TYPE> BOOT_TYPE_MAP;
+
+CmdCommandComputerResource::CmdCommandComputerResource(){
+	prefix = "cmd";
+}
+
+void CmdCommandComputerResource::run(const std::map<std::string, std::string>& params) const{
+	if(params.find("COM") == params.end())
+		missingParameter("COM");
+
+	ULONG id;
+
+	std::istringstream(params.find("id")->second) >> id;
+
+	if(!(SendCmdToComputer(id, params.find("COM")->second.c_str())))
+		return SDKError("SendCmdToComputer", EBLIB_UNKNOWN);
+
+
+	printDone();
+}
+
+MsgCommandComputerResource::MsgCommandComputerResource(){
+	prefix = "msg";
+}
+
+void MsgCommandComputerResource::run(const std::map<std::string, std::string>& params) const{
+	if(params.find("MSG") == params.end())
+		missingParameter("MSG");
+
+	ULONG id;
+
+	std::istringstream(params.find("id")->second) >> id;
+
+	if(!(SendMsgToComputer(id, params.find("MSG")->second.c_str())))
+		return SDKError("SendMsgToComputer", EBLIB_UNKNOWN);
+
+
+	printDone();
+}
+
+StartClientToolsComputerResource::StartClientToolsComputerResource(){
+	prefix = "tools";
+}
+
+void StartClientToolsComputerResource::run(const std::map<std::string, std::string>& params) const{
+	std::ostringstream cmd;
+
+	cmd <<"%NKV_TOOLS%\\NKVClientToolsConsole.exe " << GetInt(id) << " " << getIps();
+
+	if(!(SendCmdToComputer(GetInt(id), cmd.str().c_str()))) {
+		return SDKError("SendCmdToComputer", EBLIB_UNKNOWN);
+	}
+
+	if(!(SendCmdToComputer(GetInt(id), "%NKV_TOOLS%\\NKVClientToolsAppMonitor.exe"))) {
+		return SDKError("SendCmdToComputer", EBLIB_UNKNOWN);
+	}
+
+	printDone();
+}
+
+#define WOL_UDP_PORT 9
+#define WOL_HEADER_LENGTH 6
+#define WOL_MAC_LENGTH 6
+#define WOL_MAC_REPEAT_COUNT 16
+#define WOL_PASSWORD_LENGTH 6
+#define WOL_PACKET_LENGTH ( WOL_HEADER_LENGTH + WOL_MAC_LENGTH * WOL_MAC_REPEAT_COUNT )
+
+bool customWakeOnLanComputer(char *mac, in_addr ip, in_addr netmask)
+{
+	// mac c0:3f:d5:65:52:35
+	uint8_t i;
+	uint8_t wolPacketData[WOL_PACKET_LENGTH];
+	uint8_t *p;
+
+	memset(wolPacketData, 0xff, WOL_HEADER_LENGTH);
+	p = wolPacketData + WOL_HEADER_LENGTH;
+
+	for (i = 0; i < WOL_MAC_LENGTH; ++i) {
+		int hexCode;
+		sscanf(mac + 3 * i, "%2x", &hexCode);
+		*p = static_cast<uint8_t>(hexCode);
+		++p;
+	}
+
+	for (i = 1; i < WOL_MAC_REPEAT_COUNT; ++i)
+		memcpy(wolPacketData + WOL_HEADER_LENGTH + WOL_MAC_LENGTH * i, wolPacketData + WOL_HEADER_LENGTH, WOL_MAC_LENGTH);
+
+	int sockFd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sockFd < 0) {
+		return false;
+	}
+
+	int broadcast = 1;
+	if (setsockopt(sockFd, SOL_SOCKET, SO_BROADCAST, (char *)&broadcast, sizeof(broadcast)) == -1) {
+		closesocket(sockFd);
+		return false;
+	}
+
+	std::vector<uint32_t> destinationAddresses;
+	destinationAddresses.push_back(INADDR_BROADCAST);
+	destinationAddresses.push_back(ip.s_addr | (~netmask.s_addr));
+
+	{
+		std::string subject;
+		{
+			std::stringstream subjectBuffer;
+			{
+				std::ifstream inputStream("bc-subnet.ini");
+				if (inputStream.is_open()) {
+					subjectBuffer << inputStream.rdbuf();
+				}
+				else {
+					std::ifstream inputStream2("c:\\nkv\\bc-subnet.ini");
+					if (inputStream2.is_open())
+						subjectBuffer << inputStream2.rdbuf();
+				}
+			}
+			subject = subjectBuffer.str();
+		}
+
+		std::smatch matches;
+		//std::regex subjectRegex(R"(((25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)))");
+		//std::regex subjectRegex("(((25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.(25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.(25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.(25[0-5]|2[0-4]\\d|[01]?\\d\\d?)))");
+		std::regex subjectRegex("(((25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)\.(25[0-5]|2[0-4]\d|[01]?\d\d?)))");
+
+		while (std::regex_search(subject, matches, subjectRegex)) {
+			struct in_addr buf;
+			inet_pton(AF_INET, matches.begin()->str().c_str(), &buf);
+			if (std::find(destinationAddresses.cbegin(), destinationAddresses.cend(), buf.s_addr) == destinationAddresses.cend())
+				destinationAddresses.push_back(buf.s_addr);
+			subject = matches.suffix().str();
+		}
+	}
+
+	bool sent = false;
+
+	for (int i = 0; i < destinationAddresses.size(); ++i) {
+		sockaddr_in destination;
+		destination.sin_family = AF_INET;
+		destination.sin_addr.s_addr = destinationAddresses[i];
+		destination.sin_port = htons(WOL_UDP_PORT);
+
+		if (sendto(sockFd, reinterpret_cast<char const *>(wolPacketData), WOL_PACKET_LENGTH, 0, reinterpret_cast<sockaddr const *>(&destination), sizeof(destination)) != -1) {
+			sent = true;
+		}
+	}
+
+	closesocket(sockFd);
+	return sent;
+}
+
+void CommandComputerResource::run(const std::map<std::string, std::string>& params) const{
+	if(params.find("COMID") == params.end())
+		missingParameter("COMID");
+
+	ULONG id;
+
+	std::istringstream(params.find("id")->second) >> id;
+
+	ULONG bootMenuValue;
+	ULONG bootDeviceValue;
+
+	ULONG error;
+	ULONG ulCommandCode;
+	if(strcmp(params.find("COMID")->second.c_str(), "start") == 0) {
+		OBJ_COMP info;
+		if(!(GetSpecifiedComputer(id, &info, &error)))
+			return SDKError("GetSpecifiedComputer", error);
+		if(!(customWakeOnLanComputer(info.pchMac, info.nIP4, info.nNetMask4)))
+			return SDKError("WakeOnLanComputer", EBLIB_UNKNOWN);
+	} else if(strcmp(params.find("COMID")->second.c_str(), "stop") == 0) {
+		if(!(ShutdownComputer(id)))
+			return SDKError("ShutdownComputer", EBLIB_UNKNOWN);
+	} else if(strcmp(params.find("COMID")->second.c_str(), "poweroff") == 0){
+		if(IsPcAlive(id, 1)){
+			if(!(ShutdownComputer(id)))
+				return SDKError("ShutdownComputer", EBLIB_UNKNOWN);
+		}
+	} else if(strcmp(params.find("COMID")->second.c_str(), "start_device") == 0){
+		std::istringstream(params.find("bootMenuValue")->second )>> bootMenuValue;
+		std::istringstream(params.find("bootDeviceValue")->second )>> bootDeviceValue;
+
+		BOOL bEnable = TRUE;
+		if(bootMenuValue==1){
+			bEnable=false;
+		}else if(bootMenuValue==2){
+			bEnable = TRUE;
+		}
+		// bootMenu
+		if(bootMenuValue != 3){
+			EnableBootMenuForComputer(id,bEnable);
+		}
+		// device  ACNT_FLAG_BOOT_MASK 11
+		if(bootDeviceValue != 11){
+			SetStartBootDevice(id,bootDeviceValue);
+		}
+
+	}else if(strcmp(params.find("COMID")->second.c_str(), "restart") == 0) {
+		if(!(RebootComputer(id)))
+			return SDKError("RebootComputer", EBLIB_UNKNOWN);
+	} else if(strcmp(params.find("COMID")->second.c_str(), "logout") == 0) {
+		if(!(LogoutComputer(id)))
+			return SDKError("LogoutComputer", EBLIB_UNKNOWN);
+	} else {
+		invalidParameter("COMID");
+	}
+
+	printDone();
+}
+
+CommandComputerResource::CommandComputerResource(){
+	prefix = "command";
+	children.push_back(new CmdCommandComputerResource());
+	children.push_back(new MsgCommandComputerResource());
+	children.push_back(new PoweronCommand());
+}
+
+EndUpdateComputerResource::EndUpdateComputerResource(){
+	prefix = "end_update";
+}
+void EndUpdateComputerResource::run(const std::map<std::string, std::string>& params) const{
+	/*if(params.find("COM") == params.end())
+		missingParameter("COM");
+
+	ULONG id;
+
+	std::istringstream(params.find("id")->second) >> id;
+
+	if(!(SendCmdToComputer(id, params.find("COM")->second.c_str())))
+		return SDKError("SendCmdToComputer", EBLIB_UNKNOWN);
+*/
+	printDone();
+}
+StartUpdateComputerResource::StartUpdateComputerResource(){
+	prefix = "start_update";
+
+}
+void StartUpdateComputerResource::run(const std::map<std::string, std::string>& params) const{
+
+
+	printDone();
+}
+UUIDComputerResource::UUIDComputerResource(){
+	param = "id";
+	validator = &numberRegex;
+
+	children.push_back(new StartClientToolsComputerResource());
+	children.push_back(new CommandComputerResource());
+	children.push_back(new UpdateComputerResource());
+	children.push_back(new DeleteComputerResource());
+	children.push_back(new MenuResource());
+	children.push_back(new EndUpdateComputerResource());
+	children.push_back(new StartUpdateComputerResource());
+}
+
+void UUIDComputerResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG id;
+
+	std::istringstream(params.find("id")->second) >> id;
+
+	JSON::Value* data = ExtendedComputerToJSON(id);
+	if(data == NULL) return;
+
+	printHeaders();
+	data->render();
+
+	delete data;
+}
+
+DeleteComputerResource::DeleteComputerResource(){
+	prefix = "delete";
+}
+
+void DeleteComputerResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG id;
+
+	std::istringstream(params.find("id")->second) >> id;
+
+	ULONG error;
+	if(!(DelComputer(id, &error)))
+		return SDKError("DelComputer", error);
+
+	printDone();
+}
+
+CreateComputerResource::CreateComputerResource(){
+	prefix = "create";
+}
+
+void CreateComputerResource::run(const std::map<std::string, std::string>& params) const{
+	ADD_COMP_OBJ info;
+
+	/* Same order as documentation */
+
+	CopyInteger(nGrpID, "Group");
+	CopyInteger(nMTimeO, "BootMenuTimeout");
+	CopyInteger(nTBlk, "MaxDataTransfer");
+	CopyInteger(nMemCh, "MemoryCache");
+	CopyInteger(nDskCh, "DiskCacheSyncSpeed");
+	CopyInteger(nCpTimeO, "ConcurrentPackTimeout");
+	CopyInteger(nRLmt, "ReadLimit");
+	CopyInteger(nWLmt, "WriteLimit");
+	CopyInteger(nScrX, "ScreenX");
+	CopyInteger(nScrY, "ScreenY");
+
+	CopyIP(nIP4, "IP");
+	CopyIP(nNetMask4, "Netmask");
+	CopyIP(nGateWay4, "Gateway");
+
+	CopyString(pchName, "Name");
+	CopyStringValidated(pchMac, "HardwareAddress", macRegex);
+	CopyString(pchBootF, "BootFile");
+
+	CHECK_PARAM("Boot");
+	if(!BOOT_TYPE_MAP.exists(params.find("Boot")->second))
+			invalidParameter("Boot");
+
+	ULONG type = BOOT_TYPE_MAP.toBit(params.find("Boot")->second);
+	info.nFlag = type;
+
+	EnumMap<ACNT_FLAG>::iterator it;
+	for(it=ACNT_FLAG_MAP.begin();it!=ACNT_FLAG_MAP.end();it++)
+	{
+		CHECK_PARAM(it->first.c_str());
+		if(params.find(it->first)->second == "true")
+			info.nFlag |= it->second;
+		else if(params.find(it->first)->second == "false")
+			;
+		else
+			invalidParameter(it->first.c_str());
+	}
+
+	ULONG nid;
+
+	ULONG error;
+	if(!(AddComputer(&info, &nid, &error)))
+		return SDKError("AddComputer", error);
+
+	//byt add start 20160325
+	OBJ_COMP info2;
+	if(!(GetSpecifiedComputer(nid, &info2, &error)))
+		return SDKError("GetSpecifiedComputer", error);
+
+	if(info2.nGrpID != info.nGrpID)
+		if(!(MoveComputerToSpecifyGroup(nid, info.nGrpID, &error)))
+			return SDKError("MoveComputerToSpecifyGroup", error);
+	//byt add end 20160325
+
+	printID(nid);
+}
+
+ComputerResource::ComputerResource(){
+	prefix = "computers";
+	children.push_back(new CreateComputerResource());
+	children.push_back(new UUIDComputerResource());
+}
+
+void ComputerResource::run(const std::map<std::string, std::string>& params) const{
+	JSON::Value* data = ComputerEnumToJSON();
+
+	printHeaders();
+	data->render();
+
+	delete data;
+}
+
+UpdateComputerResource::UpdateComputerResource(){
+	prefix = "update";
+}
+
+void UpdateComputerResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG id;
+
+	CHECK_PARAM("DefaultMenu");
+
+	std::istringstream(params.find("id")->second) >> id;
+
+	EDIT_COMP_OBJ info;
+
+	/* Same order as documentation */
+
+	CopyInteger(nMTimeO, "BootMenuTimeout");
+	CopyInteger(nTBlk, "MaxDataTransfer");
+	CopyInteger(nMemCh, "MemoryCache");
+	CopyInteger(nDskCh, "DiskCacheSyncSpeed");
+	CopyInteger(nCpTimeO, "ConcurrentPackTimeout");
+	CopyInteger(nRLmt, "ReadLimit");
+	CopyInteger(nWLmt, "WriteLimit");
+	CopyInteger(nScrX, "ScreenX");
+	CopyInteger(nScrY, "ScreenY");
+
+	CopyIP(nIP4, "IP");
+	CopyIP(nNetMask4, "Netmask");
+	CopyIP(nGateWay4, "Gateway");
+
+	CopyString(pchName, "Name");
+	CopyStringValidated(pchMac, "HardwareAddress", macRegex);
+	CopyString(pchBootF, "BootFile");
+
+	CHECK_PARAM("Boot");
+	if(!BOOT_TYPE_MAP.exists(params.find("Boot")->second))
+			invalidParameter("Boot");
+
+	ULONG type = BOOT_TYPE_MAP.toBit(params.find("Boot")->second);
+	info.nFlag = type;
+
+	EnumMap<ACNT_FLAG>::iterator it;
+	for(it=ACNT_FLAG_MAP.begin();it!=ACNT_FLAG_MAP.end();it++)
+	{
+		CHECK_PARAM(it->first.c_str());
+		if(params.find(it->first)->second == "true")
+			info.nFlag |= it->second;
+		else if(params.find(it->first)->second == "false")
+			;
+		else
+			invalidParameter(it->first.c_str());
+	}
+
+	ULONG error;
+	if(!(EditComputer(&info, id, &error)))
+		return SDKError("EditComputer", error);
+
+	ULONG group = GetInt(Group);
+
+	OBJ_COMP info2;
+	if(!(GetSpecifiedComputer(id, &info2, &error)))
+		return SDKError("GetSpecifiedComputer", error);
+
+	if(info2.nGrpID != group)
+		if(!(MoveComputerToSpecifyGroup(id, group, &error)))
+			return SDKError("MoveComputerToSpecifyGroup", error);
+
+	ULONG defaultMenu, existingDefaultMenu;
+
+	if(!GetDfltMenuIdFromComputer(id, &existingDefaultMenu, &error))
+		return SDKError("GetDfltMenuIdFromComputer", error);
+
+	defaultMenu = GetInt(DefaultMenu);
+
+	if(defaultMenu != existingDefaultMenu)
+		if(!SetDfltMenuForComputer(defaultMenu))
+			return SDKError("SetDfltMenuForComputer", error);
+
+	printDone();
+}
+
+BOOL isComputerinUpdateMode(ULONG id) {
+	ENUM_HANDLE mh = GetFirstComputerMenu(id);
+
+	MENU_OBJ menu;
+
+	while((GetNextComputerMenu(mh, &menu))){
+		ENUM_HANDLE ph = GetFirstPackFromSpecMenu(menu.nID);
+
+		PACK_OBJ pack;
+
+		while((GetNextPackFromSpecMenu(ph, &pack))){
+			if(pack.nMode == PACK_MODE_UPDATE_ALIVE || pack.nMode == PACK_MODE_UPDATE_2) {
+				FreeEnumObject(mh);
+				FreeEnumObject(ph);
+				return true;
+			}
+		}
+
+		FreeEnumObject(ph);
+	}
+
+	FreeEnumObject(mh);
+
+	return false;
+}
+
+std::string computerUpdateMode(ULONG defaultMenu) {
+	
+		ENUM_HANDLE ph = GetFirstPackFromSpecMenu(defaultMenu);
+
+		PACK_OBJ pack;
+		std::string strmode="";
+		if(GetNextPackFromSpecMenu(ph, &pack)){
+			if(pack.nMode == PACK_MODE_UPDATE_2) {
+				
+				
+				strmode="Normal Update";
+			}else if(pack.nMode == PACK_MODE_UPDATE_ALIVE){
+				
+				
+				strmode="Active Update";
+			}else if(pack.nMode == PACK_MODE_RW){
+				strmode= "Continue Mode";
+			}else{
+				strmode= "Normal Mode";
+			}
+		}
+
+		FreeEnumObject(ph);
+	
+
+	return strmode;
+
+}
+//xiongpanan add start 20160324
+std::string computerDefaultMenu(ULONG defaultMenu, ULONG id) {
+	
+	  ENUM_HANDLE eCompMenu = GetFirstComputerMenu(id);
+		std::string strmenu="None";
+     if (NULL != eCompMenu)
+
+     {
+
+         eblib_struct::MENU_OBJ menuObj;
+
+         while (GetNextComputerMenu(eCompMenu, &menuObj))
+
+         {
+         		 if(menuObj.nID==defaultMenu){
+         			strmenu=menuObj.pchName;
+         		}
+
+
+         }
+
+ 
+
+         FreeEnumObject(eCompMenu);
+
+     }
+
+
+	return strmenu;
+
+}
+//xiongpanan add end 20160324
+
+
+
+
+
+
+
+JSON::Object* ComputerToJSONPrivate(const OBJ_COMP& info){
+	JSON::Object* data = new JSON::Object();
+
+	data->add(new JSON::String("Id"), new JSON::Integer(info.nID));
+	data->add(new JSON::String("Group"), new JSON::Integer(info.nGrpID));
+	/* TODO flags */
+	data->add(new JSON::String("BootMenuTimeout"), new JSON::Integer(info.nMTimeO));
+	data->add(new JSON::String("DefaultMenu"), new JSON::Integer(info.nDfltMenu));
+	data->add(new JSON::String("MaxDataTransfer"), new JSON::Integer(info.nTBlk));
+	data->add(new JSON::String("MemoryCache"), new JSON::Integer(info.nMemCh));
+	data->add(new JSON::String("DiskCacheSyncSpeed"), new JSON::Integer(info.nDskCh));
+	data->add(new JSON::String("ReadLimit"), new JSON::Integer(info.nRLmt));
+	data->add(new JSON::String("WriteLimit"), new JSON::Integer(info.nWLmt));
+	data->add(new JSON::String("ScreenX"), new JSON::Integer(info.nScrX));
+	data->add(new JSON::String("ScreenY"), new JSON::Integer(info.nScrY));
+
+	data->add(new JSON::String("IP"), new JSON::IP(info.nIP4));
+	data->add(new JSON::String("Netmask"), new JSON::IP(info.nNetMask4));
+	data->add(new JSON::String("Gateway"), new JSON::IP(info.nGateWay4));
+
+	data->add(new JSON::String("Name"), new JSON::String(info.pchName));
+	data->add(new JSON::String("HardwareAddress"), new JSON::String(info.pchMac));
+	data->add(new JSON::String("BootFile"), new JSON::String(info.pchBootF));
+
+	data->add(new JSON::String("Boot"), new JSON::String(BOOT_TYPE_MAP.toString(info.nFlag & BOOT_TYPE_MASK)));
+
+	EnumMap<ACNT_FLAG>::iterator it;
+	for(it = ACNT_FLAG_MAP.begin(); it != ACNT_FLAG_MAP.end(); it++)
+		data->add(new JSON::String(it->first), new JSON::Boolean(it->second & info.nFlag));
+
+	data->add(new JSON::String("ConcurrentPackTimeout"), new JSON::Integer(info.nCpTimeO));
+	data->add(new JSON::String("UpdateMode"), new JSON::Boolean(isComputerinUpdateMode(info.nID)));
+	
+
+	ULONG defaultMenu, error;
+	if(!GetDfltMenuIdFromComputer(info.nID, &defaultMenu, &error)) {
+		SDKError("GetDfltMenuIdFromComputer", error);
+
+		return NULL;
+	}
+
+	data->add(new JSON::String("DefaultMenu"), new JSON::Integer(defaultMenu));
+	data->add(new JSON::String("UpdateDisk"), new JSON::String(computerUpdateMode(defaultMenu)));
+	//xiongpanan add start 20160324
+	data->add(new JSON::String("UpdateDefault"), new JSON::String(computerDefaultMenu(info.nDfltMenu,info.nID)));
+	//xiongpanan add end 20160324
+	return data;
+}
+
+
+JSON::Value* ComputerToJSON(const OBJ_COMP& info){
+	return ComputerToJSONPrivate(info);
+}
+
+JSON::Array* ComputerEnumToJSON(){
+	JSON::Array* array = new JSON::Array();
+
+	ENUM_HANDLE EnumObj = GetFirstComputerGroup();
+
+	GRP_OBJ info;
+
+	while((GetNextComputerGroup(EnumObj, &info))){
+		ENUM_HANDLE EnumObj = GetFirstComputer(info.nID);
+
+		{
+			OBJ_COMP info;
+
+			while((GetNextComputer(EnumObj, &info))){
+				JSON::Object* data = ComputerToJSONPrivate(info);
+
+				if(data == NULL)
+					return NULL;
+
+				array->add(data);
+			}
+		}
+	}
+
+	return array;
+}
+
+JSON::Value* ExtendedComputerToJSON(ULONG id){
+	OBJ_COMP* info = (OBJ_COMP*)malloc(sizeof(OBJ_COMP) + 100);
+
+	ULONG error;
+	if(!(GetSpecifiedComputer(id, info, &error))) {
+		SDKError("GetSpecifiedComputer", error);
+		free(info);
+		return NULL;
+	}
+
+	JSON::Object* data = ComputerToJSONPrivate(*info);
+
+	free(info);
+
+	bool isalive = IsPcAlive(id, 1);
+
+	data->add(new JSON::String("Online"), new JSON::Boolean(isalive));
+
+	return data;
+}
+
+//wangxin add start 20160428
+
+PoweronCommand::PoweronCommand(){
+	prefix = "poweron";
+}
+
+void PoweronCommand::run(const std::map<std::string, std::string>& params) const{
+
+    ULONG id = GetInt(id);
+
+    ULONG timeout = GetInt(timeout);
+	
+	ULONG error;
+
+	OBJ_COMP info;
+
+	if(!(GetSpecifiedComputer(id, &info,&error))){
+		return SDKError("GetSpecifiedComputer", error);
+	}
+	if(!(WakeOnLanComputer(info.pchMac,&error))){
+		return SDKError("WakeOnLanComputer", error);
+	}
+	if(!(IsPcAlive(id, timeout))){
+		return SDKError("IsPcAlive", error);
+	}
+
+	printDone();
+}
+//wangxin add end 20160428

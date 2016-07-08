@@ -1,0 +1,3 @@
+<td class="select"><%- model.get('IP') %></td>
+<td class="select"><%- model.get('Port')%></td>
+<td class="select"><%- Type %></td>

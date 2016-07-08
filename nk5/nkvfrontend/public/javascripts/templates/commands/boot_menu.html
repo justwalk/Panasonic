@@ -1,0 +1,97 @@
+<div class=" form-horizontal no-margins">
+  <div class="modal-header">
+    <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+    <h3><%_Boot Menu%></h3>
+   
+  </div>
+
+  <div class="modal-body">
+    <!-- Popups -->
+    <div id="disk-popup" class="hide">
+      <div class="popup-backdrop"></div>
+      <div class="popup">
+        <form class="form-inline disk-form">
+          <p class="errors"></p>
+          <div class="control-group">
+            <table class="table table-bordered table-condensed" id="base-disk-table">
+              <thead>
+                <tr><th><%_Select image%></th></tr>
+              </thead>
+
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="btn pull-left close-popup" ><%_Cancel%></button>
+          <button type="submit" class="btn btn-primary pull-right"><%_Add%></button>
+        </form>
+      </div>
+    </div>
+
+
+    <div id="disk-pack-popup" class=" hide">
+      <div class="popup-backdrop"></div>
+      <div class="popup">        
+        <form class="form-inline pack-form">
+          <p class="errors"> </p>
+          <div class="control-group">
+            <label class="radio pull-left">
+              <input type="radio" name="type" value="Simple"/>
+              <%_Simple Disk%>
+            </label>
+          </br>
+
+            <label class="radio pull-left">
+              <input type="radio" name="type" value="Balance"/>
+              <%_Balance Disk%>
+            </label>
+            </br>
+
+            <label class="radio pull-left">
+              <input type="radio" name="type" value="Concurrent"/>
+              <%_Concurrent Disk%>
+            </label>
+            </br>
+          </div>
+
+          <button type="button" class="btn pull-left close-popup" ><%_Cancel%></button>
+          <button type="submit" class="btn btn-primary pull-right"><%_Add%></button>
+        </form>
+      </div>      
+    </div>
+    <!-- END Popups -->
+      <fieldset>
+        <legend><%_Menu%></legend>
+        <div class="control-group" id="menus">
+        </div>
+
+        <div class="control-group">
+          <table class="table table-bordered table-striped table-condensed" id="packs-table">
+            <thead>
+              <tr>
+                <th><%_Disk Pack%></th>
+                <th><%_Name%></th>
+                <th><%_IO-Server%></th>
+                <th><%_Action%></th>
+              </tr> 
+            </thead>
+            <tfoot>
+              <tr>
+                <td><span id="add-disk-pack">+ <%_Add disk pack%></span></td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+              </tr>              
+            </tfoot>
+          </table>
+
+        </div>
+        
+        
+      </fieldset>
+
+      <div class="modal-footer">
+        <a href="#" class="btn" title="Close" data-dismiss="modal" class="btn btn-primary"><%_Ok%></a>
+      </div>
+  </div>
+</div>

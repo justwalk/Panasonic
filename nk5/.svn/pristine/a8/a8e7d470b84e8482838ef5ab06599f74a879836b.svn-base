@@ -1,0 +1,21 @@
+var Settings = require('../models/settings').Settings;
+
+module.exports = function(socket) {
+  socket.on('settings:read', function(req, res) {
+    require('../../config/config').checkPass('admin', req, res, function() {
+      Settings.get(function(err, data) {
+        res(err, data);
+      });
+    });
+  });
+
+  socket.on('settings:update', function(req, res) {
+    require('../../config/config').checkPass('admin', req, res, function() {
+      console.log('updating settings');
+      Settings.update(req, function(err, data) {
+        res(err, data);
+      });
+    });
+  });
+
+};

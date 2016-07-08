@@ -1,0 +1,17 @@
+<ul class="unstyled clearfix">
+	<li><%= model.get('executeTime') %></li>
+	<% if(model.get('runstatus') == 'success'){%>
+		<li><img src="/images/running.png">OK</li>
+	<%}else{%>
+		<li><img src="/images/failed.png">NG</li>
+	<%}%>
+	<li><%= model.get('action') %></li>
+	<%if(model.get('status') !== 'done'){%>
+		<li>
+			<i><%= model.get('status').error %></i>
+			<i><%= model.get('status').function %></i>
+			<i><%= model.get('status').code %></i>
+		</li>
+	<%}%>
+
+</ul>

@@ -1,0 +1,23 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/home/clientlist.html'
+], function($, _, Backbone, clientlisTemplate){
+    clientListView = Backbone.View.extend({
+
+      initialize: function(){
+      	var self = this;
+      	self.template = _.template(underi18n.template(clientlisTemplate, App.msgFactory));
+      },
+
+      render: function(){
+      	var renderContent = this.template({
+      		model:this.model
+      	});
+      	this.$el.html(renderContent);
+      	return this;      }
+    });
+
+  return clientListView;
+});

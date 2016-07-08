@@ -1,0 +1,19 @@
+Permit=0
+MailSend=0
+MailTo=0
+MailFrom=0
+SMTPServer=192.168.1.223
+Port=3000
+UserName=admin
+Password=123456
+SaveUpdate=NK_Update On
+AutoUpdate=NK_Auto Update On
+WaittingTime=120s
+StartUpCheckTime=300s
+
+
+ComPath=C:\nkv
+VDISKPahtFrom=c:\nkv\
+VDISKPahtTo=
+
+ClientExePath=E:\svn\松下NetKaleidoV\DOC\0_展开资料\NKExecCmd.exe

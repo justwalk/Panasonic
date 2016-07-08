@@ -1,0 +1,122 @@
+<div class="modal-dialog modal-sm">
+<div class="form-horizontal no-margins " >
+  <div class="modal-header">
+    <button class="close">&times;</button>
+    <h3><%_VariousSetting%></h3>
+  </div>
+    <form action="">
+       <div class="modal-body max-height" >
+        
+		<div id="myTabContent" class="tab-content">
+
+	        <legend ><%_NormalUpdate%></legend>
+	        <div class="control-group">
+	        	<label for="Permit" class="my-label"><%_NormalUpdate%></label>
+	            <div class="my-controls">
+	                <label class="radio inline">
+	                    <input type="radio" id="Permit" name="Permit" value=""/><%_Permit%>
+	                </label>
+	                
+	                <label class="radio inline">
+	                    <input type="radio" id="Not_Permit" name="Permit" value=""/><%_Not Permit%>
+	                </label>
+	            </div>
+	        </div> 
+
+
+	        <legend ><%_If send a mail When action error happen%></legend>
+	        <div class="control-group">
+	        	<label for="MailSend" class="my-label"><%_Send Mail%></label>
+	            <div class="my-controls">
+	                <label class="radio inline">
+	                    <input type="radio" id="MailSend_Yes" name="MailSend" value=""/><%_Yes%>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	                </label>
+	                
+	                <label class="radio inline">
+	                    <input type="radio" id="MailSend_No" name="MailSend" value=""/><%_No%>
+	                </label>
+	            </div>
+	        </div> 
+	        
+	        <div class="control-group">
+	          <label for="MailTo" class="my-label"><%_Mail To%></label>
+	          <div class="my-controls"><input type="" name='MailTo'  /></div>
+	        </div>
+	        <div class="control-group">
+	          <label for="MailFrom" class="my-label"><%_Mail From%></label>
+	          <div class="my-controls"><input type="" name='MailFrom'  /></div>
+	        </div>
+	        <div class="control-group">
+	          <label for="SMTPServer" class="my-label"><%_SMTP Server%></label>
+	          <div class="my-controls"><input type="" name='SMTPServer' /></div>
+	        </div>
+	        <div class="control-group">
+	          <label for="Port" class="my-label"><%_Port%></label>
+	          <div class="my-controls"><input type="" name='Port'  /></div>
+	        </div>
+	        <div class="control-group">
+	          <label for="UserName" class="my-label"><%_User Name%></label>
+	          <div class="my-controls"><input type="" name='UserName'  /></div>
+	        </div>
+	        <div class="control-group">
+	          <label for="Password" class="my-label"><%_Passwrod%></label>
+	          <div class="my-controls"><input type="password" name='Password'  /></div>
+	        </div>
+
+
+	        <legend><%_For Update%></legend>
+	        
+	        <div class="control-group">
+	          <label for="SaveUpdate" class="my-label"><%_Memo for SaveUpdate%></label>
+	          <div class="my-controls"><input type="" name='SaveUpdate'  /></div>
+	        </div>
+	        <div class="control-group">
+	          <label for="AutoUpdate" class="my-label"><%_Memo for AutoUpdate%></label>
+	          <div class="my-controls"><input type="" name='AutoUpdate'  /></div>
+	        </div>
+	        
+	        <legend><%_Waitting Time%></legend>
+	        
+	        <div class="control-group">
+	          <label for="WaittingTime" class="my-label"><%_Waitting Time%></label>
+	          <div class="my-controls"><input type="" name='WaittingTime'  /></div>
+	        </div>
+	        <legend><%_Check Time For Client Startup%></legend>
+	        <div class="control-group">
+	          <label for="StartUpCheckTime" class="my-label"><%_Check Time For Client Startup%></label>
+	          <div class="my-controls"><input type="" name='StartUpCheckTime'  /></div>
+	        </div> 	       
+
+	      </div>
+		</div>
+          
+      <div class="modal-footer">
+        <a href="#" class="btn" title="Close" data-dismiss="modal"><%_Cancel%></a>
+        <input type="submit" value="<%_Save%>" class="submit btn btn-primary" class="span12">
+      </div>
+  </form>
+</div>
+</div>
+<style type="text/css">
+  .modal-lg{
+    width: 600px;
+  }
+  .max-height{
+    max-height: 350px;
+  }
+ .control-group{
+ }
+ .my-label{
+  float: left;
+  text-align: right;
+  margin-bottom: 0px;
+  margin-top: 5px;
+  width: 44%;
+ }
+ .my-controls{
+   float: left;
+   padding-left: 20px;
+   margin-left: 20px;
+
+ }
+</style>

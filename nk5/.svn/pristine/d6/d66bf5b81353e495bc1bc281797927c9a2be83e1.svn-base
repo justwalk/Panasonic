@@ -1,0 +1,221 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/schedules/task.html',
+  'text!templates/schedules/copy_modal.html',
+  'views/servers/server',
+  'views/storages/storages',
+  'views/groups/groups',
+  'collection/servers',
+  'collection/base_disks',  
+  'collection/groups',
+  'models/task',
+  'modelBinder'
+], function($, _, Backbone, tableItem,copyModal, ServersView,StoragesView,GroupsView,ServersCollection,StoragesCollection,GroupsCollection,Task,ModelBinder){
+    TaskView = Backbone.View.extend({
+      tagName: 'tr',
+      _modelBinder: undefined,
+	  
+	   events: {
+            'click .removeTask': 'removeTask',
+            'click .logTask':'logTask',
+            'click .enable' :'updateEnable',
+            'click .copy': 'copyTask',
+            'click .edit': 'editTask',
+            'click .copy_save':'copySave',
+        },
+		
+		template: _.template(underi18n.template(tableItem, msgFactory)),
+
+
+      initialize: function() {
+        this.task = this.options.task;
+        if(this.task.get('enable')==null){
+          this.task.set({'enable':true});
+        }
+        this._modelBinder = new ModelBinder();
+        _.bindAll(this, 'render');
+      },
+	  
+	  removeTask: function() {
+		  this.task.serverDelete();
+		  this.task.destroy();
+	  },
+    ShowServersView:function(){
+      var servers = new ServersCollection(); 
+      var self=this;
+      servers.fetch({success:function(erorr,date){
+          self.$el.find("#servers-container").html('');
+          servers.each(function(server) {
+          var serverView = new ServerView({
+                model: server,
+                list: false,
+                tagName:  'div',
+                className: 'server-logo pull-left'});
+                 self.$el.find("#servers-container").append(serverView.render().el);
+                  if(self.task.get('name')==server.get('IP')){
+                    serverView.toggleSelectDisk(true);
+                  }  
+                  self.views.push(serverView);
+               });
+
+               } 
+          });
+
+    },
+    ShowBasedisksView:function(server_id){
+      var base_disks = new StoragesCollection();
+       var storagesView = new StoragesView({collection: base_disks,selected_id:this.task.get('computer_uuid')});
+       storagesView.setSelectedId(server_id);
+        storagesView.collection.fetch();
+        this.views=storagesView.disksView.diskViews;
+        this.$el.find('#storages-container').html(storagesView.el);
+    },
+    ShowClientsView:function(){
+       var groups = new GroupsCollection();
+       var selected_ids=this.task.get('computer_uuid').split('|');
+       var groupsView = new GroupsView({collection: groups,selected:selected_ids});
+       groupsView.collection.fetch();
+       groupsView.setGroupid();
+
+       this.$el.find('#clients-container').html(groupsView.el);
+       this.views=groupsView.computersCollection;
+       groupsView.delegateEvents();
+       window.setTimeout(function(){
+        $('.close').removeAttr("disabled");
+        $('.btn').removeAttr("disabled");
+       },2000)
+       
+    },
+    ShowGroupsView:function(){
+        var self=this;
+         var groups = new GroupsCollection();
+         groups.fetch({success:function(erorr,date){
+          var html = '<div class="control-group"><label for="prefix-start" class="control-label">Groups</label><div class="controls"><select id="group-select">'
+          var groupsId=self.task.get('computer_uuid');
+          for( var i in date){
+            if(groupsId==date[i].id){
+              html+='<option  selected="selected" value="'+date[i].id+'">'+date[i].name+'</option>';
+              continue;
+            }
+            html+='<option value="'+date[i].id+'">'+date[i].name+'</option>';
+          }
+         html+='</select></div></div>';
+         self.$el.find('#groups-container').html(html);
+         self.groups=groups;
+    }});
+
+         
+    },
+    copyTask:function(){
+          this.$el.find(".copy_modal").modal();
+          var action=this.task.get('action');
+          this.views=[];
+          if(action=='script_exe'||action=='ioserver_restart'){
+             this.ShowServersView();
+          }else if(action=='start_update'||action=='end_update'||action=='action_exam'||action=='poweron'||action=='poweroff'||action=='restart'||action=='menu_switch'||action=='start_device'||action=='auto_update'||action=='start'||action=='send_message'||action=='send_command'||action=='logout'){
+            this.ShowClientsView();
+          }else if (action=='disk_copy'||action=='disk_backup'||action=='disk_resynchronize'||action=='disk_recheck') {
+            this.ShowBasedisksView();
+          }else if(action=='group_poweron'||action=='group_poweroff'||action=='group_restart'||action=='group_menu_switch'||action=='group_start_device'||action=='group_start'||action=='group_send_message'||action=='group_send_command'||action=='group_logout'){
+            this.ShowGroupsView()
+          }
+     },     
+    copySave:function(){
+          var action=this.task.get('action');
+          if(action=='script_exe'||action=='ioserver_restart'){
+            var selectedModels=this.getSelectedViews(this.views);
+            if(selectedModels.length>0){
+              var date=this.task.toJSON();
+              delete date.id;
+              var task =new Task(date);
+              task.save({'computer_uuid':selectedModels[0].model.get('ID'),'computer_name':date.IP},{success: function(model, response) {
+            }});
+            };
+          }else if(action=='start_update'||action=='end_update'||action=='action_exam'||action=='poweron'||action=='poweroff'||action=='restart'||action=='menu_switch'||action=='start_device'||action=='auto_update'||action=='start'||action=='send_message'||action=='send_command'||action=='logout'){
+             var selectedModels=this.getSelectedViews(this.views);
+            if(selectedModels.length>0){
+              var computer_uuid='';
+              var name='';
+              for(var i in selectedModels){
+                if(i>0){
+                  computer_uuid+="|";
+                  name+='|';
+                }
+                computer_uuid+=selectedModels[i].get('id');
+                name+=selectedModels[i].get('name');
+              }
+              var date=this.task.toJSON();
+              delete date.id;
+              var task =new Task(date);
+              task.save({'computer_uuid':computer_uuid,'computer_name':name},{success: function(model, response) {
+            }});
+            };
+          }else if (action=='disk_copy'||action=='disk_backup'||action=='disk_resynchronize'||action=='disk_recheck') {
+            console.log(this.getSelectedViews(this.views));
+          }else if(action=='group_poweron'||action=='group_poweroff'||action=='group_restart'||action=='group_menu_switch'||action=='group_start_device'||action=='group_start'||action=='group_send_message'||action=='group_send_command'||action=='group_logout'){
+            var groupId=$('#group-select',this.el).val();
+            var selectedGroup=this.groups.where({id: parseInt(groupId)})[0];
+             var date=this.task.toJSON();
+              delete date.id;
+              var task =new Task(date);
+              task.save({'computer_uuid':selectedGroup.get('id'),'computer_name':selectedGroup.get('name')},{success: function(model, response) {}})
+          }    
+          this.$el.find(".copy_modal").modal('hide');
+    },
+    editTask:function(){
+
+    },
+    updateEnable:function(){
+      this.task.set({enable:!this.task.get('enable')});
+      this.task.save();
+      this.render();
+    },
+    logTask:function(){
+      $('#tasklog').modal();
+      socket.emit('task:log',{task:this.task}, function(err, log) {
+        if(log){
+          $('#contentft').width(3100);
+          $('#logcontent').html(log);
+        }else{
+          $('#contentft').width(500);
+          $('#logcontent').html(App.msgFactory('no log'));
+        }
+      })
+    },
+    getSelectedViews: function(models) {
+        return _.filter(models, function(model) { 
+          return model.isSelected; });
+    },
+    conectionToArray:function(collection){
+            var array=[];
+            var i=0;
+          collection.each(function(model){
+              array[i]=model;
+              i++;
+          })
+          return array;
+    },
+    render: function() {
+		var html = this.template({
+			task: this.task,
+       memo:this.task.get('memo')===null?'':this.task.get('memo'),
+			action: App.msgFactory(this.task.get('action')),
+			cycle: App.msgFactory(this.task.get('cycle')),
+			last_run_status: App.msgFactory(this.task.get('last_run_status')),
+      date:this.dataToLong(this.task.get('date'))
+		  });
+
+        $(this.el).html(html);
+        this._modelBinder.bind(this.task, this.el);
+        return this;
+      },
+      dataToLong:function(dateStr){
+        var arrayDate=dateStr.split('/');
+       var dateformat=arrayDate[2]+'-'+arrayDate[1]+'-'+arrayDate[0];
+       return dateformat;
+      }
+    });
+    return TaskView;
+});

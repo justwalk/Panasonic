@@ -1,0 +1,27 @@
+var ComputerInfo = require('../../config/db.js').ComputerInfo;
+
+
+
+
+
+ComputerInfo.saveDB = function(data,callback){
+   this.all({where:{mac:data.mac}},function(err, computerInfos) {
+
+        if(computerInfos.length>0){
+           	computerInfos[0].updateAttributes(data, function(err, data) {
+                  callback(err, data);
+            });
+        }else{
+        	ComputerInfo.create(data,function(error, taskCopy) {
+			    callback(error, taskCopy);	
+			    console.log('#############################################################');
+   				console.log(error);
+   				console.log(taskCopy);
+			});
+        }
+      });	
+  
+};
+
+
+module.exports.ComputerInfo = ComputerInfo;

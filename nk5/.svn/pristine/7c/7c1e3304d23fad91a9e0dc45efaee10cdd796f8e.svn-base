@@ -1,0 +1,4 @@
+<div id="add-menu-group">
+  <input type="text" name="name" id="menu-name" style="margin-right:5px; width:190px" placeholder='<%_Menu name%>'>
+  <button type="button" id="add-menu" style="margin-right:5px" class="btn">+ <%_Add menu%></button>
+</div>

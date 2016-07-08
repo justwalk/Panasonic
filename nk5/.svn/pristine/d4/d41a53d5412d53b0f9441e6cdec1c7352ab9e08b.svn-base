@@ -1,0 +1,130 @@
+#include "menu.h"
+
+#include "error.h"
+#include "login.h"
+#include "output.h"
+#include "bitmap.h"
+
+#include "pack.h"
+
+#include <sstream>
+
+//const EnumMap<VHD_MENU_STATUS> VHD_MENU_STATUS_MAP;
+
+MenuResource::MenuResource(){
+	prefix = "menus";
+	children.push_back(new CreateMenuResource());
+	children.push_back(new UUIDMenuResource());
+}
+
+void MenuResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG id;
+	
+	std::istringstream(params.find("id")->second) >> id;
+	
+	JSON::Value* data = MenuEnumToJSON(id);
+
+	printHeaders();
+	data->render();
+
+	delete data;
+}
+
+CreateMenuResource::CreateMenuResource(){
+	prefix = "create";
+}
+
+void CreateMenuResource::run(const std::map<std::string, std::string>& params) const{
+	ADD_MENU_OBJ info;
+	
+	CopyInteger(nAcntID, "id");
+	info.nAcntType = 0;
+	CopyString(pchName, "Name");
+	
+	ULONG nid;
+	
+	ULONG error;
+	if(!(AddMenu(&info, &nid, &error)))
+		return SDKError("AddMenu", error);
+
+	printID(nid);
+}
+
+UUIDMenuResource::UUIDMenuResource(){
+	param = "mid";
+	validator = &numberRegex;
+	children.push_back(new DeleteMenuResource());
+	children.push_back(new UpdateMenuResource());
+	children.push_back(new PackResource());
+}
+
+void UUIDMenuResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG id;
+	
+	std::istringstream(params.find("mid")->second) >> id;
+
+	MENU_OBJ info;
+	
+	ULONG error;
+	if(!(GetSpecifiedMenu(id, &info, &error)))
+		return SDKError("GetSpecifiedMenu", error);
+	
+	JSON::Value* data = MenuToJSON(info);
+
+	printHeaders();
+	data->render();
+
+	delete data;
+}
+
+DeleteMenuResource::DeleteMenuResource(){
+	prefix = "delete";
+}
+
+void DeleteMenuResource::run(const std::map<std::string, std::string>& params) const{
+	/* Maybe need to delete recursively */
+	
+	ULONG id;
+	
+	std::istringstream(params.find("mid")->second) >> id;
+	
+	ULONG error;
+	if(!(DelMenu(id, &error)))
+		return SDKError("DelMenu", error);
+		
+	printDone();
+}
+
+UpdateMenuResource::UpdateMenuResource(){
+	prefix = "update";
+}
+
+void UpdateMenuResource::run(const std::map<std::string, std::string>& params) const{
+	CHECK_PARAM("Name");
+	
+	ULONG id;
+	
+	std::istringstream(params.find("mid")->second) >> id;
+	
+	ULONG error;
+	if(!(EditMenu(id, params.find("Name")->second.c_str(), &error)))
+		return SDKError("EditMenu", error);
+		
+	printDone();
+}
+
+JSON::Value* MenuToJSON(const MENU_OBJ& info){
+	JSON::Object* data = new JSON::Object();
+
+	data->add(new JSON::String("ID"), new JSON::Integer(info.nID));
+	data->add(new JSON::String("Name"), new JSON::String(info.pchName));
+	data->add(new JSON::String("Computer"), new JSON::Integer(info.nAcntID));
+
+	return data;
+}
+
+JSON::Array* MenuEnumToJSON(ULONG cid){
+	ENUM_HANDLE EnumObj = GetFirstComputerMenu(cid);
+		
+	return enumToJSON<MENU_OBJ, MenuToJSON, GetNextComputerMenu>(EnumObj);
+}

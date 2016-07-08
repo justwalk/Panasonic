@@ -1,0 +1,6 @@
+INSERT INTO "User" VALUES (1, 'admin', '123456', NULL, NULL);
+INSERT INTO "User" VALUES (2, 'teacher', '654321', NULL, NULL);
+INSERT INTO "User" VALUES (3, 'test', '111', NULL, NULL);
+INSERT INTO "User" VALUES (4, 'test1', '2221', NULL, NULL);
+INSERT INTO "User" VALUES (5, 'admin', 'admina', 'admin', 'admin2');
+INSERT INTO "User" VALUES (6, 'admina', 'admin', 'admin', '2');

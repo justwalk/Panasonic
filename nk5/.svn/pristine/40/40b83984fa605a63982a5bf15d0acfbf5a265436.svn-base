@@ -1,0 +1,70 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'views/commands/base_command',
+  'text!templates/commands/save_update_mode.html',
+  'text!templates/menus/menu_list_save_update_mode.html'
+  ], function($, _, Backbone, BaseCommandView, saveUpdateModeTemplate, menusUpdateModeTemplate){
+  SaveUpdateModeView = BaseCommandView.extend({
+    id:'save-update-modal',
+    template: _.template(underi18n.template(saveUpdateModeTemplate, msgFactory)),
+    menuTemplate:  _.template(underi18n.template(menusUpdateModeTemplate, msgFactory)),
+    
+    initialize: function() {
+      this.constructor.__super__.initialize.apply(this, ['options']);
+      this.model.set('action', 'save_update_mode');
+  
+      this.groupView = this.options.groupView;
+      this.computersView = this.options.computersView;
+      // this.bindings.update_mode = '[name=update_mode]';
+      
+    },
+    saveModel: function(e) {
+      e.preventDefault();
+        var ja = underi18n.MessageFactory(locale);
+      var self = this;
+      var computer = self.computers[0];
+       this.model.set('time', $('#time').val()+":00");
+     var menu_pack_id=$('input[name="menu_pack_id"]:checked ').val();
+    if(menu_pack_id!=undefined){
+      if (this.model.isValid) {
+        this.model.save({computer_uuid: this.computers[0].id, computer_name: this.computers[0].get('name')}, {
+          
+          success: function(model, response) {
+              self.$el.modal('hide');
+              setTimeout(function(){
+                computer.fetch({ data: {computer_id: computer.get('id')} ,success: function(data) {
+                  computer.set('attributes', data.get('attributes'));
+                  computer.trigger('rerender');
+                  
+                }
+              });
+            },10000);
+          }
+        });
+      }
+      return false;
+    }else{
+      alert(ja("Please select Disk."));
+    }
+    },
+   
+    render: function() {
+      this.constructor.__super__.render.apply(this, ['options']);
+      var self = this;
+      this.bindings.menu_pack_id = '[name=menu_pack_id]';
+      
+      this.computers[0].menus.forEach(function(menu) {
+        menu.fetchPacks(function(packs) {
+          $('#menus-table', self.el).append(self.menuTemplate({menu:menu}));
+          self._modelBinder.bind(self.model, self.el, self.bindings);
+
+        });
+      });
+      return this;
+    }
+    
+  });
+  return SaveUpdateModeView;
+});

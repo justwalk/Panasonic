@@ -1,0 +1,188 @@
+    <!-- actions -->
+    <!-- <div class="container-fluid min_width">
+        <div class="row-fluid">
+            <div class="container">
+            
+                <div id="actions" class="navbar">
+                    <div class="navbar-inner">
+                            <ul class="nav pull-left">
+                <li><a href="javascript:void(0)" class="backupLink"><%_Backup%></a></li>
+                <li><a href="javascript:void(0)" class="settings"><%_Settings%></a></li>
+              </ul>
+              <ul class="nav pull-right">
+                              <li><a href="javascript:void(0)"><%_Select%>:</a></li>
+                              <li><a href="javascript:void(0)" class="select-all"><%_All%></a></li>
+                              <li><a href="javascript:void(0)" class="select-none"><%_None%></a></li>
+                              <li><a href="javascript:void(0)" class="select-invert"><%_Invert%></a></li>
+                              <li class="list-view">
+                                    <a id="switch-list" class="switch-view no_padding show_item" href="javascript:void(0);">
+                                    <i class="icon-bar"></i>
+                                    <i class="icon-bar"></i>
+                                    <i class="icon-bar"></i>
+                                    <i class="icon-bar"></i>
+                                    </a>
+                                </li>
+                                <li class="list-view">
+                                    <a id="switch-grid" class="switch-view no_padding hide_item" href="javascript:void(0);">
+                                    <i class="icon-square"></i>
+                                    <i class="icon-square"></i>
+                                    <i class="icon-square"></i>
+                                    <br />
+                                    <i class="icon-square"></i>
+                                    <i class="icon-square"></i>
+                                    <i class="icon-square"></i>    
+                                    <div class="clearfix"></div>
+                                    </a>
+                                </li>
+                                <li><a href="javascript:void(0)" class="select-Refresh"style="width:41px;height:35px;padding-top:5px; "><img src="../../images/Refresh.png" style="margin-bottom:10px;"></a></li>
+
+                            </ul>
+                    </div>
+                </div>
+            
+            </div>page container
+        </div> row-fluid
+    </div> --> 
+    <!-- END actions -->
+    
+    <!-- Page content -->
+    <div class="container-fluid min_width min_height">
+        <div class="row-fluid">
+        
+            <div class="container min_width">
+
+               <!--  <div style="position: relative;top:26px;left: 511px;">
+                 <input type="checkbox"  class="select-schedule" style="height: 15px;width: 15px" /><%_Display Schedule Task Only%>
+               </div> -->
+                <!-- Servers container -->
+                <div id="main" class="span12" >
+                
+                    Server elements go here
+                   
+                    
+                </div>
+                <!-- END Servers container -->
+                
+            </div><!-- page container -->
+            <div style="height: 70px;"></div>
+        </div><!-- row-fluid -->
+    </div>
+    <!-- END Page content -->
+
+    <!-- Boottom menu 
+    <div id="bottom-top-navbar" class="navbar navbar-fixed-bottom">
+        <div class="navbar-inner">
+            <div class="container">
+                <div class="nav-collapse collapse bottom-navbar">
+                    <ul class="nav">
+                        <li class=""><a href="javascript:void(0)" class="start-cmd" data-toggle="modal" data-target="#cmd-modal">Start</a></li>
+                        <li class=""><a href="javascript:void(0)" class="stop-cmd" data-toggle="modal" data-target="#cmd-modal">Stop</a></li>
+                        <li class=""><a href="javascript:void(0)" class="export-cmd" data-toggle="modal" data-target="#cmd-modal">Export Server Logs</a></li>
+                        <li class=""><a href="javascript:void(0)" class="set-alert-cmd" data-toggle="modal" data-target="#cmd-modal">Set Server Alerts</a></li>
+                        <li class=""><a href="javascript:void(0)" class="status-update-cmd" data-toggle="modal" data-target="#cmd-modal">Status Update Options</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>    -->
+    <!-- CRUD Actions -->
+    <div id="bottom-navbar" class="navbar navbar-fixed-bottom bottom-navbar min_width">
+        <div class="navbar-inner">
+            <div class="container">
+              <ul class="nav">
+               <!--  <li><button class="add-server edge-margin"><i class="icon-white icon-plus"></i> <%_Create%></button></li>
+                  <li class="divider-vertical"></li> -->
+                <li><button class="remove-task"> <%_Delete by Date%></button></li>
+                 <!--  <li><button class="remove-server"> <%_Remove%></button></li>
+                  <li><button class="start-servers"><%_Start%></button></li>
+                  <li><button class="restart-servers"><%_Restart%></button></li>
+                  <li><button class="stop-server"><%_Stop%></button></li>
+                  <li><button class="bootrestart-server"><%_BootRestart%></button></li> -->
+              </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!--modal  -->
+     <div class="modal fade" id="task-date" tabindex="-1" role="dialog" 
+           aria-labelledby="myModalLabel" aria-hidden="true">
+           <div class="modal-dialog">
+              <div class="modal-content">
+      <form class="task-form form-horizontal no-margins" method="post" accept-charset="utf-8">
+    <div class="modal-header">
+        <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+        <h3><%_Delete Task%></h3>
+    </div>
+    <p class="errors"></p>
+    <div class="modal-body" style="line-height: 50px;text-align: center;">
+        <div id="schedule-details" class="control-group">
+             <%_Delete task before date%> <input type="text" id="task_date" class="datepicker input-width" name="date"/>
+        </div>    
+    </div>
+    <div class="modal-footer" >
+      <a href="#" class="btn" title="Close" data-dismiss="modal"><%_Cancel%></a>
+      <input type="button" value="<%_Enter%>" class="btn btn-primary" id='save'>
+     <!--  <input type="submit" value="tijiao" class="btn btn-primary" data-toggle="modal" 
+   data-target="#myModal"> -->
+    </div>
+    </form>
+        </div><!-- /.modal-content -->
+        </div>
+      </div>
+    <!--modal  -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" 
+           aria-labelledby="myModalLabel" aria-hidden="true">
+           <div class="modal-dialog">
+              <div class="modal-content">
+                 <div class="modal-header">
+                    <button type="button" class="close" 
+                       data-dismiss="modal" aria-hidden="true">
+                          &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                      Sure
+                    </h4>
+                 </div>
+                 <div class="modal-body" style="line-height: 50px;text-align: center;">
+                   <%_Delete task before date%> <span style="color: red;" id='datetime'>2013/12/12</span>?
+                 </div>
+                 <div class="modal-footer">
+                    <button type="button" class="btn btn-default" 
+                       data-dismiss="modal"><%_Cancel%>
+                    </button>
+                    <input type="submit" value="<%_Enter%>" class="btn btn-primary update-task" />
+                    
+                    
+                 </div>
+              </div><!-- /.modal-content -->
+        </div>
+      </div>
+      <div class="modal fade" id="tasklog" tabindex="-1" role="dialog" 
+           aria-labelledby="myModalLabel" aria-hidden="true">
+           <div class="modal-dialog">
+              <div class="modal-content">
+                 <div class="modal-header">
+                    <button type="button" class="close" 
+                       data-dismiss="modal" aria-hidden="true">
+                          &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                      Log
+                    </h4>
+                 </div>
+                 <div class="modal-body" style="max-height: 200px;">
+                   <div  style="display:inline-block;" id="contentft" >
+                      <pre  id='logcontent' style="padding-bottom: 40px;" >  
+                    </pre>
+                   
+                   </div>
+                 </div>
+                 <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" 
+                       data-dismiss="modal"><%_Cancel%>
+                    </button>
+                 </div>
+              </div><!-- /.modal-content -->
+        </div>
+      </div>
+      <div id ="modal-container"></div>

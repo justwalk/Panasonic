@@ -1,0 +1,23 @@
+<table class="table table-data table-striped table-bordered" id="table-view" >
+  <thead>
+    <tr>
+      <th><%_Pc name%></th>
+      <th style="width:80px;"><%_Update Mode%></th>
+      <th style="width:80px;"><%_Power%></th>
+      <th><%_IP%></th>
+      <th style="width:120px;"><%_Menu%></th>
+      <th style="width:150px;"><%_MenuDetail%></th>
+      <th style="width:80px;"><%_Image%></th>
+      <th style="width:80px;"><%_OS%></th>
+      <th style="width:80px;"><%_LogonUser%></th>
+      <th style="width:80px;"><%_RunningTime%></th>
+      <th style="width:80px;"><%_LoginTime%></th>
+      
+    </tr>
+  </thead>
+  <tbody id="computers-container">
+  </tbody>
+</table>
+
+
+

@@ -1,0 +1,40 @@
+<form class="storage-form form-vertical" method="post" accept-charset="utf-8" id="add-computer-form ">
+  <div class="modal-header">
+    <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+    <h3><%_synchronizeSchedule%> <%_image%></h3>
+  </div>
+
+  <div class="modal-body">
+    <div class="control-group">
+
+      <div class="controls">
+        <input type="radio" name="SyncType" value="0"/>
+        <span class="select" for="Parent"><%_synchronize immediately after basedisk updating%></span>
+        <br/>
+        <input type="radio" name="SyncType" value="1"/>
+        <span class="select" for="Parent"><%_enable synchronization%></span>
+        <select name="Week" id="SyncSelect" style="width: 80px;margin-left: 140px" >
+          <option value="0" selected="selected"><%_week%></option>
+          <option value="1"><%_Sun%></option>
+          <option value="2"><%_Mon%></option>
+          <option value="3"><%_Tue%></option>
+          <option value="4"><%_Wed%></option>
+          <option value="5"><%_Thu%></option>
+          <option value="6"><%_Fri%></option>
+          <option value="7"><%_Sat%></option>
+        </select>
+        <span>per</span>
+        <input name="Clock" type="text" style="width: 40px;"><span>hours</span>
+        <br/>
+        <input type="checkbox" name="SyncType" value="-1"/>
+        <span class="select" for="Parent"><%_synchronization speed limmit%></span>
+        <input type="text" name="Speed" style="width: 40px;margin-left: 140px"><span>KB/s</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" title="Close" data-dismiss="modal"><%_Cancel%></a>
+    <input type="submit" value="<%_Save%>" class="submit btn btn-primary" class="span12">
+  </div>
+</form>

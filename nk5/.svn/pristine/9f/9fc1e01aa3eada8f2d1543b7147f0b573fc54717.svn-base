@@ -1,0 +1,77 @@
+#include "settings.h"
+
+#include "output.h"
+
+SettingsResource::SettingsResource(){
+	prefix = "settings";
+	children.push_back(new SettingsUpdateResource());
+}
+
+void SettingsResource::run(const std::map<std::string, std::string>& params) const{
+	SETUP info;
+
+	ULONG error;
+	if(!(GetSetup(&info, &error)))
+		return SDKError("GetSetup", error);
+
+	JSON::Object* data = SettingsToJSON(info);
+
+	data->add(new JSON::String("DefaultComputer"), new JSON::Integer(1));
+	data->add(new JSON::String("DefaultGroup"), new JSON::Integer(GetDfltComputerGroupID()));
+
+	printHeaders();
+	data->render();
+
+	delete data;
+}
+
+SettingsUpdateResource::SettingsUpdateResource(){
+	prefix = "update";
+}
+
+void SettingsUpdateResource::run(const std::map<std::string, std::string>& params) const{
+	SETUP info;
+
+	// don't replace unhandled data with garbage
+	ULONG error;
+	if(!(GetSetup(&info, &error)))
+		return SDKError("GetSetup", error);
+
+	CopyBoolean(general.bAutoJoinStatus, "AutoJoin");
+	CopyString(general.szCompPrieFix, "Prefix");
+	CopyInteger(general.nComputerNameLength, "PrefixLength");
+	CopyInteger(general.nComputerStartNumber, "PrefixStart");
+	CopyBoolean(storagedisk.bStorageStatus, "Backup");
+	CopyInteger(storagedisk.nAutoBackupDays, "Days");
+	CopyInteger(storagedisk.nAutoBackupHour, "Hour");
+	CopyInteger(storagedisk.nAutoBackupLevels, "BackupLevel");
+	CopyString(dhcp.szBootSrv, "BootServer1");
+
+	CHECK_PARAM("DefaultGroup");
+	ULONG defaultGroup = GetInt(DefaultGroup);
+
+	if(GetDfltComputerGroupID() != defaultGroup)
+		if(!SetDfltComputerGroup(defaultGroup))
+			return SDKError("SetDfltComputerGroup", EBLIB_UNKNOWN);
+
+	if(!(SetSetup(&info, &error)))
+		return SDKError("SetSetup", error);
+
+	printDone();
+}
+
+JSON::Object* SettingsToJSON(const SETUP& info) {
+	JSON::Object* data = new JSON::Object();
+
+	data->add(new JSON::String("AutoJoin"), new JSON::Boolean(info.general.bAutoJoinStatus ));
+	data->add(new JSON::String("Prefix"), new JSON::String(info.general.szCompPrieFix ));
+	data->add(new JSON::String("PrefixLength"), new JSON::Integer(info.general.nComputerNameLength ));
+	data->add(new JSON::String("PrefixStart"), new JSON::Integer(info.general.nComputerStartNumber ));
+	data->add(new JSON::String("Backup"), new JSON::Boolean(info.storagedisk.bStorageStatus ));
+	data->add(new JSON::String("Days"), new JSON::Integer(info.storagedisk.nAutoBackupDays ));
+	data->add(new JSON::String("Hour"), new JSON::Integer(info.storagedisk.nAutoBackupHour ));
+	data->add(new JSON::String("BackupLevel"), new JSON::Integer(info.storagedisk.nAutoBackupLevels ));
+	data->add(new JSON::String("BootServer1"), new JSON::String(info.dhcp.szBootSrv ));
+
+	return data;
+}

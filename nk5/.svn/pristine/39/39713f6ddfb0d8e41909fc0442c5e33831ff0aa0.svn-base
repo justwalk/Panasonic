@@ -1,0 +1,467 @@
+
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/schedules/task.html',
+  'text!templates/schedules/copy_modal.html',
+  'views/servers/server',
+  'views/storages/storages',
+  'views/groups/groups',
+  'views/schedules/base-server-content',
+  'collection/servers',
+  'collection/base_disks',  
+  'collection/groups',
+  'collection/computers',
+  'models/task',
+  'modelBinder'
+], function($, _, Backbone, tableItem,copyModal, ServersView,StoragesView,GroupsView,ContentView,ServersCollection,StoragesCollection,GroupsCollection,ComputersCollection,Task,ModelBinder){
+    TaskView = Backbone.View.extend({
+      tagName: 'tr',
+      _modelBinder: undefined,
+	   events: {
+            'change #groups-select' : 'selectionChanged',
+            'click .removeTask': 'removeTask',
+            'click .logTask':'logTask',
+            'click .enable' :'updateEnable',
+            'click .copy': 'copyTask',
+            'click .edit': 'editTask',
+            'click .edit-content': 'editContentTask',
+            'click .copy_save':'copySave',
+            'click .edit_save':'editSave',
+            'click .computers':'selectedComputer',
+            'click .selected':'removeComputer',
+            'change input[name=isImport]' : 'chooseChanged',
+
+        },
+		
+		template: _.template(underi18n.template(tableItem, msgFactory)),
+
+
+      initialize: function() {
+        this.task = this.options.task;
+        this.collection=this.options.collection;
+        if(this.task.get('enable')==null){
+          this.task.set({'enable':true});
+        }
+        this.groups = new GroupsCollection();
+        this.computersCollection =new ComputersCollection();
+        this.computersSelected = new ComputersCollection();
+        this.base_disks = new StoragesCollection();
+
+        var self=this;
+        this.groups.bind('add reset remove',function(collection){
+           $('#groups-select', this.el).html('<option value="0">ALL</option>');
+          collection.each(function(group){
+            var html = '<option value="' + group.get('id') + '">' + group.get('name') + '</option>';
+            $('#groups-select', this.el).append(html);
+          })
+        });
+        this.base_disks.bind('add reset remove',function(collection){
+          var html='';
+          var template='';
+          var serversID = self.task.get('computer_uuid').split('|');
+          collection.each(function(group){
+            for (var y in group.get('disks') ){
+              if(parseInt(serversID[1])==group.get('disks')[y].ID){
+                html+='<option  selected="selected" value="'+group.get('IP')+'|'+group.get('disks')[y].ID+'|'+group.get('disks')[y].Name+'" style="color: red">'+group.get('IP')+'&nbsp;|&nbsp;'+group.get('disks')[y].Name+'</option>';
+              }else{
+                 html+='<option   value="'+group.get('IP')+'|'+group.get('disks')[y].ID+'|'+group.get('disks')[y].Name+'" >'+group.get('IP')+'&nbsp;|&nbsp;'+group.get('disks')[y].Name+'</option>';
+              }
+              if(parseInt(serversID[2])==group.get('disks')[y].ID){
+                template+='<option  selected="selected" value="'+group.get('IP')+'|'+group.get('disks')[y].ID+'|'+group.get('disks')[y].Name+'" style="color: red">'+group.get('IP')+'&nbsp;|&nbsp;'+group.get('disks')[y].Name+'</option>';
+              }else{
+                 template+='<option   value="'+group.get('IP')+'|'+group.get('disks')[y].ID+'|'+group.get('disks')[y].Name+'" >'+group.get('IP')+'&nbsp;|&nbsp;'+group.get('disks')[y].Name+'</option>';
+              }
+            }
+          })
+          $(".disk_copy_base",this.el).html(html);
+          $(".disk_copy_target",this.el).html(template);
+
+        });
+        this.computersCollection.bind('add reset remove', function(collection) {
+             $('#computer-select',self.el).html(''); 
+            var uuids = self.task.get('computer_uuid').split('|');
+            collection.each(function(computer){
+              if(self.onece){
+                  for(var i in uuids){
+                    if(parseInt(uuids[i])===computer.get('id')){
+                        self.computersSelected.add(computer);
+                        break;
+                    }
+                  }
+              }
+              var html = ' <div class="computers"  style="width: 55%;margin-bottom: 10px;" ><input type="hidden" value="'+computer.get('id')+'" name="hidden"></input><button type="button" class="btn btn-info  btn-large" style="width: 100%;" > <span class="glyphicon glyphicon-hdd"></span>'+computer.get('name')+'</button></div>';
+              $('#computer-select',self.el).append(html);
+           })
+            self.onece=false;
+        });
+        
+        this.computersSelected.bind('add', function(computer) {
+            var html = ' <div class="selected" style="width: 55%;margin-bottom: 10px;">  <input type="hidden" value="'+computer.get('id')+'" name="hidden"></input> <button type="button" class="btn btn-primary btn-large" style="width: 100%;" ><span class="glyphicon glyphicon-hdd"></span>'+computer.get('name')+'</button></div>';
+            $('#computer-selected',self.el).append(html);
+        });
+        this._modelBinder = new ModelBinder();
+        _.bindAll(this, 'render');
+      },
+	  
+	  removeTask: function() {
+		  this.task.serverDelete();
+		  this.task.destroy();
+	  },
+    ShowServersView:function(){
+      var self=this;
+      var servers = new ServersCollection(); 
+      servers.fetch({success:function(erorr,data){ 
+        var serverID=parseInt(self.task.get('computer_uuid'));
+          var html = '<div class="control-group"><label for="prefix-start" class="control-label">'+App.msgFactory('Server')+'</label><div class="controls"><select id="server-select">'
+          for( var i in data){
+            if(serverID==data[i].ID){
+              html+='<option  selected="selected" value="'+data[i].ID+'|'+data[i].IP+'" style="color: red">'+data[i].IP+'</option>';
+              continue;
+            }
+            html+='<option value="'+data[i].ID+'">'+data[i].IP+'</option>';
+          }
+         html+='</select></div></div>';
+          self.$el.find("#servers-container").html(html);
+          } 
+        });
+
+    },
+    ShowBasedisksView:function(server_id){
+      var self = this;
+      var base_disks = new StoragesCollection();
+      base_disks.fetch({success:function(erorr,data){ 
+        var serverID=parseInt(self.task.get('computer_uuid'));
+          var html = '<div class="control-group"><label for="prefix-start" class="control-label">'+App.msgFactory('BaseDisk')+'</label><div class="controls"><select id="storages-select">'
+          for( var i in data){
+            for (var y in data[i].disks) {
+              if(serverID==data[i].disks[y].ID){
+                html+='<option  selected="selected" value="'+data[i].disks[y].ID+'|'+data[i].disks[y].Name+'" style="color: red">'+data[i].IP+'&nbsp;|&nbsp;'+data[i].disks[y].Name+'</option>';
+                continue;
+              }
+             html+='<option   value="'+data[i].disks[y].ID+'|'+data[i].disks[y].Name+'" >'+data[i].IP+'&nbsp;|&nbsp;'+data[i].disks[y].Name+'</option>';
+            }
+          }
+            html+='</select></div></div>';
+          self.$el.find("#storages-container").html(html);
+          } 
+        });
+    },ShowCopyDiskView:function(){
+      this.$el.find('#diskcopy-container').html('<div id="BaseControl" class="control-group show_item"style="">                            <label class="control-label" for="disk_copy_base">'+App.msgFactory('Source of copy')+'</label>                            <div class="controls">                                <select  name="disk_copy_base" class="span12 disk_copy_base"><option>'+App.msgFactory('Please wait...')+'</option></select>                            </div>                        </div>                        <div class="control-group">                            <label class="control-label" >'+App.msgFactory('Type')+'</label>                            <div class="controls">                                <input type="radio" name="isImport"  value="1"    class="isImport"/> <span>'+App.msgFactory('choose')+'</span>                                <input type="radio" name="isImport"  value="2" class="isImport"/> <span>'+App.msgFactory('input')+'</span>                            </div>                        </div>                        <div id="TargetControl" class="control-group show_item"style="">                            <label class="control-label" for="disk_copy_target">'+App.msgFactory('Target of copy')+'</label>                            <div class="controls">                                <select  name="disk_copy_target"  class="span12 disk_copy_target"><option>'+App.msgFactory('Please wait...')+'</option></select>                                <input type="text" id="import_target"  placeholder="input diskname please!" class="span10" name="import_target" />                            </div>                        </div>')
+       $(":input[name=isImport]:eq(0)",this.el).attr("checked",'checked');
+       $('#import_target',this.el).hide();
+       $('.disk_copy_target',this.el).show();
+       this.base_disks.fetch();
+
+    },selectionChanged:function(){
+          var group_id=$('#groups-select', this.el).val();
+           this.computersCollection.fetchWithGroupId(group_id+"");
+    },chooseChanged:function(){
+        var chooseType=$("input[name='isImport']:checked",this.el).val();
+        if(chooseType=='2'){
+          $('.disk_copy_target',this.el).hide();
+           $('#import_target',this.el).show();
+        }else  if(chooseType=='1'){
+          $('#import_target',this.el).hide();
+          $('.disk_copy_target',this.el).show();
+        }
+    },
+    selectedComputer:function(ev){
+      var computerID=ev.currentTarget.childNodes[0].defaultValue;
+      this.computersSelected.add(this.computersCollection.where({id:parseInt(computerID)})[0])
+    },removeComputer:function(ev){
+      var computerID=$(ev.currentTarget).children("input").val();
+      $(ev.currentTarget).remove();
+      this.computersSelected.remove(this.computersSelected.where({id:parseInt(computerID)})[0])
+    },
+    ShowClientsView:function(){
+       this.$el.find('#clients-container').html('<div class="control-group">'+
+        '<div  style="float: left;width: 40%;">'+
+        '&nbsp;&nbsp;<span> '+App.msgFactory('Group')+'</span>&nbsp;&nbsp;'+
+        '<select id="groups-select" style="width: 65%">'+
+        '<option value="0">ALL</option>'+
+        '</select></div><div style="float: right;width: 40%;">'+
+        '<span>'+App.msgFactory('Target of task')+'</span>'+
+        '</div></div><div class="control-group" ><div id="computer-select" style="float: left;width: 40%;border: 1px solid #ddd;padding: 20px;border-radius:4px;">'+
+        '</div><div  id="computer-selected" style="float: right;width: 40%;border: 1px solid #ddd;padding: 20px;border-radius:4px;"></div></div>');
+       this.onece=true;
+       this.computersSelected.reset();
+       this.groups.fetch();
+       this.selectionChanged(); 
+     },
+    ShowGroupsView:function(){
+        var self=this;
+         var groups = new GroupsCollection();
+         groups.fetch({success:function(erorr,date){
+          var html = '<div class="control-group"><label for="prefix-start" class="control-label">'+App.msgFactory('Group')+'</label><div class="controls"><select id="group-select">'
+          var groupsId=self.task.get('computer_uuid');
+          for( var i in date){
+            if(groupsId==date[i].id){
+              html+='<option  selected="selected" value="'+date[i].id+'" style="color: red">'+date[i].name+'</option>';
+              continue;
+            }
+            html+='<option value="'+date[i].id+'">'+date[i].name+'</option>';
+          }
+         html+='</select></div></div>';
+         self.$el.find('#groups-container').html(html);
+         self.groups=groups;
+    }});
+
+         
+    },
+    actionTask:function(){
+          this.$el.find(".copy_modal").modal();
+          var action=this.task.get('action');
+          this.views=[];
+          if(action=='script_exe'||action=='ioserver_restart'){
+             this.ShowServersView();
+          }else if(action=='stop'||action=='start_update'||action=='end_update'||action=='action_exam'||action=='poweron'||action=='poweroff'||action=='restart'||action=='menu_switch'||action=='start_device'||action=='auto_update'||action=='start'||action=='send_message'||action=='send_command'||action=='logout'){
+            this.ShowClientsView();
+          }else if (action=='disk_backup'||action=='disk_resynchronize'||action=='disk_recheck') {
+            this.ShowBasedisksView();
+          }else if(action=='group_restart'||action=='group_stop'||action=='group_poweron'||action=='group_poweroff'||action=='group_menu_switch'||action=='group_start_device'||action=='group_start'||action=='group_send_message'||action=='group_send_command'||action=='group_logout'){
+            this.ShowGroupsView()
+          }else if(action=='disk_copy'){
+            this.ShowCopyDiskView();
+          }
+     },
+     editContentActionTask:function(){
+         /* this.$el.find(".copy_modal").modal();
+          var action=this.task.get('action');
+          this.views=[];
+           this.ShowServersView();*/
+          /*if(action=='ioserver_restart'){
+             this.ShowServersView();
+          }else if(action=='stop'||action=='start_update'||action=='end_update'||action=='action_exam'||action=='poweron'||action=='poweroff'||action=='restart'||action=='menu_switch'||action=='start_device'||action=='auto_update'||action=='start'||action=='send_message'||action=='send_command'||action=='logout'){
+            this.ShowClientsView();
+          }else if (action=='disk_backup'||action=='disk_resynchronize'||action=='disk_recheck') {
+            this.ShowBasedisksView();
+          }else if(action=='group_restart'||action=='group_stop'||action=='group_poweron'||action=='group_poweroff'||action=='group_menu_switch'||action=='group_start_device'||action=='group_start'||action=='group_send_message'||action=='group_send_command'||action=='group_logout'){
+            this.ShowGroupsView()
+          }else if(action=='disk_copy'){
+            this.ShowCopyDiskView();
+          }*/
+     },     
+    copySave:function(){
+          var self=this;
+          var action=this.task.get('action');
+          if(action=='script_exe'||action=='ioserver_restart'){
+           var ID_IP=$('#server-select',this.el).val().split("|");
+              var date=this.task.toJSON();
+              delete date.id;
+              var task =new Task(date);
+              task.set('date',this.getNowFormatDate())
+              task.save({'computer_uuid':ID_IP[0],'computer_name':ID_IP[1]},{success: function(model, response) {
+                 self.collection.add(model);
+            }});
+          }else if(action=='stop'||action=='start_update'||action=='end_update'||action=='action_exam'||action=='poweron'||action=='poweroff'||action=='restart'||action=='menu_switch'||action=='start_device'||action=='auto_update'||action=='start'||action=='send_message'||action=='send_command'||action=='logout'){
+            if( this.computersSelected.length>0){
+              var computer_uuid='';
+              var name='';
+              var i=0;
+              this.computersSelected.each(function(computer){
+                if(i>0){
+                  computer_uuid+="|";
+                  name+='|';
+                }
+                computer_uuid+=computer.get('id');
+                name+=computer.get('name');
+                i++;
+              })
+             
+              var data=this.task.toJSON();
+              delete data.id;
+              var task =new Task(data);
+              task.set('date',this.getNowFormatDate())
+              task.save({'computer_uuid':computer_uuid,'computer_name':name},{success: function(model, response) {
+                 self.collection.add(model);
+            }});
+            };
+          }else if (action=='disk_backup'||action=='disk_resynchronize'||action=='disk_recheck') {
+             var ID_name=$('#storages-select',this.el).val().split("|");
+              var date=this.task.toJSON();
+              delete date.id;
+              var task =new Task(date);
+              task.set('date',this.getNowFormatDate())
+              task.save({'computer_uuid':ID_name[0],'computer_name':ID_name[1]},{success: function(model, response) {
+                 self.collection.add(model);
+              }});
+          }else if(action=='group_restart'||action=='group_stop'||action=='group_poweron'||action=='group_poweroff'||action=='group_menu_switch'||action=='group_start_device'||action=='group_start'||action=='group_send_message'||action=='group_send_command'||action=='group_logout'){
+              var ID_name=$('#group-select',this.el).val().split("|");
+              var date=this.task.toJSON();
+              delete date.id;
+              var task =new Task(date);
+              task.set('date',this.getNowFormatDate())
+              task.save({'computer_uuid':ID_name[0],'computer_name':ID_name[1]},{success: function(model, response) {
+                 self.collection.add(model);
+            }});
+          }else if(action=='disk_copy'){
+              var base=$('.disk_copy_base',this.el).val().split("|");
+              var target=$('.disk_copy_target',this.el).val().split("|");
+              var chooseType=$("input[name='isImport']:checked",this.el).val();
+              var importTarget=$('#import_target',this.el).val();
+              var date=this.task.toJSON();
+              delete date.id;
+              var task =new Task(date);
+              if(chooseType=='1'||chooseType==1){
+                task.set('name',base[0]+" |"+target[0])
+                uuid="1|"+base[1]+"|"+target[1];
+                computerName=" "+base[2]+"| "+target[2];
+              }else if(chooseType=='2'||chooseType==2){
+                task.set('name',base[0]+" |"+base[0])
+                uuid="2|"+base[1]+"|"+base[1];
+                computerName=" "+base[2]+"| "+importTarget;
+              }
+              task.set('date',this.getNowFormatDate())
+              task.save({'computer_uuid':uuid,'computer_name':computerName},{success: function(model, response) {
+                 self.collection.add(model);
+              }});
+          }   
+
+          this.$el.find(".copy_modal").modal('hide');
+    },
+    editSave:function(){
+        var self=this;
+          var action=this.task.get('action');
+          if(action=='script_exe'||action=='ioserver_restart'){
+           var ID_IP=$('#server-select',this.el).val().split("|");
+            this.task.set({'computer_uuid':ID_IP[0],'computer_name':ID_IP[1]});
+             this.task.save({},{success: function(model, response) {
+                 self.collection.add(model);
+            }});
+          }else if(action=='stop'||action=='start_update'||action=='end_update'||action=='action_exam'||action=='poweron'||action=='poweroff'||action=='restart'||action=='menu_switch'||action=='start_device'||action=='auto_update'||action=='start'||action=='send_message'||action=='send_command'||action=='logout'){
+            if( this.computersSelected.length>0){
+              var computer_uuid='';
+              var name='';
+              var i=0;
+              this.computersSelected.each(function(computer){
+                if(i>0){
+                  computer_uuid+="|";
+                  name+='|';
+                }
+                computer_uuid+=computer.get('id');
+                name+=computer.get('name');
+                i++;
+              })
+              this.task.set({'computer_uuid':computer_uuid,'computer_name':name})
+              this.task.save({},{success: function(model, response) {
+                 self.collection.add(model);
+            }});
+            };
+          }else if (action=='disk_backup'||action=='disk_resynchronize'||action=='disk_recheck') {
+             var ID_name=$('#storages-select',this.el).val().split("|");
+              this.task.set({'computer_uuid':ID_name[0],'computer_name':ID_name[1]});
+              this.task.save({},{success: function(model, response) {
+                 self.collection.add(model);
+              }});
+          }else if(action=='group_restart'||action=='group_stop'||action=='group_poweron'||action=='group_poweroff'||action=='group_menu_switch'||action=='group_start_device'||action=='group_start'||action=='group_send_message'||action=='group_send_command'||action=='group_logout'){
+              var ID_name=$('#group-select',this.el).val().split("|");
+              var date=this.task.toJSON();
+              var task =new Task(date);
+              task.set('date',this.getNowFormatDate())
+              this.task.set({'computer_uuid':ID_name[0],'computer_name':ID_name[1]});
+               this.task.save({},{success: function(model, response) {
+                 self.collection.add(model);
+            }});
+          }else if(action=='disk_copy'){
+              var base=$('.disk_copy_base',this.el).val().split("|");
+              var target=$('.disk_copy_target',this.el).val().split("|");
+              var chooseType=$("input[name='isImport']:checked",this.el).val();
+              var importTarget=$('#import_target',this.el).val();
+              if(chooseType=='1'||chooseType==1){
+                this.task.set('name',base[0]+" |"+target[0])
+                uuid="1|"+base[1]+"|"+target[1];
+                computerName=" "+base[2]+"| "+target[2];
+              }else if(chooseType=='2'||chooseType==2){
+                this.task.set('name',base[0]+" |"+base[0])
+                uuid="2|"+base[1]+"|"+base[1];
+                computerName=" "+base[2]+"| "+importTarget;
+              }
+              this.task.set({'computer_uuid':uuid,'computer_name':computerName});
+              this.task.save({},{success: function(model, response) {
+                 self.collection.add(model);
+              }});
+          }   
+
+          this.$el.find(".copy_modal").modal('hide');
+    },
+    editTask:function(){
+      $("#submit",this.el).removeClass('copy_save');
+      $("#submit",this.el).addClass('edit_save');
+      $("#myModalLabel",this.el).text(App.msgFactory('EditTarget'))
+      this.actionTask();
+    },
+    copyTask:function(){
+      $("#submit",this.el).removeClass('edit_save');
+      $("#submit",this.el).addClass('copy_save');
+      $("#myModalLabel",this.el).text(App.msgFactory('Copy'))
+      this.actionTask();
+    },
+    editContentTask:function(){
+      var restartServerView = new ContentView({task: this.task});
+      restartServerView.render().$el.appendTo($('#modal-container')).modal();
+      //$('#ip', restartServerView.el).focus();
+     //$('#edit-content-modal',this.el).modal();
+
+    },
+    updateEnable:function(){
+      this.task.set({enable:!this.task.get('enable')});
+      this.task.save();
+      this.render();
+    },
+    logTask:function(){
+      $('#tasklog').modal();
+      socket.emit('task:log',{task:this.task}, function(err, log) {
+        if(log){
+          $('#contentft').width(3100);
+          $('#logcontent').html(log);
+        }else{
+          $('#contentft').width(500);
+          $('#logcontent').html(App.msgFactory('no log'));
+        }
+      })
+    },
+    getSelectedViews: function(models) {
+        return _.filter(models, function(model) { 
+          return model.isSelected; });
+    },
+    conectionToArray:function(collection){
+            var array=[];
+            var i=0;
+          collection.each(function(model){
+              array[i]=model;
+              i++;
+          })
+          return array;
+    },
+    render: function() {
+		var html = this.template({
+			task: this.task,
+       memo:this.task.get('memo')===null?'':this.task.get('memo'),
+			action: App.msgFactory(this.task.get('action')),
+			cycle: App.msgFactory(this.task.get('cycle')),
+			last_run_status: App.msgFactory(this.task.get('last_run_status')),
+      date:this.dataToLong(this.task.get('date'))
+		  });
+
+        $(this.el).html(html);
+        this._modelBinder.bind(this.task, this.el);
+        return this;
+      },
+      dataToLong:function(dateStr){
+        var arrayDate=dateStr.split('/');
+       var dateformat=arrayDate[2]+'-'+arrayDate[1]+'-'+arrayDate[0];
+       return dateformat;
+      },
+       getNowFormatDate:function() {
+          var date = new Date();
+          var seperator1 = "/";
+          var month = date.getMonth() + 1;
+          var strDate = date.getDate();
+          var currentdate =strDate + seperator1 + month + seperator1 + date.getFullYear();
+          return currentdate;
+      } 
+    });
+    return TaskView;
+});

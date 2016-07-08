@@ -1,0 +1,84 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'views/logs/logsView',
+  'text!templates/logs/logs.html',
+  'touchPunch',
+  'bootstrapDatatables'
+],  function($, _, Backbone, TaskView, tasksTemplate){
+    TasksView = Backbone.View.extend({
+      template: _.template(underi18n.template(tasksTemplate, msgFactory)),
+      initialize: function() {
+        this.collection.bind('add reset remove', this.render, this);
+      },
+           
+      events: {
+          'click .refreshlogs': 'refreshData'
+        },
+          
+      render: function() {
+        var self = this;
+        self.$el.html(this.template());
+        this.collection.each(function(task) {
+          var taskView = new TaskView({task: task});
+          $('#schedules-container', self.el).append(taskView.render().el);
+        });
+        $('#schedules-table', this.el).dataTable({
+
+          'sDom': 'R<\'row-fluid table-data-search\'<\'datatable-part pull-left\'l>r <\'datatable-part pull-right\' f> > t<\'row-fluid\'<\'datatable-part-medium pull-left\'i><\'datatable-part-medium padding-remove-a pull-right\'p><\'datatable-part-small\' T>>',
+          'sPaginationType': 'bootstrap',
+          'oLanguage': {
+           'sUrl': '/dt.' + App.locale + '.js'
+          },
+          oTableTools: {
+            'sSwfPath': 'javascripts/vendor/datatable/copy_csv_xls_pdf.swf',
+            'aButtons': [{
+                    "sButtonText": "csv",
+                      "sExtends": "xls",
+                      "bFooter": false
+                  }, {
+                    "sButtonText": "xls",
+                      "sExtends": "csv",
+                      "bFooter": false
+                  },{
+                    "sButtonText": "pdf",
+                      "sExtends": "pdf",
+                      "bFooter": false
+                  }]
+          },
+          'bAutoWidth': false,
+          'bDestroy': true,
+          'bFilter': true,
+          'nTFoot': true,
+          'aoColumns' : [
+          {sWidth: '10%'},
+          {sWidth: '12%'},
+          {sWidth: '14%'},
+          {sWidth: '15%'},
+          {sWidth: '19%'},
+          {sWidth: '7%'},
+          {sWidth: '13%'},
+          {sWidth: '10%'},
+          ],
+          "aaSorting": [[2, "desc" ]],
+        }).columnFilter({
+          aoColumns: [
+          {type: 'select', values: ['term', 'process','user']},
+          {type: 'text'},
+          {type: 'date-range'},
+          {type: 'text'},
+          {type: 'text'},
+          {type: 'text'},
+          {type: 'text'},
+          {type: 'text'}
+          ]
+        });
+         this.delegateEvents();
+      },
+      refreshData:function(){
+         this.collection.fetchWithGroupId("");
+      }
+    });
+    return TasksView;
+});

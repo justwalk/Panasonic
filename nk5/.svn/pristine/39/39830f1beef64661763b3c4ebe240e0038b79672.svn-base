@@ -1,0 +1,35 @@
+var model = require('../models/server');
+var util = require('util');
+
+exports.index = function(req, res){
+  model.Server.all(function(servers){
+    res.send(servers);
+  });
+};
+
+exports.new = function(req, res){
+  res.send('new server');
+};
+
+exports.create = function(req, res){
+  res.send('create server');
+};
+
+exports.show = function(req, res){
+    model.Server.find(req.params.server, function(server){
+      res.send(server);
+   });
+};
+
+exports.edit = function(req, res){
+    res.send('edit server ' + req.params.server);
+};
+
+exports.update = function(req, res){
+
+};
+
+exports.destroy = function(req, res){
+    res.send('destroy server ' + req.params.server);
+};
+

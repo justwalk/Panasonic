@@ -1,0 +1,110 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/computers/menu_detail.html',
+  'modelBinder',
+  'models/computer',
+
+  ], function($, _, Backbone,MenuDetailTemlate,ModelBinder,Computer){
+ var MenuDetailView= Backbone.View.extend({
+    id:'copy_modal',
+    className: 'modal fade',
+    template: _.template(underi18n.template(MenuDetailTemlate, msgFactory)),
+    
+    events:{
+      'click .btn-primary ': 'saveModel',
+      // 'hidden' : 'remove', //the 'hidden' event is from bootstrap modal dismiss
+      // 'click .computer-form .checkbox': 'checkboxChangedConverter'
+    },
+    _modelBinder: undefined,
+    initialize: function(options) {
+      var self = this;
+    this.model=new Computer;
+      this.menu_detail = this.options.menu_detail;
+
+      this._modelBinder = new Backbone.ModelBinder();
+
+
+      var menu_details=[];
+      if(this.menu_detail!=undefined){
+         if(this.menu_detail.indexOf(",")>-1){
+                menu_details=this.menu_detail.split(",");
+
+            }else{
+              menu_details.push(this.menu_detail);
+            }
+      }
+     
+      var menus = "";
+       menu_details.forEach(function(menu){
+
+        menus += '<p style="margin-left:150px;">' + menu + '</p>';
+     });
+      this.menus = menus;
+
+      _.bindAll(this);
+      
+      //this.model.set('menu_detail', this.menu_detail);
+      //this.model.set('groupId', this.groups.get('id'));
+    },
+    
+    checkboxChangedConverter: function(){
+        var self = this;
+        //Display Boot Menu
+        var enableMenuOf=$('input[name=enable_menu]',self.el);
+        //Disable All USB
+        var usbDevicesOf=$('input[name=disable_usb_devices]',self.el);
+        //Support Windows Domain
+        var adOf=$('input[name=ad]',self.el);
+        //Enable Image Synchroniz
+        var ldcSyncOf=$('input[name=ldc_sync]',self.el);
+
+        if(enableMenuOf.is(':checked')){
+          $('#bootmenu_timeout',self.el).attr('disabled','disabled');
+        }else{
+          $('#bootmenu_timeout',self.el).attr('disabled',null);
+        }
+
+        if(usbDevicesOf.is(':checked')){
+          $('input[name=disable_usb_storage]',self.el).attr('disabled','disabled');
+        }else{
+          $('input[name=disable_usb_storage]',self.el).attr('disabled',null);
+        }
+
+        if(adOf.is(':checked')){
+          $('input[name=domainPath]',self.el).attr('disabled','disabled');
+        }else{
+          $('input[name=domainPath]',self.el).attr('disabled',null);
+        }
+
+        if(ldcSyncOf.is(':checked')){
+          $('input[name=disk_cache_sync_speed]',self.el).attr('disabled','disabled');
+        }else{
+          $('input[name=disk_cache_sync_speed]',self.el).attr('disabled',null);
+        }
+
+      },
+    
+    setupMultipleEdit: function() {
+      var self = this;
+      _(self.disabledAttributes).forEach(function(attribute) {
+        $('[name="'+attribute+'"]', self.el).attr('disabled', 'disabled');
+      });
+    },
+ saveModel: function(e) {
+
+ },
+            
+    render: function() {
+      this.delegateEvents();
+      $(this.el).html(this.template({model:this.model, menus: this.menus, groups: this.groups}));
+
+      this._modelBinder.bind(this.model, this.el);
+      if (this.models) {this.setupMultipleEdit();}
+      this.checkboxChangedConverter();
+      return this;
+    }
+  });
+  return MenuDetailView;
+});

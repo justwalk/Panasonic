@@ -1,0 +1,42 @@
+define([
+    'jquery',
+    'underscore',
+    'backbone',
+    'models/message',
+    'text!templates/modals/message_modal.html',
+	'msgFactory'
+    ],
+    function($, _, Backbone, Message, tmpl, msgFactory) {
+
+      var MessageModal =  Backbone.View.extend({
+        model: Message,
+        template: _.template(underi18n.template(tmpl, msgFactory)),
+
+        events: {
+          'submit form': function(e) {
+            this.model.set('msg', this.$('#message-input').val());
+            Backbone.sync('update', this.model, {success: function() {}});
+            this.$el.modal('hide');
+            return false;
+          },
+
+          'click .btn-close': function(e) {
+            this.$el.modal('hide');
+          }
+        },
+
+
+        initialize: function(model) {
+          this.model = model || new Message();
+          this.model.fetch();
+        },
+
+      render: function() {
+        this.$el.html(this.template(this.model.toJSON())).modal();
+        return this;
+      }
+      });
+
+
+      return MessageModal;
+    });

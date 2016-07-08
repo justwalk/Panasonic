@@ -1,0 +1,12 @@
+var log = require('../../config/db.js').Log;
+
+
+module.exports = function(socket) {
+	socket.on('logs:read', function (req, res) {
+		require('../../config/config').checkPass('admin', req, res, function() {
+			log.all(function(err, logs) {
+				 res(err, logs);
+			});
+		});
+	});
+};

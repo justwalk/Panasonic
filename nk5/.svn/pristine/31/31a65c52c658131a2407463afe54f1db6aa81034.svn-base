@@ -1,0 +1,17 @@
+<div class="modal">
+  <div class="modal-header">
+    <h3><%_Message%></h3>
+  </div>
+  <form >
+  <div class="modal-body">
+	<textarea cols="40" rows="5" name="message" id="message-input">
+<%- msg %>
+	</textarea>
+  </div>
+  <div class="modal-footer">
+    <input type="button" value="<%_Close%>" class="btn btn-close"/>
+    <input type="submit" value="<%_Save%>" class="btn btn-primary"/>
+  </div>
+  
+  </form>
+</div>

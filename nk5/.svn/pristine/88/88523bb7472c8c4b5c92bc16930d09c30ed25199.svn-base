@@ -1,0 +1,22 @@
+var config = require('../../config/config.js');
+var cron = require('cron');
+var fs = require('fs'); 
+
+var logFile = {};
+
+logFile.readStream=function(cback){
+  
+            fs.readFile(config.logPath('executeLog'),{encoding:'utf8',flag:'r'},function(err,data){
+              if(err){
+                         cback(err,null);
+                }else{
+                    var arr = data.trim().split('\r\n');
+                    arr.forEach(function(item,index){arr[index] = JSON.parse(item)});
+                    arr.sort(function(a,b){ return a.executeTime < b.executeTime});
+                     cback(null,arr);
+                }
+            });
+	  
+}
+ 
+module.exports.logFile = logFile;

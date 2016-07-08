@@ -1,0 +1,103 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'views/commands/base_command',
+  'text!templates/commands/auto_update_computer.html',
+  'text!templates/menus/menu_list_save_update_mode.html'
+  ], function($, _, Backbone, BaseCommandView, endUpdateComputerTemplate, menusUpdateModeTemplate){
+ EndUpdateComputerView = BaseCommandView.extend({
+    id:'save-update-modal',
+    template: _.template(underi18n.template(endUpdateComputerTemplate, msgFactory)),
+    menuTemplate:  _.template(underi18n.template(menusUpdateModeTemplate, msgFactory)),
+    
+   
+    initialize: function() {
+      var self = this;
+      this.constructor.__super__.initialize.apply(this, ['options']);
+      this.model.set('action', 'auto_update');
+      this.groupView = this.options.groupView;
+      this.computersView = this.options.computersView;
+     socket.emit('various_setting:read', {}, function(err, data) {
+          self.model.set('verbose', data["SaveUpdate"]);
+     });
+      // this.bindings.update_mode = '[name=update_mode]';
+      
+    },
+
+
+   
+
+    saveModel: function(e) {
+      e.preventDefault();
+      var self = this;
+      var computer = this.computers[0];
+        this.model.set('time', $('#time').val()+":00");
+       var verbose=$("#verbose",self.el).val();
+        this.model.set('snapshot_comment',verbose);
+        var update_mode=$('input[name="update_mode"]:checked ').val();
+        this.model.set('update_mode',update_mode);
+
+        var command = '';
+        var forceShutdown =$("input[name='forceShutdown']:checked").val();
+        if(forceShutdown){
+            command += forceShutdown+"|";
+        }else{
+            command += 1+"|";
+        }
+
+        var diskShutdown =$("input[name='diskShutdown']:checked").val();
+        if(diskShutdown){
+            command += diskShutdown+"|";
+        }else{
+            command += 1+"|";
+        }
+
+        var operation =$("input[name='operation']:checked").val();
+        if(operation){
+            command += operation+"|";
+        }else{
+            command += 1+"|";
+        }
+
+        var second = $('#after_start').val();
+        command += second;
+        this.model.set('command',command);
+      if (this.model.isValid) {
+        this.model.save({computer_uuid: this.computers[0].id, computer_name: this.computers[0].get('name')}, {
+        success: function(model, response) {
+          self.$el.modal('hide');
+        }
+        });
+      }
+      return false;
+    },
+     radioChangedConverter:function(){
+         var self = this;
+         socket.emit('various_setting:read', {}, function(err, data) {
+             if(data["Permit"]==1){
+                 $('#normalUpdate',self.el).attr('disabled','disabled');
+             }else{
+                 $('#normalUpdate',self.el).attr('disabled',null);
+             }
+         });
+     },
+   
+    render: function() {
+      this.constructor.__super__.render.apply(this, ['options']);
+      var self = this;
+      this.bindings.menu_pack_id = '[name=menu_pack_id]';
+      
+      this.computers[0].menus.forEach(function(menu) {
+        menu.fetchPacks(function(packs) {
+          $('#menus-table', self.el).append(self.menuTemplate({menu:menu,model:self.model}));
+          self._modelBinder.bind(self.model, self.el, self.bindings);
+        });
+      });
+        self.radioChangedConverter();
+      return this;
+    }
+    
+  });
+  return EndUpdateComputerView;
+});

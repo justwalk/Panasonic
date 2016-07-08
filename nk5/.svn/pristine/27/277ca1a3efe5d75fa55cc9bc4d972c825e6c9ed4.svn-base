@@ -1,0 +1,19 @@
+define(['underscore', 'backbone'], function(_, Backbone) {
+  var Home = Backbone.Model.extend({
+    urlRoot: 'home',
+    noIoBind: false,
+    defaults:{
+        'homeData':'1234567890'
+        },
+    initialize: function() {
+    	this.fetch()
+        _.bindAll(this, 'homeCreate');
+        this.ioBind('create', this.homeCreate, this);
+        },
+    homeCreate: function(data) {
+         this.set({"homeData":data.homeData})
+        }
+  });
+
+  return Home;
+});

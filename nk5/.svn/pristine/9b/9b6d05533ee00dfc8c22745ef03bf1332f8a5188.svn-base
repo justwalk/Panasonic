@@ -1,0 +1,52 @@
+<div class="form-horizontal no-margins " >
+  <div class="modal-header">
+    <button class="close">&times;</button>
+    <h3><%_Settings%></h3>
+  </div>
+    <form action="">
+      <div class="modal-body">
+          <div class="control-group">
+            <label for="auto-join" class="checkbox control-label"><%_Auto join%></label>
+            <div class="controls">
+              <input type="checkbox" name="AutoJoin" id="auto-join" />
+            </div>
+          </div>
+          <div class="control-group">
+            <label for="Prefix" class="control-label"><%_Prefix%></label>
+            <div class="controls"><input type="" name='Prefix' id='prefix-input' /></div>
+          </div>
+		  <div class="control-group">
+            <label for="prefix-length" class="control-label"><%_Number length%></label>
+            <div class="controls"><input type="Number" name="PrefixLength"  /></div>
+          </div>
+		  <div class="control-group">
+            <label for="prefix-start" class="control-label"><%_Number start%></label>
+            <div class="controls"><input type="Number" name="PrefixStart"  /></div>
+          </div>
+          <div class="control-group hide_item">
+            <label for="Backup" class="control-label"><%_Backup%></label>
+            <div class="controls"><input type="checkbox" name='Backup' /></div>
+          </div>
+          <div class="control-group hide_item">
+            <label for="days" class="control-label"><%_Days%></label>
+            <div class="controls"><input type="" name="Days" /></div>
+          </div>
+          <div class="control-group hide_item">
+            <label for="Hour" class="control-label"><%_Hour%></label>
+            <div class="controls"><input type="" name="Hour" /></div>
+          </div>
+          <div class="control-group hide_item">
+            <label for="backup-level" class="control-label"><%_Backup level%></label>
+            <div class="controls"><input type="Number" name="BackupLevel"  /></div>
+          </div>
+          <div class="control-group">
+            <label for="Prefix" class="control-label">BootServer1</label>
+            <div class="controls"><input type="" name='BootServer1' id='BootServer1' /></div>
+           </div>
+      </div>
+      <div class="modal-footer">
+        <a href="#" class="btn" title="Close" data-dismiss="modal"><%_Cancel%></a>
+        <input type="submit" value="<%_Save%>" class="submit btn btn-primary" class="span12">
+      </div>
+  </form>
+</div>

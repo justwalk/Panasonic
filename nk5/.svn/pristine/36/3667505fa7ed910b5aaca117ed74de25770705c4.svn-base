@@ -1,0 +1,19 @@
+module.exports = function(socket) {
+  // Adding the main Resources
+  // app.all("*", checkAuthentication);
+  //app.use(require('../app/socket_controllers/groups_controller')(app));    
+  require('../app/socket_controllers/servers_controller')(socket);
+  require('../app/socket_controllers/base_disks_controller')(socket);
+  require('../app/socket_controllers/groups_controller')(socket);
+  require('../app/socket_controllers/computers_controller')(socket);
+  require('../app/socket_controllers/tasks_controller')(socket);
+  require('../app/socket_controllers/menus_controller')(socket);
+  require('../app/socket_controllers/packs_controller')(socket);
+  require('../app/socket_controllers/disks_controller')(socket);
+  require('../app/socket_controllers/message_controller')(socket);
+  require('../app/socket_controllers/settings_controller')(socket);
+  require('../app/socket_controllers/directories_controller')(socket);
+  require('../app/socket_controllers/logs_controller')(socket);
+  require('../app/socket_controllers/home_controller')(socket);
+  require('../app/socket_controllers/user_contriller')(socket);
+}

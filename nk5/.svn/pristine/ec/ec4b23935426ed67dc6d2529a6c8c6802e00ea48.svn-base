@@ -1,0 +1,53 @@
+<form id="creates-server-form" class="form-horizontal no-margins add-server-form">
+    <div class="modal-header">
+        <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+        <h3><%_License%></h3>
+    </div>
+    <p class="errors"></p>
+
+
+    <div class="modal-body" >
+        <div class="control-group">
+          <label class="control-label" for="serialNo"><%_Serial No%></label>
+            <div class="controls">
+                <input type="text" id="serialNo" class="span10" name="serialNo" disabled="disabled" style="width:368px; " />
+            </div>
+        
+        </div>
+    <div class="control-group" >
+          <label class="control-label" for="licenseInfo"><%_License Info%></label>
+            <div class="controls" style="border:1px solid #ccc; height:150px;">
+           
+                <div >
+                <% if(model.get('LicenseType')=="2") { %>
+                    <h5 style="margin-left:100px;" ><%_Periodic License%></h5>
+                  <% } %>
+                <% if(model.get('LicenseType')=="1") { %> 
+					<h5 style="margin-left:100px;" ><%_Trial License%></h5>
+                 <% } %>
+                <% if(model.get('LicenseType')=="3") { %> 
+					<h5 style="margin-left:100px;" ><%_Permanent License%></h5>
+                 <% } %>
+                <% if(model.get('LicenseType')=="4") { %> 
+					<h5 style="margin-left:100px;" ><%_License failed%></h5>
+                 <% } %>
+                <% if(model.get('LicenseType')=="0") { %> 
+					<h5 style="margin-left:100px;" ><%_License failed%></h5>
+                 <% } %>
+                    <div >
+                    <label style="float:left;"><%_Number Of Licenses%></label><label name="NumberOfLicenses" style="margin-left:100px;"></label>
+                    <label style="float:left;"><%_Days Left%></label><label name="DaysLeft" style="margin-left:70px;"></label>
+                    <label style="float:left;"><%_User%></label><label name="User" style="margin-left:60px;"></label>
+
+                    </div>
+                   
+           
+                </div>
+               
+            </div>
+        </div>
+        
+    </div>
+    
+   
+</form>

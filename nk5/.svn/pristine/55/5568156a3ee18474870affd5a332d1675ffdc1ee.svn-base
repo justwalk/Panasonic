@@ -1,0 +1,124 @@
+    <!-- actions -->
+    <div class="container-fluid min_width">
+        <div class="row-fluid">
+            <div class="container">
+            
+                <div id="actions" class="navbar">
+                    <div class="navbar-inner">
+                            <ul class="nav pull-left">
+                             <% if(App.menu['9']) { %>
+                                <li><a href="javascript:void(0)" class="backupLink"><%_Backup%></a></li>
+                              <% } %>
+                              <% if(App.menu['10']) { %>
+                                <li><a href="javascript:void(0)" class="settings"><%_Settings%></a></li>
+                              <% } %>
+							</ul>
+							<ul class="nav pull-right">
+                              <% if(App.menu['28']) { %>
+                                <li><a href="javascript:void(0)"><%_Select%>:</a></li>
+                                <li><a href="javascript:void(0)" class="select-all"><%_All%></a></li>
+                                <li><a href="javascript:void(0)" class="select-none"><%_None%></a></li>
+                                <li><a href="javascript:void(0)" class="select-invert"><%_Invert%></a></li>
+                                 <% } %> 
+                                <% if(App.menu['29']) { %>
+                                <li class="list-view">
+                                    <a id="switch-list" class="switch-view no_padding hide_item" href="javascript:void(0);">
+                                    <i class="icon-bar"></i>
+                                    <i class="icon-bar"></i>
+                                    <i class="icon-bar"></i>
+                                    <i class="icon-bar"></i>
+                                    </a>
+                                </li>
+                                <li class="list-view">
+                                    <a id="switch-grid" class="switch-view no_padding" href="javascript:void(0);">
+                                    <i class="icon-square"></i>
+                                    <i class="icon-square"></i>
+                                    <i class="icon-square"></i>
+                                    <br />
+                                    <i class="icon-square"></i>
+                                    <i class="icon-square"></i>
+                                    <i class="icon-square"></i>    
+                                    <div class="clearfix"></div>
+                                    </a>
+                                </li>
+                                 <% } %> 
+                                <% if(App.menu['30']) { %>
+                                <li><a href="javascript:void(0)" class="select-Refresh"style="width:41px;height:35px;padding-top:5px; "><img src="../../images/Refresh.png" style="margin-bottom:10px;"></a></li>
+                                <% } %>     
+                            </ul>
+                    </div>
+                </div>
+            
+            </div><!-- page container -->
+        </div><!-- row-fluid -->
+    </div>
+    <!-- END actions -->
+    
+    <!-- Page content -->
+    <div class="container-fluid min_width min_height">
+        <div class="row-fluid">
+            <div id="page" class="container">
+                
+                <!-- Servers container -->
+                <div id="servers-container" class="span12">
+                
+                    <!-- Server elements go here -->
+                   
+                    
+                </div>
+                <!-- END Servers container -->
+                
+            </div><!-- page container -->
+        </div><!-- row-fluid -->
+    </div>
+    <!-- END Page content -->
+
+    <!-- Boottom menu 
+    <div id="bottom-top-navbar" class="navbar navbar-fixed-bottom">
+        <div class="navbar-inner">
+            <div class="container">
+                <div class="nav-collapse collapse bottom-navbar">
+                    <ul class="nav">
+                        <li class=""><a href="javascript:void(0)" class="start-cmd" data-toggle="modal" data-target="#cmd-modal">Start</a></li>
+                        <li class=""><a href="javascript:void(0)" class="stop-cmd" data-toggle="modal" data-target="#cmd-modal">Stop</a></li>
+                        <li class=""><a href="javascript:void(0)" class="export-cmd" data-toggle="modal" data-target="#cmd-modal">Export Server Logs</a></li>
+                        <li class=""><a href="javascript:void(0)" class="set-alert-cmd" data-toggle="modal" data-target="#cmd-modal">Set Server Alerts</a></li>
+                        <li class=""><a href="javascript:void(0)" class="status-update-cmd" data-toggle="modal" data-target="#cmd-modal">Status Update Options</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>    -->
+    <!-- CRUD Actions -->
+    <div id="bottom-navbar" class="navbar navbar-fixed-bottom bottom-navbar min_width">
+        <div class="navbar-inner">
+            <div class="container">
+              <ul class="nav">
+                 <% if(App.menu['11']) { %>
+                <li><button class="add-server edge-margin"><i class="icon-white icon-plus"></i> <%_Create%></button></li>
+                  <li class="divider-vertical"></li>
+                   <% } %>   
+                     <% if(App.menu['12']) { %>
+				  <li><button class="edit-directory"> <%_Edit%></button></li>
+                   <% } %>   
+                     <% if(App.menu['13']) { %>
+                  <li><button class="remove-server"> <%_Remove%></button></li>
+                   <% } %>   
+                     <% if(App.menu['14']) { %>
+                  <li><button class="start-servers"><%_Start%></button></li>
+                   <% } %>   
+                     <% if(App.menu['15']) { %>
+                  <li><button class="restart-servers"><%_Restart%></button></li>
+                   <% } %>   
+                     <% if(App.menu['16']) { %>
+                  <li><button class="stop-server"><%_Stop%></button></li>
+                   <% } %>   
+                     <% if(App.menu['17']) { %>
+                  <li><button class="bootrestart-server"><%_BootRestart%></button></li>
+                   <% } %>   
+              </ul>
+            </div>
+        </div>
+    </div><!-- CRUD Actions -->
+    <!-- END Boottom menu -->
+    

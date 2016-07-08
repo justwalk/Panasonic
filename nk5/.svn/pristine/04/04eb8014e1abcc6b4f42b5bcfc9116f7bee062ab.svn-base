@@ -1,0 +1,101 @@
+#pragma once
+
+//Not defined error or invalid value.
+#define EBLIB_UNKNOWN 					(ULONG(-1))
+
+#define ERROR_CODE(Base, Index)			((ULONG)(0xE0000000 | (Base <<16) | Index))
+#define EBLIB_ERROR(Index)				ERROR_CODE(0x12, Index)
+//"Initialize socket library failed." 
+#define EBLIB_ERR_INIT_SOCKET			EBLIB_ERROR(0x0)
+//Initialize eblib failed.
+#define EBLIB_ERR_INIT_LIB				EBLIB_ERROR(0x1)
+//IP address is empty.
+#define EBLIB_ERR_IP_EMPTY				EBLIB_ERROR(0x2)
+//IP address is failed.
+#define EBLIB_ERR_IP_FAILED				EBLIB_ERROR(0x3)
+//Add client to server failed, please check your IP address and port.
+#define EBLIB_ERR_ADD_CLIENT			EBLIB_ERROR(0x4)
+//Connection to server failed.
+#define EBLIB_ERR_CONNECT				EBLIB_ERROR(0x5)
+//User or password is failed, please check it
+#define EBLIB_ERR_USER_PASS				EBLIB_ERROR(0x6)
+//Apply for memory failed.
+#define EBLIB_ERR_MEMORY				EBLIB_ERROR(0x7)
+//Execute the SQL statement failed.
+#define EBLIB_EXEC_SQL_FAILED			EBLIB_ERROR(0x8)
+//Invalid record set.
+#define EBLIB_ERR_RECORDSET				EBLIB_ERROR(0x9)
+//Invalid input parameter
+#define EBLIB_INVALID_INPUT				EBLIB_ERROR(0xA)
+//Invalid ENUM_HANDLE
+#define EBLIB_INVALID_HANDLE			EBLIB_ERROR(0xB)
+//send MSG invalid, please check network.
+#define EBLIB_INVALID_SEND				EBLIB_ERROR(0xC)
+//recv MSG invalid, please check network.
+#define EBLIB_INVALID_RECV				EBLIB_ERROR(0xD)
+//Do not delete the disk with sub disk.
+#define EBLIB_ERR_DEL_DISKWITHSUB		EBLIB_ERROR(0xE)
+//Invalid disk version
+#define EBLIB_INVALID_DISKVER			EBLIB_ERROR(0xF)
+//Access is denied. 
+#define EBLIB_INVALID_ACCESS			EBLIB_ERROR(0x10)
+//Invalid  name, do not have same name in on group. 
+#define EBLIB_USERNAME_EXIST			EBLIB_ERROR(0x11)
+//Passport is empty.
+#define EBLIB_ERR_PST_EMPTY				EBLIB_ERROR(0x12)
+//Password is empty.
+#define EBLIB_ERR_PSD_EMPTY			    EBLIB_ERROR(0x13)
+//Out of max pack of menu
+#define EBLIB_OUTOF_MAXPACK				EBLIB_ERROR(0x14)
+//No such objects, please check the inputs.
+#define EBLIB_EMPTY_RECORDSET			EBLIB_ERROR(0x15)
+//Do not add same group name.
+#define EBLIB_GROUPNAME_EXIST			EBLIB_ERROR(0x16)
+//Invalid name, do not have same computer name in one group.
+#define EBLIB_COMPUTERNAME_EXIST		EBLIB_ERROR(0x17)
+//the name of menu is empty.
+#define EBLIB_MENUNAME_EMPTY			EBLIB_ERROR(0x18)
+//invalid index, pack is out of range.
+#define EBLIB_INVALID_PACKINDEX			EBLIB_ERROR(0x19)
+//invalid mac, do not have same MAC.
+#define EBLIB_MAC_EXIST					EBLIB_ERROR(0x1A)
+//invalid user group id, have not such group.
+#define EBLIB_INVALID_USERGROUPID		EBLIB_ERROR(0x1B)
+//invalid computer group id, have not such group.
+#define EBLIB_INVALID_COMPGROUPID		EBLIB_ERROR(0x1C)
+//No such disk, please check.
+#define EBLIB_DISK_NOTEXIST				EBLIB_ERROR(0x1E)
+//Not any disks exist in the pack
+#define EBLIB_EMPTY_PACK				EBLIB_ERROR(0x1F)
+//Base disk is not released, can not leave update mode.
+//Please shutdown the PC, which is used for update base disk, and try again.
+#define EBLIB_BASIC_DISK_LOCKED			EBLIB_ERROR(0x20)
+//Pack is not exist, please check Pack's ID.
+#define EBLIB_INVALID_PACK				EBLIB_ERROR(0x21)
+//Pack is already update.
+#define EBLIB_PACK_ALREADY_UPDATE		EBLIB_ERROR(0x22)
+//Disk is already update.
+#define EBLIB_DISK_ALREADY_UPDATE		EBLIB_ERROR(0x23)
+//The parent/basic disk is not exist.
+#define EBLIB_NOT_PARENT_DISK			EBLIB_ERROR(0x24)
+//Create direction failed.
+#define EBLIB_ERR_CREATE_DIR 			EBLIB_ERROR(0x25)
+//The IO server is not exist.
+#define EBLIB_INVALID_SRV 				EBLIB_ERROR(0x26)
+//Disk is in update mode, not allowed restore
+#define EBLIB_NOT_RESTORE_UPDATEDISK	EBLIB_ERROR(0x27)
+//boot server is disconnect, please reconnect.
+#define EBLIB_BOOT_DISCONNECT			EBLIB_ERROR(0x28)
+//Pack is not alive update mode.
+#define EBLIB_PACK_NOT_ALIVE			EBLIB_ERROR(0x29)
+//I/O service not alive, can not continue.
+#define EBLIB_LOGIN_IO_SVC_NOT_ALIVE	EBLIB_ERROR(0x30)
+
+//Success
+#define EBLIB_SUCCESS					0
+//Success
+#define EBLIB_OK						EBLIB_SUCCESS
+//Failed. not define code 
+#define EBLIB_FAILED					EBLIB_ERROR(0xEE)
+//Not implement. 
+#define EBLIB_NOT_IMPLEMENT				EBLIB_ERROR(0xEF)

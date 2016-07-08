@@ -1,0 +1,144 @@
+  <!-- actions -->
+    <div class="container-fluid min_width">
+        <div class="row-fluid">
+            <div class="container">
+                <div id="actions" class="navbar">
+                    <div class="navbar-inner">
+                            <ul class="nav">
+                             <% if(App.menu['68']) { %>
+                                <li>
+                                    <form class="form-inline">
+                                        <div class="styled select" style="width: 260px;">
+                                            <select id="servers-select">
+                                                <%= serversOptions %>
+                                            </select>
+                                        </div>
+                                    </form>
+                                </li>
+                                 <% } %>
+                            </ul>
+                                             
+                            <ul class="nav pull-right">
+                                 <% if(App.menu['69']) { %>
+                                <li ><a style="color:#000000;"><%_Select%>:</a></li>
+                                <li><a href="javascript:void(0)" class="select-all"><%_All%></a></li>
+                                <li><a href="javascript:void(0)" class="select-none"><%_None%></a></li>
+                                <li><a href="javascript:void(0)" class="select-invert"><%_Invert%></a></li>
+                                 <% } %>
+                                <li class="list-view">
+                                    <a id="switch-list" class="switch-view no_padding show_item" href="javascript:void(0);">
+                                    <i class="icon-bar"></i>
+                                    <i class="icon-bar"></i>
+                                    <i class="icon-bar"></i>
+                                    <i class="icon-bar"></i>
+                                    </a>
+                                </li>
+                                <li class="list-view">
+                                    <a id="switch-grid" class="switch-view no_padding hide_item" href="javascript:void(0);">
+                                    <i class="icon-square"></i>
+                                    <i class="icon-square"></i>
+                                    <i class="icon-square"></i>
+                                    <br />
+                                    <i class="icon-square"></i>
+                                    <i class="icon-square"></i>
+                                    <i class="icon-square"></i>    
+                                    <div class="clearfix"></div>
+                                    </a>
+                                </li>
+                                 <% if(App.menu['70']) { %>
+                                 <li><a href="javascript:void(0)" class="select-Refresh"style="width:41px;height:35px;padding-top:5px; "><img src="../../images/Refresh.png" style="margin-bottom:10px;"></a></li>
+                                  <% } %>
+                            </ul>
+                    </div>
+                </div>
+            
+            </div><!-- page container -->
+        </div><!-- row-fluid -->
+    </div>
+    <!-- END actions -->
+    
+    <!-- Page content -->
+    <div class="container min_width">
+        <div class="row-fluid">
+            <div class="container">
+            <div id="main" class="container min_height">
+                
+                <!-- Storage container -->
+            </div>
+            </div><!-- page container -->
+        </div><!-- row-fluid -->
+    </div>
+    <!-- END Page content -->
+        
+    <!-- Boottom menu 
+    <div id="bottom-top-navbar" class="navbar navbar-fixed-bottom">
+        <div class="navbar-inner">
+            <div class="container">
+                <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".bottom-navbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                
+                <div class="nav-collapse collapse bottom-navbar">
+                    <ul class="nav">
+                        <li class=""><a href="javascript:void(0)" data-toggle="modal" data-target="#cmd-modal">Backup Image</a></li>
+                        <li class=""><a href="javascript:void(0)" data-toggle="modal" data-target="#cmd-modal">Rollback Image</a></li>
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+-->    
+    <!-- CRUD Actions -->
+    <div id="bottom-navbar" class="navbar navbar-fixed-bottom min_width">
+        <div class="navbar-inner">
+            <div class="container">
+                    <ul class="nav">
+                    <% if(App.menu['19']) { %>
+                      <li><button class="add-image edge-margin"><i class="icon-white icon-plus"></i> <%_Create%></button></li>
+                      <% } %>
+                      <% if(App.menu['71']) { %>
+                        <li><button class="disk-copy"><%_VDiskCopy%></button></li>
+                        <li class="divider-vertical"></li>
+                         <% } %>
+                          <% if(App.menu['60']) { %>
+                        <li><button class="differencing-image" title="AddDifferencingDisk">  <%_AddDifferencingDisk%></button></li>
+                          <% } %>
+                         <% if(App.menu['61']) { %>
+                        <li><button class="rollBack-image" title="RollBack"><%_RollBack%></button></li>
+                          <% } %>
+                         <% if(App.menu['62']) { %>
+                        <li><button class="diskMerge-image" title="DiskMerge"><%_DiskMerge%></button></li>
+                          <% } %>
+                         <% if(App.menu['63']) { %>
+                        <li><button class="synchronizeSchedule-image" title="SynchronizeSchedule">
+                        <%_SynchronizeSchedule%></button></li>
+                          <% } %>
+                         <% if(App.menu['64']) { %>
+                        <li><button class="changeTBasedisk-image" title="ChangeTBasedisk"><%_ChangeTBasedisk%></button></li>
+                          <% } %>
+                         <% if(App.menu['65']) { %>
+                        <li><button class="resynchroniz-image" title="Re-synchroniz"><%_Re-synchroniz%></button></li>
+                         <% } %>
+                         <% if(App.menu['66']) { %>
+                        <li><button class="reCheck-image" title="Re-Check"><%_Re-Check%></button></li>
+                          <% } %>
+
+                        <% if(App.menu['18']) { %>
+                        <li><button class="edit-image" title="Edit">
+                        <%_Edit%></button></li>
+                         <% } %>
+                        <% if(App.menu['20']) { %>
+                        <li><button class="delete-image" title="Delete"><%_Delete%></button></li>
+                         <% } %>
+                         <% if(App.menu['67']) { %>
+                        <li><button class="displayImageComputers-images" title="_DisplayImageComputers"><%_DisplayImageComputers%></button></li>
+                          <% } %>
+                        <li class="diskBackup"><button><%_VDiskBackup%></button></li>
+                    </ul>
+            </div>
+        </div>
+    </div><!-- CRUD Actions -->
+    <!-- END Boottom menu -->

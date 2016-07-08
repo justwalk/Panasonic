@@ -1,0 +1,17 @@
+#ifndef OUTPUT_H
+#define OUTPUT_H
+
+//needs to be before windows.h
+#include "WinSock2.h"
+
+//vhd includes need these included before them
+#include <Windows.h>
+
+void printHeaders();
+void printHeaders(const char* status);
+
+void printDone();
+void printID(ULONG ID);
+void printHomeData(ULONG ID);
+
+#endif

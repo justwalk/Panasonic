@@ -1,0 +1,11 @@
+var Home = require('../models/home').Home;
+
+module.exports = function(socket) {
+	socket.on('home:read', function(req, res) {
+    require('../../config/config').checkPass('admin', req, res, function() {
+      Home.get(function(err, data) {
+        res(err, data);
+      });
+    });
+  });
+}

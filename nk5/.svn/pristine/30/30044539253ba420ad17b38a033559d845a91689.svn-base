@@ -1,0 +1,126 @@
+<form class="storage-form form-vertical" method="post" accept-charset="utf-8" id="add-computer-form ">
+  <div class="modal-header">
+    <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+    <h3><%- model.isNew() ? '<%_Add%>' : '<%_Edit%>' %> <%_image%></h3>
+  </div>
+  <p class="errors"></p>
+
+  <div class="modal-body">
+	
+  
+	 <div class="control-group">
+      <label class="control-label" for="Parent"><%_Type%></label>
+      <div class="controls">
+        <input type="radio" name="internal" id="virtual_check" value="virtual" /> <span><%_Virtual%></span>
+        <input type="radio" name="internal" id="differencing_check" value="differencing" /> <span><%_Differencing%></span>
+		    <input type="radio" name="internal" id="proxy_check" value="proxy" /> <span><%_Proxy%></span>
+		    <% if(model.isNew()) { %>
+			   <input type="radio" name="internal" id="physical_check" value="physical" /> <span><%_Physical%></span>
+			   <input type="radio" name="internal" id="existing_check" value="existing" /> <span><%_Existing%></span>
+         <input type="radio" name="internal" id="cache_check" value="cache" /> <span><%_Cache%></span>
+		    <% } %>
+      </div>
+    </div>
+	
+	<div class="control-group" id="NameControl show_item">
+      <label class="control-label" for="Name"><%_Name%></label>
+      <div class="controls">
+        <input type="text" name="Name" value="" id="Name" class="span12">
+      </div>
+    </div>
+	
+	 <% if(model.isNew()) { %>
+	<div id="ParentControl" class="control-group show_item"style="display:none;">
+      <label class="control-label" for="Parent"><%_Parent%></label>
+      <div class="controls">
+        <select disabled name="Parent" id="Parent" class="span12"><option><%_Please wait...%></option></select>
+      </div>
+    </div>
+	<!--
+    <div class="control-group">
+      <label class="control-label" for="Type"><%_Type%></label>
+      <div class="controls">
+        <select name="Type" id="Type" class="span12">
+          <option value="BaseDisk" selected="selected"><%_BaseDisk%></option>
+          <option value="Export"><%_Export%></option>
+          <option value="RestorePoint"><%_RestorePoint%></option>
+          <option value="Storage"><%_Storage%></option>
+          <option value="Snapshot"><%_Snapshot%></option>
+          <option value="Proxy"><%_Proxy%></option>
+        </select>
+      </div>
+    </div>
+	-->
+
+    <div id="SizeControl" class="control-group show_item">
+      <label class="control-label" for="Size"><%_Size%> (MB)</label>
+      <div class="controls">
+        <input type="text" name="Size" value="" id="Size" class="span12">
+      </div>
+    </div>
+
+	<!--
+    <div class="control-group">
+      <label class="control-label" for="Format"><%_Format%></label>
+      <div class="controls">
+		<select name="Format" id="Format" class="span12">
+		  <option value="0" selected="selected"><%_Physical%></option>
+		  <option value="1" selected="selected"><%_Other%></option>
+        </select>
+      </div>
+    </div>
+	-->
+	
+	<!--
+    <div class="control-group">
+      <label class="control-label" for="Version"><%_Version%></label>
+      <div class="controls">
+        <input type="text" name="Version" value="" id="Version" class="span12">
+      </div>
+    </div>
+	-->
+	
+    <div class="control-group">
+      <label class="control-label" for="BaseDirectory"><%_Base directory%></label>
+      <div class="controls">
+        <select disabled name="BaseDirectory" id="BaseDirectory" class="span12">
+          <option><%_Please wait...%></option>
+        </select>
+      </div>
+    </div>
+
+    <div class="control-group show-item" id="PathControl">
+      <label class="control-label" for="Path"><%_Path%></label>
+      <div class="controls">
+        <input type="text" name="Path" value="" id="Path" class="span12">
+      </div>
+    </div>
+	
+	<% } %>
+	
+	<div class="control-group span12 hide_item" id="SyncControls">
+      <label class="control-label" for="SyncControls"><%_Sync%></label>
+      <div class="controls">
+		<% if(!model.isNew()) { %>
+		<label class="control-label" for="SyncType"><%_Sync Type%></label>  
+			<select name="SyncType" id="SyncType" class="block_item">
+			  <option value="0"><%_Start%></option>
+			  <option value="1" selected="selected"><%_Check%></option>
+			</select>
+		<% } %>
+        <label class="control-label inline_item" for="Day"><%_Day%></label>
+			<input type="text" name="SyncDay" value="" id="Day" class="span1 inline_item">
+		<label class="control-label inline_item" for="Hour"><%_Hour%></label>
+			<input type="text" name="SyncHour" value="" id="Hour" class="span1 inline_item">
+		<label class="control-label inline_item" for="Speed"><%_Speed%></label>
+			<input type="text" name="SyncSpeed" value="" id="Speed" class="span2 inline_item">
+      </div>
+    </div>
+
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" title="Close" data-dismiss="modal"><%_Cancel%></a>
+    <input type="submit" value="<%_Save%>" class="submit btn btn-primary" class="span12">
+  </div>
+</form>

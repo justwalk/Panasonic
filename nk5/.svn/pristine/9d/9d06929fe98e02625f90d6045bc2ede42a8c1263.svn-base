@@ -1,0 +1,82 @@
+/**
+ * Module dependencies.
+ */
+
+var express = require('express'),
+    path    = require('path');
+
+require('express-resource');
+
+var app = module.exports = express.createServer();
+
+// Configuration
+
+app.configure(function(){
+  //this is the root folder for views
+  app.set('views', path.join(__dirname, "app/views"));
+
+  //this is the template engine that we are using
+  app.set('view engine', 'ejs');
+
+  app.use(express.bodyParser());
+  app.use(express.methodOverride());
+  app.use(express.cookieParser());
+  app.use(express.session({ secret: 'your secret here' }));
+  app.use(app.router);
+
+});
+
+
+var io = require('socket.io').listen(app);
+
+// io.configure('production', function(){
+//   io.disable('browser client cache');
+//   io.set('browser client expires', 0);
+
+//   io.set('transports', [
+//     'websocket'
+//   , 'flashsocket'
+//   , 'htmlfile'
+//   , 'xhr-polling'
+//   , 'jsonp-polling'
+//   ]);
+// });
+
+io.sockets.on('connection', function (socket) {
+	require('./config/socket_router')(socket);
+});
+
+// Start the alive connection with the CGI
+// var Alive = require('./app/models/alive').Alive;
+// Alive.startListening(io.sockets);
+
+// Start the task scheduler
+var Task = require('./app/models/task').Task;
+Task.startScheduler()
+
+app.configure('development', function(){
+  app.use(express.static(path.join(__dirname + '/public')));
+  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+});
+
+app.configure('production', function(){
+  app.use(express.static(path.join(__dirname + '/public')));
+  app.use(express.errorHandler());
+});
+
+// Config Loading
+// require('./config/config.js');
+// Routes Loading
+require('./config/routes.js')(app);
+require('./config/config').existsPath();
+
+// if it is running in IIS it will use the env.PORT
+app.listen(process.env.PORT || 3000);
+console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
+
+//var rabbit = require('./app/helpers/rabbitmq_helper.js');
+//rabbit.listeningCPUInfo();
+
+require('./app/helpers/alive').startAlive(io);
+
+

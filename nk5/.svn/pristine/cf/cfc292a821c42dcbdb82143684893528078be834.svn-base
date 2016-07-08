@@ -1,0 +1,36 @@
+var rest = require('../helpers/rest_helper');
+var config = require('../../config/config.js');
+var base_disksURL = config.restHost() + '/ioservers/';
+
+
+var RestoreDisk = {};
+
+RestoreDisk.getRestore = function(params, callback) {
+	var restoreURL = base_disksURL + params.IOServer +'/disks/'+ params.ID;
+	rest.getJSON(restoreURL + '/restore', function(err, resp, body) {
+		callback(err, body);
+	});
+};
+
+RestoreDisk.create = function(params, callback) {
+	var restoreURL = base_disksURL + params.IOServer +'/disks/'+ params.ID + '/restore';
+	rest.postData(restoreURL + '/create', params , function(err, resp, body) {
+    if (err) {
+      callback(err);
+    }else{
+      params.ID = body.ID;
+      callback(err, params);
+    }
+  });
+};
+
+RestoreDisk.merge = function(params, callback) {
+  var mergeURL = base_disksURL + params.IOServer +'/disks/'+ params.ID;
+  rest.getJSON(mergeURL + '/merge', function(err, resp, body) {
+    callback(err, body);
+  });
+};
+
+
+
+module.exports.RestoreDisk = RestoreDisk;

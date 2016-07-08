@@ -1,0 +1,102 @@
+var Disk = require('../models/disk').Disk;
+
+
+module.exports = function(socket) {
+  
+  socket.on('disks:read', function (req, res) {
+  require('../../config/config').checkPass('admin', req, res, function() {
+    var conditions = {};
+    if(req.computer_id && req.menu_id && req.pack_id){
+      conditions.computer_id = req.computer_id;
+      conditions.menu_id = req.menu_id;
+      conditions.pack_id = req.pack_id;
+    }
+
+    Disk.all({where: conditions}, function(error, disks) {
+      res(null, disks);
+    });
+	});
+  });
+
+  socket.on('disk:create', function(req, res) {
+  require('../../config/config').checkPass('admin', req, res, function() {
+    console.log('disks:create');
+
+    Disk.create(req, function(error, diskCopy) {
+      if (!error) {
+        socket.emit('disks:create', diskCopy);
+        socket.broadcast.emit('disks:create', diskCopy);
+      }
+      res(error, diskCopy);
+    });
+	});
+  });
+
+  socket.on('disk:update', function(req, res) {
+    require('../../config/config').checkPass('admin', req, res, function() {
+	console.log('disk:update');
+    Disk.find(req.id, function(error, disk) {
+      if (!error) {
+        disk.updateAttributes(req, function(error, diskCopy) {
+          if (!error) {
+            socket.emit('disks:update', disk);
+            socket.broadcast.emit('disks:update', disk);
+          }
+          console.log('err', disk.errors);
+          res(disk.errors, disk);
+        });
+      }
+    });
+	});
+  });
+  
+  socket.on('disk:delete', function(req, res) {
+  require('../../config/config').checkPass('admin', req, res, function() {
+    console.log('disk:delete', req);
+    
+    Disk.find(req.computer_id, req.menu_id, req.pack, req.id, function(error, disk) {
+      console.log('disk found', disk);
+      if (!error) {
+        disk.destroy(function(err, disk) {
+          if(!err){
+            socket.emit('disks:delete', disk);
+            socket.broadcast.emit('disks:delete', disk);
+          }
+          res(err, disk);
+        });
+      }else{
+        res('Disk, not found', null);
+      }
+    });
+	});
+  });
+
+  socket.on('restore:read', function(req, res) {
+    require('../../config/config').checkPass('admin', req, res, function() {
+      Disk.getRestore(req,function(err, data) {
+        res(err, data);
+      });
+    });
+  });
+
+  socket.on('restore:rollback', function(req, res) {
+    require('../../config/config').checkPass('admin', req, res, function() {
+      Disk.rollback(req, function(error, data) {
+        if (!error) {
+          socket.emit('Disk:rollback', data);
+          socket.broadcast.emit('restore:rollback', data);
+        }
+        res(error, data);
+      });
+    });
+  });
+
+  socket.on('disk:merge', function(req, res) {
+    require('../../config/config').checkPass('admin', req, res, function() {
+      Disk.merge(req,function(err, data) {
+        res(err, data);
+      });
+    });
+  });
+
+};

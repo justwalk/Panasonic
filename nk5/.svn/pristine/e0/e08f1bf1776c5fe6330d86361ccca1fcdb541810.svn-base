@@ -1,0 +1,71 @@
+var Pack = require('../models/pack').Pack;
+
+
+module.exports = function(socket) {
+  
+  socket.on('packs:read', function (req, res) {
+    require('../../config/config').checkPass('admin', req, res, function() {
+	var conditions = {};
+    if(req.computer_id && req.menu_id){
+      conditions.computer_id = req.computer_id;
+      conditions.menu_id = req.menu_id;
+    }
+
+    Pack.all({where: conditions}, function(error, packs) {
+      res(null, packs);
+    });
+	});
+  });
+
+  socket.on('pack:create', function(req, res) {
+    console.log('pack:create', req);
+    require('../../config/config').checkPass('admin', req, res, function() {
+    Pack.create(req, function(error, packCopy) {
+      if (!error) {
+        socket.emit('packs:create', packCopy);
+        socket.broadcast.emit('packs:create', packCopy);
+      }
+      res(error, packCopy);
+    });
+	});
+  });
+
+  socket.on('pack:update', function(req, res) {
+    console.log('pack:update');
+	require('../../config/config').checkPass('admin', req, res, function() {
+   Pack.find(req.id, function(error, pack) {
+      if (!error) {
+        pack.updateAttributes(req, function(error, packCopy) {
+          if (!error) {
+            socket.emit('packs:update', pack);
+            socket.broadcast.emit('packs:update', pack);
+          }
+          console.log('err', pack.errors);
+          res(pack.errors, pack);
+        });
+      }
+    });
+	});
+  });
+  
+  socket.on('pack:delete', function(req, res) {
+    console.log('pack:delete', req);
+    require('../../config/config').checkPass('admin', req, res, function() {
+    Pack.find(req.computer_id, req.menu,  req.id, function(error, pack) {
+      console.log('pack found', pack);
+      if (!error) {
+        pack.destroy(function(err, pack) {
+          if(!err){
+            socket.emit('packs:delete', pack);
+            socket.broadcast.emit('packs:delete', pack);
+          }
+          res(err, pack);
+        });
+      }else{
+        res('Pack, not found', null);
+      }
+    });
+	});
+  });
+
+};

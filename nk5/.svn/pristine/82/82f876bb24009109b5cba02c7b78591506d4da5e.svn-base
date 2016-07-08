@@ -1,0 +1,57 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'models/server',
+  'text!templates/servers/edit_server.html',
+  'modelBinder'
+], function($, _, Backbone, Server, editServer, ModelBinder){
+
+  var EditServerView = Backbone.View.extend({
+    id:'add-server-modal',
+    className: 'modal fade',
+    template: _.template(underi18n.template(editServer, msgFactory)),
+    
+    events:{
+      'submit #edit-server-form': 'saveModel',
+      'hidden' : 'remove' //the 'hidden' event is from bootstrap modal dismiss
+    },
+    _modelBinder: undefined,
+    initialize: function(options) {
+       var self = this;
+       this.model = this.options.model || new Server();
+       console.log(this.model);
+       this._modelBinder = new Backbone.ModelBinder();
+        
+       _.bindAll(this);
+    },
+    
+    saveModel: function(e) {
+      var self = this;
+      $('input[type=submit]', self.el).attr('alt',$('input[type=submit]',self.el).val());
+      $('input[type=submit]', self.el).attr('disabled', 'disabled').val(App.msgFactory('Please wait...'));
+      this._modelBinder.bind(this.model, this.el);
+      this.model.save({}, {
+        success: function(model, response) {
+          self.$el.modal('hide');
+        }
+      });
+      return false;
+    },
+    
+    render: function() {
+      this.delegateEvents();
+      $(this.el).html(this.template({model:this.model}));
+      this._modelBinder.bind(this.model, this.el);
+//      this.model.bind('error', function(object, message) {
+//        self.$('input[type=submit]').removeAttr('disabled').val("Save");
+//        var errorContainer = $('.storage-form .errors', this.el);
+//        errorContainer.html(JSON.stringify(message));
+//        errorContainer.show();
+//      });
+
+      return this;
+    }
+  });
+  return EditServerView;
+});

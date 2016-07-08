@@ -1,0 +1,106 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'models/user',
+  'collection/users',
+  'text!templates/users/user_menu.html',
+  'collection/groups',
+  'views/users/users',
+  'views/groups/group',
+  'views/users/edit_user_menu',
+  'touchPunch',
+  'bootstrapDatatables'
+        
+], function($, _, Backbone,User, SchedulesCollection ,listTemplate, GroupsCollection, TasksView, GroupView,EditUserMenuView){
+    
+    var SchedulesView = Backbone.View.extend({
+        template : _.template(underi18n.template(listTemplate, msgFactory)),
+        events: {
+              'click .add_user':'createUser',
+              'click .submit':'saveUser',
+              'click .remove_user':'removeUser',
+              'click .edit_user_menu':'editUserMenu'
+          },
+        initialize: function() {
+          var self = this;
+          self.router = self.options.router;
+          
+          this.groupsCollection = new GroupsCollection();  
+          this.groupsCollection.bind('add remove reset', this.render, this);
+          this.groupsCollection.fetch({});
+          
+          this.collection = new SchedulesCollection();
+          this.tasksView = new TasksView({collection: this.collection});
+        },
+
+        
+        resetClickedSchedule: function(schedule) {
+          if (this.clickedSchedule.get(schedule.id)) {
+            this.clickedSchedule.reset([]);
+          }else {
+            this.clickedSchedule.reset([schedule]);
+          }
+        },
+
+        selectionChanged: function(){
+          this.setGroupid($('#group-select', this.el).val());
+        },
+
+        setGroupid: function(group_id) {
+          this.group_id = group_id ? group_id : '';
+          $('#group-select', this.el).val(this.group_id);
+          this.router.navigate('users'+ (this.group_id ? ('/'+this.group_id) : ''));
+          this.collection.fetchWithGroupId(group_id);
+        },
+                
+        render: function() {
+          $(this.el).html(this.template());
+          $('#main', this.el).html(this.tasksView.el);
+          this.tasksView.delegateEvents();
+          return this;
+        },
+      createUser:function(){
+         $('#add_modal').modal();
+      },
+      saveUser:function(){
+        var data=this.serializeJSON($("#add-user-form"));
+        var user=new User(data);
+        user.save();
+       $('#add_modal').modal('hide');
+       this.selectionChanged();
+      },
+      removeUser:function(){
+        if(this.tasksView.getSelectedViews().length>0){
+          this.tasksView.getSelectedViews()[0].task.destroy();
+          this.selectionChanged();
+        }else{
+          alert('select one placese!');
+        }
+        
+      },
+      editUserMenu:function(){
+        if(this.tasksView.getSelectedViews().length>0){
+           var editUserMenuView = new EditUserMenuView(this.tasksView.getSelectedViews()[0].task);
+           $("#modal-container").html(editUserMenuView.render().$el.modal());
+        }else{
+          alert('select one placese!');
+        }
+          
+       
+      },
+      serializeJSON:function(ev){
+         var obj = {};
+            var count = 0;
+            $.each(ev.serializeArray(), function (i, o) {
+                var n = o.name, v = o.value;
+                count++;
+                obj[n] = obj[n] === undefined ? v
+                : $.isArray(obj[n]) ? obj[n].concat(v)
+                : [obj[n], v];
+            });
+            return obj;
+      }
+    });
+    return SchedulesView;
+});

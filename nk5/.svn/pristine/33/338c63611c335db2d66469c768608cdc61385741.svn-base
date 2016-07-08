@@ -1,0 +1,282 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'rsvp',
+  'views/groups/group',
+  'text!templates/groups/groups_view.html',
+  'text!templates/groups/groups_view_modal.html',
+  'collection/computers',
+  'views/computers/computers',
+  'views/groups/computer_commands',
+  'views/computers/context_commands',
+  'views/groups/add_group',
+  'views/computers/computer_form_templete',
+  'models/computer',
+    'collection/menus',
+  'views/commands/boot_menu_template',
+  'views/commands/setting_menu',
+  'bootstrapDatatables'
+], function($, _, Backbone, RSVP, GroupView, groupsTemplate,groupsModalTemplate, ComputersCollection, ComputersView, ComputerCommands, ContextCommands, AddGroupView,ComputerFormT,Computer,Menus){
+    var GroupsView = Backbone.View.extend({
+        template: _.template(underi18n.template(groupsTemplate, msgFactory)),
+        events: {
+            'change #group-select' : 'selectionChanged',
+            'click .group-actions .add-group': 'addGroup',
+            'click .group-actions .remove-group': 'removeGroup',
+            'click .switch-view': 'switchView',
+            'click .select-all': 'selectAll',
+            'click .select-none': 'selectNone',
+            'click .select-invert': 'selectInvert',
+            'click .reset-computers': 'resetComputers',
+            'click .select-Refresh': 'selectRefresh',
+            'click .edit-computersT': 'editComputersT',
+            'click .edit-bootMenuT': 'editBootMenuT',
+            'click .group-actions .operate-group': 'operateGroup' //byt add 20160316
+
+        },
+
+        initialize: function(){
+            var self = this;
+            if(self.options.router){
+              self.router = self.options.router;
+            }else{
+              self.template=_.template(underi18n.template(groupsModalTemplate, msgFactory));
+              self.selected = self.options.selected;
+            }
+            
+            this.collection.bind('reset', function(collection) {
+              if (!self.group_id || (parseInt(self.group_id) !== 0 &&
+                  collection.where({id: parseInt(self.group_id)}).length === 0)) {
+                  //cookie 记录选择 分组
+                  var cookieValue=localStorage.getItem('selectCookieGroup');
+                  if(cookieValue!=='' && cookieValue!=null){
+                      self.setGroupid(cookieValue);
+                  }else{
+                      self.setGroupid(collection.at(0).id);
+                  }
+              }
+            });
+            this.collection.bind('add reset remove', function(collection) {
+              self.render();
+            });
+        
+            this.collection.bind('remove',function(group) {
+              if (self.group_id == group.id) {
+                self.setGroupid(self.collection.at(0).id);
+              }
+            });
+
+            this.computersCollection = new ComputersCollection([], {group_id:''});
+            self.computersView = new ComputersView({collection: this.computersCollection,selected:this.selected});
+            this.computersCollection.bind('add reset remove', function(collection) {
+              if (self.group_id == 0) {
+            	//byt add start 20160317  
+            	if(self.$('#operate_group').val()=="false"){
+    			  self.computersCollection.forEach(function(computer) {
+                    computer.toggleSelected(true);
+                  });			  
+    			}
+            	//byt add end 20160317
+                $('.lock-position', self.el).hide();
+                $('.unlock-position', self.el).hide();
+                $('.reset-computers', self.el).hide();
+              }
+              else {
+            	//byt add start 20160317 
+            	if(self.$('#operate_group').val()=="false"){
+        		  self.computersCollection.forEach(function(computer) {
+                    computer.toggleSelected(true);
+                  });			  
+        	    }
+            	//byt add end 20160317
+                $('.lock-position', self.el).show();
+                $('.unlock-position', self.el).hide();
+                $('.reset-computers', self.el).show();
+              }
+            });
+
+            // 获取 computer template 数据
+            socket.emit('computer:readRewrite', {computer_id:1}, function(err, data) {
+                var computer =new Computer(data);
+                self.default_computer=computer;
+            });
+        },
+
+        editComputersT: function() {
+            var self=this;
+            _.bindAll(this, 'render');
+            // 获取menu
+            socket.emit('menus:read', {computer_id:1}, function(err, data) {
+                self.default_menu=data;
+                self.computerFormT = new ComputerFormT({groups: self.groups, model:self.default_computer,defaultMenu: self.default_menu});
+                self.computerFormT.render().$el.appendTo($('#modal-container')).modal();
+                $('input:visible:first', self.computerFormT.el).focus();
+            });
+        },
+
+        // 缂栬緫 boot Menu template
+        editBootMenuT: function() {
+            var bootMenuView;
+            var promiseArray = [];
+            var self=this;
+            _.bindAll(this, 'render');
+            // 获取menu
+            socket.emit('menus:read', {computer_id:1}, function(err, data) {
+                self.default_menu=data;
+                var arr=[];
+                arr.push(self.default_computer);
+                bootMenuView = new (require('views/commands/boot_menu_template'))({computers: arr,menus:self.default_menu});
+                bootMenuView.render().$el.appendTo($('#modal-container')).modal();
+                $('#menu-name', bootMenuView.el).focus();
+            });
+        },
+
+        selectionChanged: function(){
+            localStorage.setItem("selectCookieGroup",$('#group-select', this.el).val());
+            this.setGroupid($('#group-select', this.el).val());
+        },
+        
+        setGroupid: function(group_id) {
+          
+          this.group_id = group_id ? group_id : '';
+          $('#group-select', this.el).val(this.group_id);
+          if(this.router){
+                      this.router.navigate('clients'+ (this.group_id ? ('/'+this.group_id) : ''));
+          }
+          $('.group-actions .remove-group', this.el).attr('disabled', (this.group_id ? false : true));
+          this.computersView.setGroupid(this.group_id);
+        },
+
+        addGroup: function(e) {
+          var addGroupView = new AddGroupView({parentView:this});
+          addGroupView.render().$el.appendTo($('#modal-container')).modal();
+          $('input:visible:first', addGroupView.el).focus();
+        },
+        
+        removeGroup: function(e) {
+          var self = this;
+          var group = this.collection.get(this.group_id);
+          if (group) {
+            group.destroy({
+              success: function() {
+                self.setGroupid('');
+              }
+            });
+          }
+        },
+        
+        switchView: function(e) {
+
+          if (this.computersView.switchView()) {
+         
+            // list mode
+            $('#switch-grid').removeClass('hide_item').addClass('show_item');
+            $('#switch-list').removeClass('show_item').addClass('hide_item');
+          } else {
+            // grid mode
+           
+            $('#switch-grid').removeClass('show_item').addClass('hide_item');
+            $('#switch-list').removeClass('hide_item').addClass('show_item');
+          }
+        },
+        
+        selectAll: function() {
+          this.computersCollection.forEach(function(computer) {
+            computer.toggleSelected(true);
+          });
+        },
+
+        selectNone: function() {
+          this.computersCollection.forEach(function(computer) {
+            computer.toggleSelected(false);
+          });
+        },
+
+        selectInvert: function() {
+          this.computersCollection.forEach(function(computer) {
+            computer.toggleSelected();
+          });
+        },
+        //byt add start 20160316
+        operateGroup: function() {
+  		  var self = this;
+  		  if(self.$('#operate_group').val() == "true"){
+            this.computersCollection.forEach(function(computer) {			  
+              computer.toggleSelected(true);
+  			}); 
+  			self.$('#operate_group').val("false");
+  			self.$('#select-none').removeClass();
+  			self.$('#select-invert').removeClass();
+          }else{
+  			this.computersCollection.forEach(function(computer) {			  
+              computer.toggleSelected(false);
+  			}); 	
+  			self.$('#operate_group').val("true");
+  			self.$('#select-none').addClass("select-none");
+  			self.$('#select-invert').addClass("select-invert");
+          }  
+  		  
+        },        
+        //byt add end 20160316
+        resetComputers: function() {
+
+          var count = 0;
+          var self = this;
+          var promiseArray = [];
+          var r=confirm(App.msgFactory('Are you sure you want to reset computers?'));
+          if (r===true) {
+            this.computersCollection.forEach(function (computer) {
+              computer.set('x', (count%11)*95);
+              computer.set('y', Math.floor(count/11)*75);
+              count++;
+              promiseArray.push(new RSVP.Promise( function (resolve, reject) {
+                computer.save({}, {
+                  success: function(model, response) {
+                    resolve(model);
+                  },
+                  error: function(model, response) {
+                    reject(model);
+                  }
+                });
+              }));
+            });
+            self.computersView.$el.hide();
+            RSVP.all(promiseArray).then(function(data) {
+              self.computersView.render();
+              self.computersView.$el.show();
+            });
+          }
+        },
+    selectRefresh:function(e){
+     
+        Backbone.history.loadUrl();
+      } , 
+        render: function() {
+          var self = this;
+          var options = '<option value="0">All</option>';
+          // var options = '';
+          //  var cookieValue=localStorage.getItem('selectCookieGroup');
+          //  if(cookieValue!=='' && cookieValue!=null){
+          //      self.group_id=cookieValue;
+         //   }
+            this.collection.each(function(group) {
+                //alert("group==="+JSON.stringify(group));
+            var groupView = new GroupView({model: group, selected:(group.get('id')==self.group_id)});
+            options += groupView.render();
+          });
+          $(this.el).html(this.template({groupOptions: options, user: App.user}));
+
+          $('#main', this.el).html(self.computersView.el);
+          this.computersView.delegateEvents();
+
+          var contextCommands = new ContextCommands({parentView:self, el: $('#context-commands', self.el), collection:this.computersCollection, clickedComputer:this.computersView.clickedComputer});
+          var computerCommands = new ComputerCommands({groups: self,computersView: self.computersView, el: $('#computer-commands', self.el), collection:this.computersCollection, clickedComputer:this.computersView.clickedComputer});
+          return this;
+        }
+
+    });
+
+  return GroupsView;
+});
+

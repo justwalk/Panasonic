@@ -1,0 +1,82 @@
+    <!-- actions -->
+    <div class="container-fluid min_width">
+        <div class="row-fluid">
+            <div class="container">
+            
+                <div id="actions" class="navbar">
+                    <div class="navbar-inner">                       
+                            <ul class="nav pull-right">
+                                <li><a href="javascript:void(0)"><%_Select%>:</a></li>
+                                <li><a href="javascript:void(0)" class="select-all"><%_All%></a></li>
+                                <li><a href="javascript:void(0)" class="select-none"><%_None%></a></li>
+                                <li><a href="javascript:void(0)" class="select-invert"><%_Invert%></a></li>
+                                <li class="list-view">
+                                    <a id="switch-list" class="switch-view no_padding hide_item" href="javascript:void(0);">
+                                    <i class="icon-bar"></i>
+                                    <i class="icon-bar"></i>
+                                    <i class="icon-bar"></i>
+                                    <i class="icon-bar"></i>
+                                    </a>
+                                </li>
+                                <li class="list-view">
+                                    <a id="switch-grid" class="switch-view no_padding" href="javascript:void(0);">
+                                    <i class="icon-square"></i>
+                                    <i class="icon-square"></i>
+                                    <i class="icon-square"></i>
+                                    <br />
+                                    <i class="icon-square"></i>
+                                    <i class="icon-square"></i>
+                                    <i class="icon-square"></i>    
+                                    <div class="clearfix"></div>
+                                    </a>
+                                </li>
+                            </ul>
+                    </div>
+                </div>
+            
+            </div><!-- page container -->
+        </div><!-- row-fluid -->
+    </div>
+    <!-- END actions -->
+    
+    <!-- Page content -->
+    <div class="container-fluid min_width">
+        <div class="row-fluid">
+            <div id="page" class="container">
+                
+                <table class="table table-data table-striped table-bordered" id="table-view">
+                    <thead>
+                        <tr>
+                            <th><%_IP%></th>
+                            <th><%_Port%></th>
+                            <th><%_Type%></th>
+                        </tr>
+                    </thead>
+                    <tbody id="servers-container">
+                         <!--Servers Elements come HERE -->
+                    </tbody>
+                </table>
+                
+            </div><!-- page container -->
+        </div><!-- row-fluid -->
+    </div>
+    <!-- END Page content -->
+    
+    <!-- Boottom menu -->
+    <!-- CRUD Actions -->
+    <div id="bottom-navbar" class="navbar navbar-fixed-bottom bottom-navbar">
+        <div class="navbar-inner">
+            <div class="container">
+              <ul class="nav">
+                  <li><button class="add-server"><i class="icon-white icon-plus"></i> <%_Create%></button></li>
+                  <li class="divider-vertical"></li>
+				  <li><button class="edit-server"> <%_Edit%></button></li>
+                  <li><button class="remove-server"> <%_Remove%></button></li>
+                  <li><button class="restart-servers"><%_Restart%></button></li>
+                   <li><button class="restart-servers"><%_BootServerRestart%></button></li>
+              </ul>
+            </div>
+        </div>
+    </div><!-- CRUD Actions -->
+    <!-- END Boottom menu -->
+    

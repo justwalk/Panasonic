@@ -1,0 +1,33 @@
+
+<td><%- memo %></td>
+<td><%- action %></td>
+<td><%- cycle %></td>
+<td><%- task.getDate('next_execution_date')||'-' %></td>
+<td><%- task.getDate('last_run_date')||'-' %></td>
+<td><%- last_run_status ||'-' %> <i class="pull-right status <%- task.get('last_run_status') %>"></i> </td>
+<td>
+	<% if(task.getDate('next_execution_date')) { %>
+		<button class="removeTask btn btn-default"><%_Remove%></button>
+		<% if(task.get('enable')) { %>
+		<!-- <%- task.get('enable') %> -->
+			<button type="button" value="Disable" class=" btn btn-default enable "><%_Disable%></button>
+			<% }else{ %>
+			<!-- <%- task.get('enable') %> -->
+			<button type="button" value="Enable" class=" btn btn-default enable "><%_Enable%></button>
+		<% } %>
+	<% } %>
+	<!-- <% if(task.get('execute') == 'schedule') { %>
+		<% if(task.get('cycle')!='once'||(task.get('cycle') == 'once' &&!task.get('last_run_date'))) { %>
+			<% if(task.get('enable')) { %>
+			<button type="button" value="Disable" class=" btn btn-default enable "><%_Disable%></button>
+			<% }else{ %>
+			<button type="button" value="Enable" class=" btn btn-default enable "><%_Enable%></button>
+			<% } %>
+		<% } %>
+	<% } %> -->
+</td>
+	<td><% if(App.menu['27']) { %><button class="btn btn-default logTask"><%_Log%></button><% } %>
+</td>
+<td  style="display: none;"><%- date %></td>
+<td style="display: none;" ><%- task.get('id') %></td>
+

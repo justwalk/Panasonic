@@ -1,0 +1,26 @@
+IOServer
+  -Add
+  -Delete
+Images
+  ✓ Create
+  - Update
+  - Delete
+  ✓ List
+Computers
+  ✓ add group
+  ✓ delete group
+  ✓ select group
+  ✓ Start
+  ✓ Stop
+  ✓ Restart
+  ✓ Sendcmd
+  ✓ Logout
+  - Change mac (deleted)
+  - Naming pattern (deleted)
+  ✓ Update mode
+  ✓ Save update
+  ✓ Test update
+  ✓ Boot Menu
+  ✓ Add computer
+  ✓ edit computer
+  ✓ delete computer

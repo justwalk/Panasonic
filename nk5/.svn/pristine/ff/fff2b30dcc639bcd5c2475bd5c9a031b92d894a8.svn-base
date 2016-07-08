@@ -1,0 +1,155 @@
+var restore_modal;
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/modals/error_prompt.html',
+  'msgFactory'
+], function($, _, Backbone, tmpl, msgFactory){
+  var ErrorPrompt = Backbone.View.extend({
+  
+    template: _.template(underi18n.template(tmpl, msgFactory)),
+  id: 'error-prompt',
+  events: {
+    'click #close_error': 'close'
+  },
+
+    render: function(msg, param) {
+
+      if ($('#add-storage-modal').hasClass('in') === true){
+          $('#add-storage-modal').modal('hide');
+          restore_modal='add-storage-modal';
+      }
+      if ($('#server-settings-modal').hasClass('in') === true){
+          $('#server-settings-modal').modal('hide');
+          restore_modal='server-settings-modal';
+      }
+      if ($('#add-group-modal').hasClass('in') === true){
+          $('#add-group-modal').modal('hide');
+          restore_modal='add-group-modal';
+      }
+      if ($('#add-server-modal').hasClass('in') === true){
+          $('#add-server-modal').modal('hide');
+          restore_modal='add-server-modal';
+      }
+      if ($('#start-group-modal').hasClass('in') === true){
+          $('#start-group-modal').modal('hide');
+          restore_modal='start-group-modal';
+      }
+      if ($('#stop-group-modal').hasClass('in') === true){
+          $('#stop-group-modal').modal('hide');
+          restore_modal='stop-group-modal';
+      }
+      if ($('#restart-group-modal').hasClass('in') === true){
+          $('#restart-group-modal').modal('hide');
+          restore_modal='restart-group-modal';
+      }
+      if ($('#start-computer-modal').hasClass('in') === true){
+          $('#start-computer-modal').modal('hide');
+          restore_modal='start-computer-modal';
+      }
+      if ($('#stop-computer-modal').hasClass('in') === true){
+          $('#stop-computer-modal').modal('hide');
+          restore_modal='stop-computer-modal';
+      }
+      if ($('#restart-computer-modal').hasClass('in') === true){
+          $('#restart-computer-modal').modal('hide');
+          restore_modal='restart-computer-modal';
+      }
+      if ($('#send-command-modal').hasClass('in') === true){
+          $('#send-command-modal').modal('hide');
+          restore_modal='send-command-modal';
+      }
+      if ($('#send-message-modal').hasClass('in') === true){
+          $('#send-message-modal').modal('hide');
+          restore_modal='send-message-modal';
+      }
+      if ($('#logout-modal').hasClass('in') === true){
+          $('#logout-modal').modal('hide');
+          restore_modal='logout-modal';
+      }
+      if ($('#update-mode-modal').hasClass('in') === true){
+          $('#update-mode-modal').modal('hide');
+          restore_modal='update-mode-modal';
+      }
+      if ($('#save-update-modal').hasClass('in') === true){
+          $('#save-update-modal').modal('hide');
+          restore_modal='save-update-modal';
+      }
+      if ($('#login-modal').hasClass('in') === true){
+          $('#login-modal').modal('hide');
+          restore_modal='login';
+      }
+      if ($('#add-computer-modal').hasClass('in') === true){
+          $('#add-computer-modal').modal('hide');
+          restore_modal='add-computer-modal';
+      }
+      if ($('#boot-menu-modal').hasClass('in') === true){
+          $('#boot-menu-modal').modal('hide');
+          restore_modal='boot-menu-modal';
+      }
+
+      this.$el.html(this.template({error: msg, param: param})).modal();
+      return this;
+    },
+    close: function() {
+        this.$el.modal('hide');
+        switch (restore_modal)
+        {
+        case 'login':
+           $('#login-modal').modal({show: true});
+           break;
+        case 'server-settings-modal':
+           $('#server-settings-modal').modal({show: true});
+           break;
+        case 'add-storage-modal':
+           $('#add-storage-modal').modal({show: true});
+           break;
+        case 'add-server-modal':
+           $('#add-server-modal').modal({show: true});
+           break;
+        case 'start-computer-modal':
+           $('.start-computer-modal').modal({show: true});
+           break;
+        case 'start-group-modal':
+            $('.start-group-modal').modal({show: true});
+            break;
+        case 'stop-group-modal':
+            $('.stop-group-modal').modal({show: true});
+            break;
+        case 'restart-group-modal':
+            $('.restart-group-modal').modal({show: true});
+            break;
+        case 'stop-computer-modal':
+           $('#stop-computer-modal').modal({show: true});
+           break;
+        case 'restart-computer-modal':
+           $('#restart-computer-modal').modal({show: true});
+           break;
+        case 'send-command-modal':
+           $('#send-command-modal').modal({show: true});
+           break;
+        case 'send-message-modal':
+            $('#send-message-modal').modal({show: true});
+            break;
+        case 'logout-modal':
+           $('#logout-modal').modal({show: true});
+           break;
+        case 'update-mode-modal':
+           $('#update-mode-modal').modal({show: true});
+           break;
+        case 'save-update-modal':
+           $('#save-update-modal').modal({show: true});
+           break;
+        case 'add-computer-modal':
+           $('#add-computer-modal').modal({show: true});
+           break;
+        case 'add-group-modal':
+           $('add-group-modal').modal({show: true});
+           break;
+        }
+      }
+  });
+  return ErrorPrompt;
+});
+

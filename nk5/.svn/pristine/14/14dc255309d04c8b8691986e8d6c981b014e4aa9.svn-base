@@ -1,0 +1,38 @@
+ <div style="height: 30px;"><div  style="position: relative;top:32px;right: 458px;">
+              <div style="float: right;line-height: 29.5px;font-weight: bold;padding-left: 33px;"><input type="checkbox"  class="select-schedule" id='checkbox' /><%_Display Schedule Task Only%></div>
+        </div></div>
+<table class="table table-data table-striped table-bordered" id="schedules-table" style="max-width: 98%;">
+     <thead >
+       <div style="float: right;margin-right: 100px;">&nbsp;</div>
+    <div style="float: right;"><img  class='refreshtask' src="../../images/Refresh.png" style="cursor: pointer;" title="Resh2"></div>
+      <th style="display: none;" ><%_id%></th>
+       <th><%_Memo%></th>
+      <th><%_Action%></th>
+      <th><%_Cycle%></th>
+      <th><%_Next Exec Date%></th>
+      <th><%_Last Run Date%></th>
+      <th><%_Last Run Status%></th>
+      <th><%_Settings%></th>      
+      <th><%_Log%></th>
+      <th style="display: none;"><%_Date%></th>
+
+    </tr>
+  </thead>
+  <div style="float: right;">
+      
+</div>
+  <tbody id="schedules-container"> </tbody>
+  <tfoot>
+   <tr>
+     <th></th>
+     <th></th>
+     <th></th>
+     <th></th>
+     <th></th>
+     <th></th>    
+     <th></th>
+     <th></th>
+   </tr>
+  </tfoot>
+
+</table>

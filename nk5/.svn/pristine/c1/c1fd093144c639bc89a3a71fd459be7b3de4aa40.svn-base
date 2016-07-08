@@ -1,0 +1,126 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'modelBinder',
+  'models/task',
+  'collection/base_disks'
+  ], function($, _, Backbone, ModelBinder, Task,BaseDiskCollection){
+ BaseCommand = Backbone.View.extend({
+    className: 'modal fade',
+    events:{
+      'submit .task-form ': 'saveModel',
+      'hidden' : 'remove' //the "hidden" event is from bootstrap modal dismiss
+    },
+
+    initialize: function() {
+        _.bindAll(this);
+      var self = this;
+        var name = '';
+        var computer_uuid = '';
+
+      _.bindAll(this, 'render', 'weekdaysConverter', 'cycleChangedConverter', 'executeChangedConverter');
+      this.model = this.options.task || new Task();
+        this.model.set('name', name);
+        this.model.set('computer_name', name);
+        this.model.set('computer_uuid', computer_uuid);
+      this._modelBinder = new ModelBinder();
+        this.bindings = {
+            name: '[name=name]',
+            execute:[
+                {selector: '[name=execute]'},
+                {selector: '#schedule-details', elAttribute:'displayed', converter: this.executeChangedConverter}
+            ],
+            cycle: [{selector: '[name=cycle]'}, {selector: '.cycle', converter: this.cycleChangedConverter}],
+            date: '[name=date]',
+            weekdays: {selector:'[name=weekdays]', converter: this.weekdaysConverter, elAttribute:'checked'},
+            month_days: {selector:'[name=month_days]', converter: this.monthDaysConverter},
+            time: '[name=time]'
+        };
+      this.model.bind('error', function(object, message) {
+        var errorContainer = $('.task-form .errors', this.el);
+        errorContainer.html(JSON.stringify(message));
+        errorContainer.show();
+      });
+        this.parentDisks = new BaseDiskCollection();
+        this.parentDisks.bind('add remove reset', self.renderParentDisks);
+    },
+
+     // 获取 disk 列表  ##########################
+     renderParentDisks: function(collection) {
+
+         console.log(collection);
+         options = '<option value="0">' + App.msgFactory('No parent') + '</option>';
+         collection.each(function(server) {
+             _(server.get('disks')).each(function(disk) {
+                 options += '<option value="' + disk.ID + '">' + server.get('IP') + ' | ' + disk.Name + '</option>';
+             });
+         });
+         this.$('#Base').html(options);
+         this.$('#Target').html(options);
+     },
+
+    // when  时间帅选 ###############################
+    monthDaysConverter: function(direction, value, attribute, model) {
+      return direction=='ViewToModel' ? value.join(',') : value.split(',');
+    },
+
+    cycleChangedConverter: function(direction, value, attribute, model) {
+      $('#once, #weekly, #monthly', this.el).addClass('hide');
+      $('#'+model.get('cycle'), this.el).removeClass('hide');
+    },
+
+    weekdaysConverter: function(direction, value, attribute) {
+      var self = this;
+      if (direction=='ViewToModel') {
+        var weekdays = [];
+        $('[name=weekdays]:checked', self.el).each(function() { weekdays.push(this.value); });
+        return weekdays.join(',');
+      }else{
+        _.forEach(value.split(','), function(day) {
+          $('#weekdays_'+day, self.el).attr('checked', true);
+        });
+      }
+      
+    },
+
+    executeChangedConverter: function(direction, value, attribute, model){
+      if (value=='now') {
+        this.model.set('cycle', 'once');
+      }
+      return value!='now';
+    },
+    // 保存 #########################################
+    saveModel: function(e) {
+        e.preventDefault();
+        var self = this;
+        //获取bootMenu选中值
+        var bootMenuValue =$("input[name='bootMenu']:checked").val();
+        //获取boot Device 选中值
+        var bootDeviceValue=$("#boot_device option:selected").val();
+        this.model.set('command',bootMenuValue+"|"+bootDeviceValue);
+        if (this.model.isValid) {
+            if(bootMenuValue!=3 ||  bootDeviceValue!=11){
+                //关闭，开启 bootMenu
+                this.model.save({action: "start_device"}, {
+                    success: function (model, response) {
+                        self.$el.modal('hide');
+                    }
+                });
+            }
+        }
+        return false;
+    },
+
+
+    render: function() {
+      var self = this;
+      $(this.el).html(this.template({model:this.model}));
+      this._modelBinder.bind(this.model, this.el, this.bindings);
+      $('.datepicker', this.el).datepicker({dateFormat: 'dd/mm/yy'});
+        this.parentDisks.fetch();
+      return this;
+    }
+  });
+  return BaseCommand;
+});

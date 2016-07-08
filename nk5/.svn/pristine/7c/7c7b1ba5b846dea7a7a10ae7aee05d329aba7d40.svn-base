@@ -1,0 +1,3 @@
+<ul class="unstyled">
+	<li>Total <%= this.aliveLength %>/<%= this.computersLength %></li>
+</ul>

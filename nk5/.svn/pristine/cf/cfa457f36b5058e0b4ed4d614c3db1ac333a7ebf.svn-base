@@ -1,0 +1,28 @@
+<tr>
+  <th><%- pack.get('name') %></th>
+  <th><%- Type %></th>
+  <th><select name="mode" id="mode">
+  	<option value="UpdateActive"
+	  	 <% if(pack.get('state')=="UpdateActive"){ %> 
+	  	 selected="selected"
+	  	 <% }%>
+  	><%_Active Update%></option>
+  	<option value="Undo"
+  		<% if(pack.get('state')=="UndoReady"){ %> 
+	  	 selected="selected"
+	  	 <% }%>
+  	><%_Normal Mode%></option>
+  	<option value="RWReady"
+  		<% if(pack.get('state')=="RWReady"){ %> 
+	  	 selected="selected"
+	  	 <% }%>
+  	><%_Continue Mode%></option>
+  </select></th>
+  <th><button type="button" class="update btn"><%_Change%></button></th>
+</tr>
+<tr>
+  <td>&nbsp;</td>
+  <td><button type="button" class="remove btn">-<%_Remove%></button></td>
+  <td><%_Local Disk Cache%></td>
+  <td><button type="button" class="update btn"><%_Change%></button></td>
+</tr>

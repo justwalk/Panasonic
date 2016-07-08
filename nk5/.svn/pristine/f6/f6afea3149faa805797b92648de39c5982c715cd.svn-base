@@ -1,0 +1,365 @@
+define([
+  'require',
+  'jquery',
+  'underscore',
+  'backbone',
+  'rsvp',
+  'views/computers/computer_form',
+  'models/computer',
+  'views/commands/update_mode',
+  'views/commands/action_exam',
+  'views/commands/save_update_mode',
+  'views/commands/test_update_mode',
+  'views/commands/boot_menu',
+  'views/commands/multiclient_boot_menu',
+  'views/commands/boot_menu_template',
+  'views/commands/setting_group_menu',
+  'views/commands/setting_computer_menu',
+  'views/commands/setting_group_disk',
+  'views/commands/setting_computer_disk',
+  'views/commands/poweron_group_message',
+  'views/commands/power_on',
+  'views/commands/restart_action',
+  'views/commands/group_restart_action',
+  'views/commands/power_group_message',
+  'views/commands/power_off',
+  'views/commands/start_update_computer',
+  'views/commands/end_update_computer',
+  'views/commands/option_setting_group_menu',
+  'views/commands/option_setting_computer_menu'
+], function(require, $, _, Backbone,RSVP, ComputerForm, Computer,SettingMenuView,SettingGroupMenuView,SettingComputerMenuView,SettingGroupDiskView,SettingComputerDiskView,OptionSettingsGroupMenuView,OptionSettingsComputerMenuView){
+  var ComputerCommands = Backbone.View.extend({
+    events:{
+      'click .add-computer': 'addComputer',
+      'click .edit-computer': 'editComputer',
+      'click .update-mode' : 'updateMode',
+      'click .action-exam' : 'actionExam',
+      'click .save-update-mode' : 'saveUpdateMode',
+      'click .delete-computer' : 'deleteComputer',
+      'click .boot-menu': 'bootMenu', 
+      'click .lock-position': 'lockComputers',
+      'click .unlock-position': 'unlockComputers',
+      'click .menuOperation': 'menuOperation',
+      'click .diskOperation': 'diskOperation',
+      'click .poweron': 'poweron',
+      'click .restartAction': 'restartAction',
+      'click .start-update': 'startUpdate',
+      'click .end-update': 'endUpdate',
+      'click .power-off': 'powerOff',
+      'click .start-device': 'startDevice',
+      'click .option-settings': 'optionSettings',
+    },
+    initialize: function(options) {
+      this.computersView = this.options.computersView;
+      this.clickedComputer = this.options.clickedComputer;
+      //this.bind('recheck', this.toggleCommandAvailability, this);
+      this.clickedComputer.bind('reset', this.toggleCommandAvailability, this);
+      this.collection.bind('toggleSelected', this.toggleCommandAvailability, this);
+		  this.groups = this.options.groups;
+    },
+
+    poweron: function(){
+      if(this.options.collection.group_id > 0 && this.options.collection.length == this.collection.selectedComputers().length){
+        var sendGroupMessageView = new (require('views/commands/poweron_group_message'))({groups: this.getGroup()});
+        sendGroupMessageView.render().$el.appendTo($('#modal-container')).modal();
+        $('#task_name', sendGroupMessageView.el).focus();
+      }else if(this.options.collection.group_id == 0 || this.collection.selectedComputers().length){
+        var powerOnView = new (require('views/commands/power_on'))({computers: this.getActiveComputers()});
+        powerOnView.render().$el.appendTo($('#modal-container')).modal();
+        $('#task_name', powerOnView.el).focus();
+      }
+          
+    },
+    restartAction:function(){
+       if(this.options.collection.group_id > 0 && this.options.collection.length == this.collection.selectedComputers().length){
+              var sendGroupMessageView = new (require('views/commands/group_restart_action'))({groups: this.getGroup()});
+              sendGroupMessageView.render().$el.appendTo($('#modal-container')).modal();
+              $('#task_name', sendGroupMessageView.el).focus();
+
+          }else if(this.options.collection.group_id == 0 || this.collection.selectedComputers().length){
+              var powerOffView = new (require('views/commands/restart_action'))({computers: this.getActiveComputers()});
+              powerOffView.render().$el.appendTo($('#modal-container')).modal();
+              $('#task_name', powerOffView.el).focus();
+          }
+        }, //电源切断
+      powerOff: function() {
+          if(this.options.collection.group_id > 0 && this.options.collection.length == this.collection.selectedComputers().length){
+              var sendGroupMessageView = new (require('views/commands/power_group_message'))({groups: this.getGroup()});
+              sendGroupMessageView.render().$el.appendTo($('#modal-container')).modal();
+              $('#task_name', sendGroupMessageView.el).focus();
+
+          }else if(this.options.collection.group_id == 0 || this.collection.selectedComputers().length){
+              var powerOffView = new (require('views/commands/power_off'))({computers: this.getActiveComputers()});
+              powerOffView.render().$el.appendTo($('#modal-container')).modal();
+              $('#task_name', powerOffView.el).focus();
+          }
+      },
+      //开闭计算机启动菜单,设置计算机的启动设备
+      startDevice: function() {
+          if(this.options.collection.group_id > 0 && this.options.collection.length == this.collection.selectedComputers().length){
+              var sendGroupMessageView = new (require('views/commands/device_group_message'))({groups: this.getGroup()});
+              sendGroupMessageView.render().$el.appendTo($('#modal-container')).modal();
+              $('#task_name', sendGroupMessageView.el).focus();
+
+          }else if(this.options.collection.group_id == 0 || this.collection.selectedComputers().length){
+              var startDeviceView = new (require('views/commands/start_device'))({computers: this.getActiveComputers()});
+              startDeviceView.render().$el.appendTo($('#modal-container')).modal();
+              $('#task_name', startDeviceView.el).focus();
+          }
+      }, 
+      //byt change end 20160322 
+    startUpdate:function(){
+     
+        if(this.options.collection.group_id == 0 || this.collection.selectedComputers().length){      
+       var startComputerView = new (require('views/commands/start_update_computer'))({computers: this.getActiveComputers()});
+        startComputerView.render().$el.appendTo($('#modal-container')).modal();
+        $('#task_name', startComputerView.el).focus();
+      }
+      
+    },
+     endUpdate:function(){
+      if(this.options.collection.group_id == 0 || this.collection.selectedComputers().length){      
+       var startComputerView = new (require('views/commands/end_update_computer'))({computers: this.getActiveComputers()});
+        startComputerView.render().$el.appendTo($('#modal-container')).modal();
+        $('#task_name', startComputerView.el).focus();
+      }
+         
+      
+    },
+
+
+
+
+
+
+
+    
+
+    addComputer: function(e) {
+//      --------------------------------------------------------------  
+/*       if (!this.computerForm) {
+         this.computerForm = new ComputerForm({groups: this.groups});
+       }
+       this.computerForm.model = new Computer();
+       if (this.groups.group_id){
+         this.computerForm.model.set('group_id', this.groups.group_id);
+       }
+
+       this.computerForm.render().$el.appendTo($('#modal-container')).modal();
+      
+       $('input:visible:first', this.computerForm.el).focus();*/
+//     --------------------------------------------------------------  
+	  var self=this;
+      _.bindAll(this, 'render');
+      socket.emit('computer:readRewrite', {computer_id:1}, function(err, data) {
+		var data1 = {};
+		for(var a in data){
+			if(a!="id" && a!="name")
+				data1[a] = data[a];		
+		}
+		console.log(self);
+        
+    	var computer =new Computer(data1);
+        self.computerForm = new ComputerForm({groups: self.groups, model:computer});
+        self.computerForm.render().$el.appendTo($('#modal-container')).modal();
+       $('input:visible:first', self.computerForm.el).focus();
+      });
+    },
+
+    getGroup:function(){
+    var self = this;
+    
+      var data = this.options.groups.collection._byCid;
+      var group = '';
+      for(var a in data){
+      if(data[a].get('id') == self.options.collection.group_id){
+        group = data[a];
+      }
+      }
+      return this.group = group;
+  },
+    
+//菜单操作
+        menuOperation: function() {
+          var self=this;
+          if(this.options.collection.group_id > 0 && this.options.collection.length == this.collection.selectedComputers().length){
+                  socket.emit('menus:read', {computer_id:1}, function(err, data) {
+                  self.default_menu=data;
+                  var settingGroupMenuView = new (require('views/commands/setting_group_menu'))({groups: self.getGroup(),defaultMenu:self.default_menu});
+                  settingGroupMenuView.render().$el.appendTo($('#modal-container')).modal();
+                  $('#task_name', settingGroupMenuView.el).focus();
+                  });
+          }else if(this.options.collection.group_id == 0 || this.collection.selectedComputers().length){
+                 socket.emit('menus:read', {computer_id:1}, function(err, data) {
+                 self.default_menu=data;
+                 var settingComputerMenuView = new (require('views/commands/setting_computer_menu'))({computers: self.getActiveComputers(),defaultMenu:self.default_menu});
+                  settingComputerMenuView.render().$el.appendTo($('#modal-container')).modal();
+                  $('#task_name', settingComputerMenuView.el).focus();
+                     });  
+                  }
+         
+    },
+
+
+
+    //disk 操作
+        diskOperation: function() {
+          var self=this;
+          if(this.options.collection.group_id > 0 && this.options.collection.length == this.collection.selectedComputers().length){
+                  socket.emit('menus:read', {computer_id:1}, function(err, data) {
+                  self.default_menu=data;
+                  var settingGroupDiskView = new (require('views/commands/setting_group_disk'))({groups: self.getGroup(),defaultMenu:self.default_menu});
+                  settingGroupDiskView.render().$el.appendTo($('#modal-container')).modal();
+                  $('#task_name', settingGroupDiskView.el).focus();
+                  });
+          }else if(this.options.collection.group_id == 0 || this.collection.selectedComputers().length){
+                 socket.emit('menus:read', {computer_id:1}, function(err, data) {
+                 self.default_menu=data;
+                 var settingComputerDiskView = new (require('views/commands/setting_computer_disk'))({computers: self.getActiveComputers(),defaultMenu:self.default_menu});
+                  settingComputerDiskView.render().$el.appendTo($('#modal-container')).modal();
+                  $('#task_name', settingComputerDiskView.el).focus();
+                     });  
+                  }
+         
+    },
+
+
+
+        optionSettings: function() {
+          var self=this;
+          if(this.options.collection.group_id > 0 && this.options.collection.length == this.collection.selectedComputers().length){
+                  socket.emit('menus:read', {computer_id:1}, function(err, data) {
+                  self.default_menu=data;
+                  var optionSettingGroupMenuView = new (require('views/commands/option_setting_group_menu'))({groups: self.getGroup(),defaultMenu:self.default_menu});
+                  optionSettingGroupMenuView.render().$el.appendTo($('#modal-container')).modal();
+                  $('#task_name', optionSettingGroupMenuView.el).focus();
+                  });
+          }else if(this.options.collection.group_id == 0 || this.collection.selectedComputers().length){
+                 socket.emit('menus:read', {computer_id:1}, function(err, data) {
+                 self.default_menu=data;
+                 var optionSettingComputerMenuView = new (require('views/commands/option_setting_computer_menu'))({computers: self.getActiveComputers(),defaultMenu:self.default_menu});
+                  optionSettingComputerMenuView.render().$el.appendTo($('#modal-container')).modal();
+                  $('#task_name', optionSettingComputerMenuView.el).focus();
+                     });  
+                  }
+         
+    },
+
+      // actionExam 操作
+      actionExam: function() {
+          var updateModeView = new (require('views/commands/action_exam'))({computersView: this.computersView,groupView: this.groups,computers: this.getActiveComputers()});
+          updateModeView.render().$el.appendTo($('#modal-container')).modal();
+      },
+
+    updateMode: function() {
+      var updateModeView = new (require('views/commands/update_mode'))({computersView: this.computersView,groupView: this.groups,computers: this.getActiveComputers()});
+      updateModeView.render().$el.appendTo($('#modal-container')).modal();
+    },
+
+    saveUpdateMode: function() {
+      var saveUpdateModeView = new (require('views/commands/save_update_mode'))({computersView: this.computersView ,groupView: this.groups, computers: this.getActiveComputers()});
+      saveUpdateModeView.render().$el.appendTo($('#modal-container')).modal();
+    },
+    
+    editComputer: function() {
+      if (this.getActiveComputers()) {
+        if (this.getActiveComputers().length==1) {
+          this.computerForm = new ComputerForm({groups: this.groups, model: this.getActiveComputers()[0]});
+        }else{
+          this.computerForm = new ComputerForm({groups: this.groups, model: this.getActiveComputers()});
+        }
+        this.computerForm.render().$el.appendTo($('#modal-container')).modal();
+
+        $('input:visible:first', this.computerForm.el).focus();
+      }
+    },
+
+    deleteComputer: function() {
+      var ja = underi18n.MessageFactory(locale);
+      var r=confirm(ja('Are you sure you want to delete it?'));
+      if (r===true) {
+        var computers = this.getActiveComputers();
+        _(computers).each(function(computer) {
+          computer.destroy({error: function(model, response) {
+            alert('An error occured when deleting Computer '+model.get('name')+'. Error:'+response);
+          }});
+        });
+      }
+    },
+     bootMenu: function() {
+      var bootMenuView;
+      var promiseArray = [];
+
+      if(App.user == 'admin') {
+       // alert("this.getActiveComputers()==="+JSON.stringify(this.getActiveComputers()));
+        if (this.getActiveComputers().length > 1) {
+          bootMenuView = new (require('views/commands/multiclient_boot_menu'))({computers: this.getActiveComputers()});
+          bootMenuView.render().$el.appendTo($('#modal-container')).modal();
+          var loadingScreen = new LoadingView({promiseArray: promiseArray,displayView: bootMenuView});
+          loadingScreen.render();
+        }
+        else {
+          bootMenuView = new (require('views/commands/boot_menu'))({computers: this.getActiveComputers()});
+          bootMenuView.render().$el.appendTo($('#modal-container')).modal();
+        }
+        $('#menu-name', bootMenuView.el).focus();
+      }
+    },
+
+     lockComputers: function() {
+      var self = this;
+      _(this.getActiveComputers()).forEach(function (computer) {
+        if (computer.get('locked') == false) {
+          computer.set('locked', true);
+          computer.trigger('rerender');
+          computer.save({},{
+            success: function(model,response) {
+              $('.lock-position', self.el).hide();
+                $('.unlock-position', self.el).show();
+            }
+          });
+        }
+      });
+    },
+
+    unlockComputers: function() {
+      var self = this;
+      _(this.getActiveComputers()).forEach(function (computer){
+        if (computer.get('locked') == true) {
+          computer.set('locked', false);
+          computer.save({},{
+            success: function(model,response) {
+               $('.lock-position', self.el).show();
+                $('.unlock-position', self.el).hide();
+              computer.trigger('rerender');
+            }
+          });
+        }
+      });
+    },
+     selectRefresh:function(e){
+     
+        Backbone.history.loadUrl();
+      } , 
+    getActiveComputers: function() {
+      if (this.collection.selectedComputers().length) {
+        return this.collection.selectedComputers();
+      }else if(this.clickedComputer.length) {
+        return this.clickedComputer.models;
+      }else{
+        return false;
+      }
+    },
+    
+    toggleCommandAvailability: function() {
+      if (this.getActiveComputers()){
+        $('button', this.el).removeAttr('disabled');
+      } else{
+        $(':not(.add-computer) button', this.el).attr('disabled', 'disabled');
+      }
+    }
+
+  });
+
+  return ComputerCommands;
+});

@@ -1,0 +1,98 @@
+define([
+    'jquery',
+    'underscore',
+    'backbone',
+    'models/message',
+    'models/user',
+    'text!templates/modals/message_modal.html',
+	'msgFactory'
+    ],
+    function($, _, Backbone, Message,User, tmpl, msgFactory) {
+
+      var MessageModal =  Backbone.View.extend({
+        model: Message,
+        template: _.template(underi18n.template(tmpl, msgFactory)),
+
+        events: {
+          'submit form': function(e) {
+            var msg=$.trim(this.$('#message-input').val());
+            var isopen=this.$('#isopen').is(':checked');
+            if(msg!=$.trim(this.model.get('msg'))){
+              this.model.set({isupdate: msg!=$.trim(this.model.get('msg')),msg:msg,lastModifyDate:this.getNowFormatDate(),lastModifyName:App.user});
+              Backbone.sync('update', this.model, {success: function() {}});
+            }
+            var height = this.$('#message-input').height();
+            var width = this.$('#message-input').width();
+            if(App.info.isopen!=isopen||App.info.width!=width||App.info.height!=height){
+                var user=new User(App.info);
+                user.set({isopen:isopen,height:height,width:width,updateOpen:true});
+                user.save();
+            }
+            this.$el.modal('hide');
+            return false;
+          },
+
+          'click .btn-close': function(e) {
+            this.$el.modal('hide');
+          },
+          'click .btn-rest':function(e){
+            this.$('#message-input').height(118);
+            this.$('#message-input').width(434);
+          }
+        },
+
+
+        initialize: function(model) {
+          this.model = model || new Message();
+          this.model.fetch();
+
+        },
+        getDate: function(date1) {
+        if (isNaN(Date.parse(date1))) {
+          return undefined;
+        }
+        date = new Date(date1);
+          var seperator1 = "-";
+          var seperator2 = ":";
+          var month = date.getMonth() + 1;
+          var strMinutes = date.getMinutes();
+          if (strMinutes >= 1 && strMinutes <= 9) {
+              strMinutes = "0" + strMinutes;
+          }
+          return date.getFullYear() + seperator1 + month + seperator1 + date.getDate()
+                  + " " + date.getHours() + seperator2 + strMinutes + seperator2 + date.getSeconds();
+      },
+      getNowFormatDate:function(date) {
+          var date = new Date();
+          var seperator1 = "-";
+          var seperator2 = ":";
+          var month = date.getMonth() + 1;
+          var strDate = date.getDate();
+          if (month >= 1 && month <= 9) {
+              month = "0" + month;
+          }
+          if (strDate >= 0 && strDate <= 9) {
+              strDate = "0" + strDate;
+          }
+          var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate
+                  + " " + date.getHours() + seperator2 + date.getMinutes()
+                  + seperator2 + date.getSeconds();
+          return currentdate;
+      } ,
+
+      render: function() {
+        this.$el.html(this.template(this.model.toJSON()));
+        var modifyDate = Date.parse(this.model.get('modifyDate'));
+        var lastlogintime = Date.parse(this.getDate(App.info.lastlogintime));
+        if(modifyDate>lastlogintime||!App.info.isopen){
+           this.$el.modal();
+           this.$('#message-input').height(App.info.height);
+           this.$('#message-input').width(App.info.width);
+         }
+         return this;
+      }
+      });
+
+
+      return MessageModal;
+    });

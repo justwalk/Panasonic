@@ -1,0 +1,5 @@
+<ul class="unstyled">
+	<li class="pull-left"><%= model.get('IP') %></li>
+	<li class="hide li-margin"><img src="/images/running.png"><span>running</span></li>
+	<li class="show li-margin"><img src="/images/failed.png"><span>Warning</span></li>
+</ul>

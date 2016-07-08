@@ -1,0 +1,49 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/disks/disk.html',
+  'models/server',
+  'rsvp'
+], function($, _, Backbone, tableItem, Server, RSVP) {
+    DiskView = Backbone.View.extend({
+      tagName: 'tr',
+      template: _.template(underi18n.template(tableItem, msgFactory)),
+      events:{
+        'click td .remove': 'destroy'
+      },
+
+      initialize: function() {
+        var self = this;
+        _.bindAll(this, 'render', 'close');
+        this.ioserver = this.options.ioserver;
+      },
+      
+      close: function() {
+        this.unbind();
+        this.remove();
+      },
+      destroy: function() {
+        this.model.destroy({
+          success: function(model, response) {
+            alert('Disk '+model.get('name')+' was deleted.');
+          },
+          error: function(model, response) {
+            alert('Failed to delete disk. '+response.error);
+          },
+          wait:true
+        });
+      },
+      
+      render: function() {
+        var self = this;
+        
+        $(this.el).html(this.template({
+          disk: this.model,
+          baseDiskIP: this.ioserver.IP
+        }));
+        return this;
+      }
+    });
+    return DiskView;
+});

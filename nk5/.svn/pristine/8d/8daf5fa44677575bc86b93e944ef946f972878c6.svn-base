@@ -1,0 +1,331 @@
+#include "basedisk.h"
+
+#include <iostream>
+#include <sstream>
+#include <string>
+
+#include "login.h"
+#include "output.h"
+
+#include "bitmap.h"
+
+const EnumMap<DISK_TYPE> DISK_TYPE_MAP;
+
+BaseDiskResource::BaseDiskResource(){
+	prefix = "disks";
+	children.push_back(new CreateBaseDiskResource());
+	children.push_back(new UUIDBaseDiskResource());
+}
+
+void BaseDiskResource::run(const std::map<std::string, std::string>& params) const{
+	JSON::Value* data = BaseDiskEnumToJSON(GetInt(iid));
+
+	if(data == NULL) return;
+	
+	printHeaders();
+	data->render();
+
+	delete data;
+}
+
+UUIDBaseDiskResource::UUIDBaseDiskResource(){
+	param = "bdid";
+	validator = &numberRegex;
+	children.push_back(new UpdateBaseDiskResource());
+	children.push_back(new DeleteBaseDiskResource());
+	children.push_back(new MergeBaseDiskResource());
+	children.push_back(new DropBaseDiskResource());
+	children.push_back(new RevertBaseDiskResource());
+	children.push_back(new DiskRestore());
+}
+
+void UUIDBaseDiskResource::run(const std::map<std::string, std::string>& params) const{
+	die("Not supported");
+}
+
+DeleteBaseDiskResource::DeleteBaseDiskResource(){
+	prefix = "delete";
+}
+
+void deleteDisk(ULONG ioid, ULONG id) {
+	DISK_INFO_OBJ info;
+	
+	ENUM_HANDLE EnumObj = GetFirstBaseDisk(ioid, id);
+	
+	while((GetNextBaseDisk(EnumObj, &info))){
+		deleteDisk(ioid, info.nID);
+	}
+
+	FreeEnumObject(EnumObj);
+	
+	ULONG errorno;
+	if(!(DelBaseDisk(id, &errorno))) {
+		char error[1000];
+		
+		sprintf(error, "DelBaseDisk(%u)", id);
+		return SDKError(error, errorno);
+	}
+}
+
+void DeleteBaseDiskResource::run(const std::map<std::string, std::string>& params) const{
+	deleteDisk(GetInt(iid), GetInt(bdid));
+	
+	printDone();
+}
+
+UpdateBaseDiskResource::UpdateBaseDiskResource(){
+	prefix = "update";
+}
+
+void UpdateBaseDiskResource::run(const std::map<std::string, std::string>& params) const{
+	CHECK_PARAM("Type");
+	if(!DISK_TYPE_MAP.exists(params.find("Type")->second))
+			invalidParameter("Type");
+	
+	ULONG type = DISK_TYPE_MAP.toBit(params.find("Type")->second);
+	
+	CHECK_PARAM("Name");
+		
+	ULONG error;
+	if(!(EditBaseDisk(GetInt(bdid), params.find("Name")->second.c_str(), &error)))
+		return SDKError("EditBaseDisk", error);
+	
+	if(type == DISK_TYPE_BASE) {
+	} else if(type == DISK_TYPE_PROXY){
+		DISK_SYNC info;
+		
+		CopyInteger(nSyncType, "SyncType");
+		CopyInteger(nCurSel, "SyncDay");
+		CopyInteger(nClock, "SyncHour");
+		CopyInteger(nSpeed, "SyncSpeed");
+		
+		if(!(SetProxyDiskSync(GetInt(bdid), &info, &error)))
+			return SDKError("SetProxyDiskSync", error);
+	} else {
+		invalidParameter("Type");
+	}
+	
+	printDone();
+}
+
+CreateBaseDiskResource::CreateBaseDiskResource(){
+	prefix = "create";
+}
+
+void CreateBaseDiskResource::run(const std::map<std::string, std::string>& params) const{
+	ADD_BASE_DISK_OBJ info;
+	memset(&info, 0, sizeof(info));
+	
+	info.nSrvID = GetInt(iid);
+
+	CHECK_PARAM("Type");
+	if(!DISK_TYPE_MAP.exists(params.find("Type")->second))
+			invalidParameter("Type");
+	
+	ULONG type = DISK_TYPE_MAP.toBit(params.find("Type")->second);
+	info.nType = type;
+	
+	CopyInteger(nFmt, "Format");
+	CopyString(pchPath, "Path");
+	
+	ULONG error;
+	if(type == DISK_TYPE_EXISTING) {
+		SHOW_VHD_INFO existing;
+		memset(&existing, 0, sizeof(existing));
+		
+		if(!(GetExistVhdInfo(info.nSrvID, info.pchPath, &existing, &error)))
+			return SDKError("GetExistVhdInfo", error);
+		
+		info.nType = DISK_TYPE_BASE;
+		info.nPID = 0;
+		info.nSizeMb = existing.nSizeMb;
+		info.nVer = existing.nVer;
+		CopyString(pchName, "Path");
+	} else if (type == DISK_TYPE_CACHE){
+		
+		info.nSyncSchd = 0;
+		info.nType = DISK_TYPE_CACHE;
+		info.nXID=0;
+		info.nFmt=0;
+		CopyString(pchName, "Path");
+		CopyInteger(nPID, "Parent");
+		CopyInteger(nSizeMb, "Size");
+		CopyString(pchName, "Name");
+	}else
+	{
+		CopyInteger(nSizeMb, "Size");
+		CopyString(pchName, "Name");
+		CopyInteger(nVer, "Version");
+		CopyInteger(nPID, "Parent");
+	}
+	
+	DISK_SYNC sync;
+	
+	if(info.nType == DISK_TYPE_PROXY) {
+		CopyInteger(nXID, "Parent");
+		//CopyInteger(nSyncSchd, "SynchronizationSettings");
+		info.nSyncSchd = 0;
+		
+		{
+			DISK_SYNC& info = sync;
+				
+			//CopyInteger(nSyncType, "Type");
+			info.nSyncType = 0;
+			CopyInteger(nCurSel, "SyncDay");
+			CopyInteger(nClock, "SyncHour");
+			CopyInteger(nSpeed, "SyncSpeed");
+		}
+	}
+
+	ULONG nid;
+	
+	if(!(AddBaseDisk(&info, &nid, TRUE, &error)))
+		return SDKError("AddBaseDisk", error);
+	
+	if(info.nType == DISK_TYPE_PROXY) {
+		if(!(SetProxyDiskSync(nid, &sync, &error)))
+			return SDKError("SetProxyDiskSync", error);
+	}
+	
+	printID(nid);
+}
+
+RevertBaseDiskResource::RevertBaseDiskResource(){
+	prefix = "revert";
+}
+
+void RevertBaseDiskResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG disk = GetInt(bdid);
+	ULONG version = GetInt(Snapshot);
+
+	ULONG error;
+	if(!(RestoreToSpecifiedRestorePoint(disk, version, version, &error)))
+		return SDKError("RestoreToSpecifiedRestorePoint", error);
+
+	printDone();
+}
+
+DropBaseDiskResource::DropBaseDiskResource(){
+	prefix = "drop";
+}
+
+void DropBaseDiskResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG error;
+	if(!(DelBaseDisk(GetInt(bdid), &error)))
+		return SDKError("DelBaseDisk", error);
+	
+	printDone();
+}
+
+MergeBaseDiskResource::MergeBaseDiskResource(){
+	prefix = "drop";
+}
+
+void MergeBaseDiskResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG error;
+	if(!(CommitToParentDisk(GetInt(bdid), &error)))
+		return SDKError("CommitToParentDisk", error);
+	
+	printDone();
+}
+
+JSON::Value* DiskToJSON(const DISK_INFO_OBJ& info){
+	JSON::Object* data = new JSON::Object();
+
+	data->add(new JSON::String("Parent"), new JSON::Integer(info.nPID));
+	data->add(new JSON::String("IOServer"), new JSON::Integer(info.nSrvID));
+	data->add(new JSON::String("Pack"), new JSON::Integer(info.nPackID));
+	
+	data->add(new JSON::String("Type"), new JSON::String(DISK_TYPE_MAP.toString(info.nType)));
+
+	data->add(new JSON::String("Size"), new JSON::Integer(info.nSizeMb));
+	data->add(new JSON::String("Name"), new JSON::String(info.pchName));
+	data->add(new JSON::String("ID"), new JSON::Integer(info.nID));
+	
+	data->add(new JSON::String("Format"), new JSON::Integer(info.nFmt));
+	data->add(new JSON::String("Version"), new JSON::Integer(info.nVer));
+	
+	if(info.nType == DISK_TYPE_PROXY) {
+		data->add(new JSON::String("Source"), new JSON::Integer(info.nXID));
+		data->add(new JSON::String("SynchronizationSettings"), new JSON::Integer(info.nSyncSchd));
+		
+		DISK_SYNC sync;
+		
+		ULONG error;
+		if(!(GetProxyDiskSync(info.nID, &sync, &error))) {
+			SDKError("GetProxyDiskSync", error);
+			delete data;
+			return NULL;
+		}
+			
+		data->add(new JSON::String("SyncType"), new JSON::Integer(sync.nSyncType));
+		data->add(new JSON::String("SyncDay"), new JSON::Integer(sync.nCurSel));
+		data->add(new JSON::String("SyncSpeed"), new JSON::Integer(sync.nSpeed));
+		data->add(new JSON::String("SyncHour"), new JSON::Integer(sync.nClock));		
+	}
+	data->add(new JSON::String("Path"), new JSON::String(info.pchPath));
+
+	JSON::Array* children = BaseDiskEnumToJSON(info.nSrvID, info.nID);
+	if(children == NULL) {
+		delete data;
+		return NULL;
+	}
+	data->add(new JSON::String("Children"), children);
+	
+	return data;
+}
+
+JSON::Array* BaseDiskEnumToJSON(ULONG iid){
+	ENUM_HANDLE EnumObj = GetFirstBaseDisk(iid, 0);
+	
+	return  enumToJSON<DISK_INFO_OBJ, DiskToJSON, GetNextBaseDisk>(EnumObj);
+}
+
+JSON::Array* BaseDiskEnumToJSON(ULONG iid, ULONG pid){
+	ENUM_HANDLE EnumObj = GetFirstBaseDisk(iid, pid);
+	
+	return  enumToJSON<DISK_INFO_OBJ, DiskToJSON, GetNextBaseDisk>(EnumObj);
+}
+
+
+
+
+DiskRestore::DiskRestore(){
+	prefix = "restore";
+
+}
+
+void DiskRestore::run(const std::map<std::string, std::string>& params) const{
+	JSON::Value* data = BaseDiskRestoreToJSON(GetInt(iid));
+
+	if(data == NULL) return;
+	
+	printHeaders();
+	data->render();
+
+	//printDone();
+}
+
+
+JSON::Value* DiskToJSON1(const SHOW_REST_POINT& info){
+	JSON::Object* data = new JSON::Object();
+	
+
+	data->add(new JSON::String("Parent"), new JSON::String("children"));
+	/*data->add(new JSON::String("Type"), new JSON::Integer(info.pchTime[0]));
+	
+	JSON::Array* restore = BaseDiskRestoreToJSON(info.pchDesc[0]);
+	if(restore == NULL) {
+		delete data;
+		return NULL;
+	}
+	data->add(new JSON::String("restore"), restore);*/
+
+	return data;
+}
+
+JSON::Array* BaseDiskRestoreToJSON(ULONG iid){
+	 ENUM_HANDLE eHandle = GetFirstRestorePoint(iid);
+	
+	return  enumToJSON<SHOW_REST_POINT, DiskToJSON1, GetNextRestorePoint>(eHandle);
+}

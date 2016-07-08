@@ -1,0 +1,19 @@
+
+	<td style="width:200px;">
+		<%- menu.get('name')%>
+		<!-- <button type="button" class="Default-menu btn" style="margin-top:2px"> <%_Default%></button>
+		<button type="button" class="recovery btn" style="margin-top:2px; display:none;"> <%_Recovery%></button> -->
+	</td>
+	<td>
+		<button type="button" class="add-pack btn" style="margin-top:2px; width:120px;"> + <%_Add%></button>
+	</td>
+	<td>
+	    <select class="pack-types" name="type" style="float: left! important;margin-right:5px; margin-bottom:5px; width:220px">
+      		<option value="Simple"><%_Simple Disk%></option>
+      		<option value="Balance"><%_Balance Disk%></option>
+      		<option value="Concurrent"><%_Concurrent Disk%></option>
+    	</select>
+	</td>
+	<td>
+		<button type="button" class="remove btn">-<%_Remove%></button>
+	</td>

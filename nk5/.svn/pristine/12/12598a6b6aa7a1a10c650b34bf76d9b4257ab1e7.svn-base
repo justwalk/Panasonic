@@ -1,0 +1,50 @@
+<form class="computer-form form-horizontal no-margins" method="post" accept-charset="utf-8" id="packmodel" i>
+    <div class="modal-header">
+        <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+        <h3><%_Local Disk Cache%></h3>
+    </div>
+    <p class="errors"></p>
+    
+    <div class="modal-body">
+       <div class="control-group">
+            <label class="control-label" for="memo">&nbsp;</label>
+            <div class="controls">
+                  <input type="checkbox"  name="checkbox"    value="0" ><%_Disable%>
+            </div>
+        </div>
+          <div class="control-group">
+            <label class="control-label" for="memo">&nbsp;</label>
+            <div class="controls">
+                   <input type="checkbox"  name="checkbox" value="1" ><%_Clear Cache%>
+            </div>
+        </div>
+
+
+        <div class="control-group">
+            <label class="control-label" for="memo"><%_Type Of Writting%></label>
+            <div class="controls">
+                   <select name="typeOfWritting" id="typeOfWritting" class="">
+          				<option value="2"><%_Format Of Cache File%></option>
+          				<option value="3"><%_RAW area(Not Used Part)%></option>
+          				<option value="4"><%_RAW area(Full Disk)%></option>
+          		  </select>
+            </div>
+        </div>
+
+         <div class="control-group">
+            <label class="control-label" for="memo"><%_Access Mode%></label>
+            <div class="controls">
+                   <select name="accessMode" id="accessMode" >
+           				<option value="5"><%_ReadORWrite%></option>
+          				<option value="6"><%_Write Only%></option>
+          				<option value="7"><%_Read Only%></option>
+         			 </select>
+            </div>
+        </div>
+        
+    </div>
+    
+    <div class="modal-footer">
+      <input type="button" value="<%_Ok%>" class="btn btn-primary">
+    </div>
+</form>

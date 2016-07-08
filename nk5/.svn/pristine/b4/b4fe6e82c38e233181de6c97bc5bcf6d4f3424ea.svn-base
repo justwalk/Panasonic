@@ -1,0 +1,21 @@
+var config = require('../../config/config.js');
+
+var fs = require('fs'); 
+
+var logFile = {};
+
+logFile.readStream=function(callback){
+    fs.readFile(config.logPath('executeLog'),'utf-8',function(err,data){
+        if(err){
+            callback(err,null)
+        }
+        else{
+            var arr = data.trim().split('\n');
+            arr.forEach(function(item,index){arr[index] = JSON.parse(item)});
+            arr.sort(function(a,b){ return ((new Date(b.executeTime))-(new Date(a.executeTime)))});
+            callback(null,arr);
+        }
+    });	  
+}
+ 
+module.exports.logFile = logFile;

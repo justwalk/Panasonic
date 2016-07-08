@@ -1,0 +1,370 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'modelBinder',
+  'text!templates/schedules/editcontent_ioserver.html',
+  'text!templates/schedules/editcontent_scriptexe.html',
+  'text!templates/schedules/editcontent_diskcopy.html',
+  'text!templates/schedules/editcontent_diskrecheck.html',
+  'text!templates/schedules/editcontent_poweroff.html',
+  'text!templates/schedules/editcontent_startdevice.html',
+  'text!templates/schedules/editcontent_actionexam.html',
+  'text!templates/menus/menu_list_update_mode.html',
+  'text!templates/schedules/editcontent_menuswitch.html',
+  'text!templates/schedules/editcontent_autoupdate.html',
+  'text!templates/schedules/editcontent_diskbackup.html',
+  'text!templates/schedules/editcontent_sendcmd.html',
+  'collection/menus',
+  'models/task',
+  'models/server',
+
+  ], function($, _, Backbone, ModelBinder,ioserverTemlate,scriptexeTemlate,diskcopyTemlate,diskrecheckTemlate,poweroffTemlate,startdeviceTemlate,actionexamTemlate,menusUpdateModeTemplate,menuswitchTemplate,autoupdateTemplate,diskbackupTemplate,sendcmdTemplatMenus,Teask,Server,BaseServer){
+ BaseServer = Backbone.View.extend({
+    events:{
+      'submit .task-form ': 'saveModel',
+      'hidden' : 'remove' //the "hidden" event is from bootstrap modal dismiss
+    },
+    initialize: function(options) {
+      var self = this;
+   
+      _.bindAll(this, 'render', 'weekdaysConverter', 'cycleChangedConverter', 'executeChangedConverter');
+      this.model = this.options.task || new Task();
+      if(this.model.get('action')=='ioserver_restart'){
+          this.template=_.template(underi18n.template(ioserverTemlate, msgFactory));
+           this.bindings = {
+            name: '[name=computer_name]',
+            memo: '[name=memo]'
+     ,       execute:[
+              {selector: '[name=execute]'},
+              {selector: '#schedule-details', elAttribute:'displayed',  converter: this.executeChangedConverter}
+            ],
+            cycle: [{selector: '[name=cycle]'}, {selector: '.cycle', converter: this.cycleChangedConverter}],
+            date: '[name=date]',
+            weekdays: {selector:'[name=weekdays]', converter: this.weekdaysConverter, elAttribute:'checked'},
+            month_days: {selector:'[name=month_days]', converter: this.monthDaysConverter},
+            time: '[name=time]'
+          };
+      
+      }else if(this.model.get('action')=="script_exe"){
+          this.template=_.template(underi18n.template(scriptexeTemlate, msgFactory));
+           this.bindings = {
+            memo: '[name=memo]',
+            execute:[
+              {selector: '[name=execute]'},
+              {selector: '#schedule-details', elAttribute:'displayed',  converter: this.executeChangedConverter}
+            ],
+            cycle: [{selector: '[name=cycle]'}, {selector: '.cycle', converter: this.cycleChangedConverter}],
+            date: '[name=date]',
+            weekdays: {selector:'[name=weekdays]', converter: this.weekdaysConverter, elAttribute:'checked'},
+            month_days: {selector:'[name=month_days]', converter: this.monthDaysConverter},
+            time: '[name=time]',
+            command: '[name=command]'
+          };
+      }else if(this.model.get('action')=='disk_copy'){
+           this.template=_.template(underi18n.template(diskcopyTemlate, msgFactory));
+           this.bindings = {
+            computer_name: '[name=computer_name]',
+            memo: '[name=memo]',
+            execute:[
+              {selector: '[name=execute]'},
+              {selector: '#schedule-details', elAttribute:'displayed',  converter: this.executeChangedConverter}
+            ],
+            cycle: [{selector: '[name=cycle]'}, {selector: '.cycle', converter: this.cycleChangedConverter}],
+            date: '[name=date]',
+            weekdays: {selector:'[name=weekdays]', converter: this.weekdaysConverter, elAttribute:'checked'},
+            month_days: {selector:'[name=month_days]', converter: this.monthDaysConverter},
+            time: '[name=time]'
+          };
+      }else if(this.model.get('action')=='disk_recheck'||this.model.get('action')=='disk_resynchronize'||this.model.get('action')=='start'||this.model.get('action')=='bootserver_restart'||this.model.get('action')=='poweron'||this.model.get('action')=='logout'||this.model.get('action')=='group_logout'||this.model.get('action')=='group_poweron'||this.model.get('action')=='group_start'){
+           this.template=_.template(underi18n.template(diskrecheckTemlate, msgFactory));
+           this.bindings = {
+           name: '[name=computer_name]',
+            memo: '[name=memo]',
+            execute:[
+              {selector: '[name=execute]'},
+              {selector: '#schedule-details', elAttribute:'displayed',  converter: this.executeChangedConverter}
+            ],
+            cycle: [{selector: '[name=cycle]'}, {selector: '.cycle', converter: this.cycleChangedConverter}],
+            date: '[name=date]',
+            weekdays: {selector:'[name=weekdays]', converter: this.weekdaysConverter, elAttribute:'checked'},
+            month_days: {selector:'[name=month_days]', converter: this.monthDaysConverter},
+            time: '[name=time]'
+          };
+      }else if(this.model.get('action')=='poweroff'||this.model.get('action')=='group_poweroff'||this.model.get('action')=='restart_action'||this.model.get('action')=='group_restart_action'){
+          this.template=_.template(underi18n.template(poweroffTemlate, msgFactory));
+          var command=this.model.get('command').split(" ");
+          if(command.length>4){
+            this.model.set('allow_message','Y');
+          }else{
+            this.model.set('allow_message','N');
+          }
+          this.model.set('allow_cancel',command[3]);//after_start
+          this.model.set('after_start',command[2]);//after_start
+          var msg='';
+          for(var i=4;i<command.length;i++ ){
+              msg+=command[i];
+          }
+          msg = msg.substring(1,msg.length-1);
+          this.model.set('message',msg);
+           this.bindings = {
+            name: '[name=name]',
+            memo: '[name=memo]',
+            after_start:'[name=after_start]',
+            message:'[name=message]',
+            execute:[
+              {selector: '[name=execute]'},
+              {selector: '#schedule-details', elAttribute:'displayed',  converter: this.executeChangedConverter}
+            ],
+            allow_cancel:'[name=allow_cancel]',
+            allow_message:'[name=allow_message]',
+            cycle: [{selector: '[name=cycle]'}, {selector: '.cycle', converter: this.cycleChangedConverter}],
+            date: '[name=date]',
+            weekdays: {selector:'[name=weekdays]', converter: this.weekdaysConverter, elAttribute:'checked'},
+            month_days: {selector:'[name=month_days]', converter: this.monthDaysConverter},
+            time: '[name=time]'
+          };
+      }else if(this.model.get('action')=='start_device'||this.model.get('action')=='group_start_device'){
+           this.template=_.template(underi18n.template(startdeviceTemlate, msgFactory));
+           var command=this.model.get('command').split("|");
+           this.model.set('bootMenu',command[0]);
+           this.model.set('boot_device',command[1]);
+           this.bindings = {
+            name: '[name=name]',
+            memo: '[name=memo]',
+            bootMenu: '[name=bootMenu]',
+            boot_device: '[name=boot_device]',
+            execute:[
+              {selector: '[name=execute]'},
+              {selector: '#schedule-details', elAttribute:'displayed',  converter: this.executeChangedConverter}
+            ],
+            cycle: [{selector: '[name=cycle]'}, {selector: '.cycle', converter: this.cycleChangedConverter}],
+            date: '[name=date]',
+            weekdays: {selector:'[name=weekdays]', converter: this.weekdaysConverter, elAttribute:'checked'},
+            month_days: {selector:'[name=month_days]', converter: this.monthDaysConverter},
+            time: '[name=time]'
+          };
+      }else if(this.model.get('action')=='action_exam'){
+            var command=this.model.get('command').split("|");
+            this.model.set('confirmStatus',command[0]==='2'?true:false);
+            this.model.set('confirmShutdown',command[1]==='2'?true:false);
+            this.model.set('after_start',command[4]);
+            this.model.set('forceShutdown',command[2]==='2'?true:false);
+            this.model.set('diskShutdown',command[3]==='2'?true:false);
+           this.template=_.template(underi18n.template(actionexamTemlate, msgFactory));
+           this.bindings = {
+            computer_name: '[name=name]',
+            memo: '[name=memo]',
+            execute:[
+              {selector: '[name=execute]'},
+              {selector: '#schedule-details', elAttribute:'displayed',  converter: this.executeChangedConverter}
+            ],
+            cycle: [{selector: '[name=cycle]'}, {selector: '.cycle', converter: this.cycleChangedConverter}],
+            date: '[name=date]',
+            weekdays: {selector:'[name=weekdays]', converter: this.weekdaysConverter, elAttribute:'checked'},
+            month_days: {selector:'[name=month_days]', converter: this.monthDaysConverter},
+            time: '[name=time]' ,
+            confirmStatus:'[name=confirmStatus]',
+            confirmShutdown:'[name=confirmShutdown]',
+            after_start:'[name=after_start]',
+            forceShutdown:'[name=forceShutdown]',
+            'diskShutdown':'[name=diskShutdown]',
+            'menu_pack_id':'[name=menu_pack_id]'
+          };
+          this.menus = new Menus();
+          this.menuTemplate =  _.template(underi18n.template(menusUpdateModeTemplate, msgFactory));
+          this.menus.bind('add reset remove',function(menus){
+            menus.forEach(function(menu) {
+              menu.computer_id=menu.get("computer_id");
+              menu.id=menu.get('id');
+                menu.fetchPacks(function(packs) {
+                  $('#menus-table', self.el).append(self.menuTemplate({menu:menu}));
+                  self._modelBinder.bind(self.model, self.el, self.bindings);
+                  $("#menupackid",self.el).remove();
+                });
+
+              });
+           });
+          this.menus.fetch({ data: {computer_id: this.model.get('computer_uuid')}});
+        
+           
+      }else if(this.model.get('action')=='menu_switch'||this.model.get('action')=='group_menu_switch'){
+        this.template=_.template(underi18n.template(menuswitchTemplate, msgFactory));
+           this.bindings = {
+            name: '[name=name]',
+            memo: '[name=memo]',
+            execute:[
+              {selector: '[name=execute]'},
+              {selector: '#schedule-details', elAttribute:'displayed',  converter: this.executeChangedConverter}
+            ],
+            cycle: [{selector: '[name=cycle]'}, {selector: '.cycle', converter: this.cycleChangedConverter}],
+            date: '[name=date]',
+            weekdays: {selector:'[name=weekdays]', converter: this.weekdaysConverter, elAttribute:'checked'},
+            month_days: {selector:'[name=month_days]', converter: this.monthDaysConverter},
+            time: '[name=time]'
+          };
+            this.menus = new Menus();
+            this.menus.fetch({ data: {computer_id: 1}});
+            this.menus.bind('add reset remove',function(menus){
+            var temp='<select name="menu_pack_id" > <option value="0">none</option>';
+              menus.forEach(function(menu) {
+                temp+='<option value="'+menu.get('id')+'" '+(self.model.get('menu_pack_id')==menu.get('id')?'selected = "selected"':'')+'>'+menu.get('name')+'</option>'
+                });
+              temp+='</select>';
+              $('#default_menu', self.el).append(temp);
+              $("#defaultmenu",self.el).remove();
+            }); 
+      }else if(this.model.get('action')=='auto_update'){
+           this.template=_.template(underi18n.template(autoupdateTemplate, msgFactory));
+           var command=this.model.get('command').split("|");
+            this.model.set('forceShutdown',command[0]==='2'?true:false);
+            this.model.set('diskShutdown',command[1]==='2'?true:false);
+            this.model.set('after_start',command[3]);
+            this.model.set('operation',command[2]==='2'?true:false);
+           this.bindings = {
+            name: '[name=name]',
+            memo: '[name=memo]',
+            execute:[
+              {selector: '[name=execute]'},
+              {selector: '#schedule-details', elAttribute:'displayed',  converter: this.executeChangedConverter}
+            ],
+            cycle: [{selector: '[name=cycle]'}, {selector: '.cycle', converter: this.cycleChangedConverter}],
+            date: '[name=date]',
+            weekdays: {selector:'[name=weekdays]', converter: this.weekdaysConverter, elAttribute:'checked'},
+            month_days: {selector:'[name=month_days]', converter: this.monthDaysConverter},
+            time: '[name=time]',
+            menu_pack_id:'[name=menu_pack_id]',
+            forceShutdown:'[name=forceShutdown]',
+            diskShutdown:'[name=diskShutdown]',
+            after_start:'[name=after_start]',
+            operation:'[name=operation]',
+            snapshot_comment:'[name=verbose]',
+            update_mode:'[name=update_mode]'
+          };
+          this.menus = new Menus();
+          this.menuTemplate =  _.template(underi18n.template(menusUpdateModeTemplate, msgFactory));
+          this.menus.bind('add reset remove',function(menus){
+            menus.forEach(function(menu) {
+              menu.computer_id=menu.get("computer_id");
+              menu.id=menu.get('id');
+                menu.fetchPacks(function(packs) {
+                  $('#menus-table', self.el).append(self.menuTemplate({menu:menu}));
+                  self._modelBinder.bind(self.model, self.el, self.bindings);
+                  $("#menupackid",self.el).remove();
+                });
+
+              });
+           });
+          this.menus.fetch({ data: {computer_id: this.model.get('computer_uuid')}});
+      }else if(this.model.get('action')=='disk_backup'){
+           this.template=_.template(underi18n.template(diskbackupTemplate, msgFactory));
+           this.bindings = {
+            name: '[name=name]',
+            memo: '[name=memo]',
+            execute:[
+              {selector: '[name=execute]'},
+              {selector: '#schedule-details', elAttribute:'displayed',  converter: this.executeChangedConverter}
+            ],
+            cycle: [{selector: '[name=cycle]'}, {selector: '.cycle', converter: this.cycleChangedConverter}],
+            date: '[name=date]',
+            weekdays: {selector:'[name=weekdays]', converter: this.weekdaysConverter, elAttribute:'checked'},
+            month_days: {selector:'[name=month_days]', converter: this.monthDaysConverter},
+            time: '[name=time]',
+            start_number:'[name=backNumber]',
+            prefix:'[name=derectory]'
+          };
+      }else if(this.model.get('action')=='send_command'||this.model.get('action')=='group_send_command'){
+           this.template=_.template(underi18n.template(diskrecheckTemlate, msgFactory));
+           this.bindings = {
+           name: '[name=computer_name]',
+            memo: '[name=memo]',
+            execute:[
+              {selector: '[name=execute]'},
+              {selector: '#schedule-details', elAttribute:'displayed',  converter: this.executeChangedConverter}
+            ],
+            cycle: [{selector: '[name=cycle]'}, {selector: '.cycle', converter: this.cycleChangedConverter}],
+            date: '[name=date]',
+            weekdays: {selector:'[name=weekdays]', converter: this.weekdaysConverter, elAttribute:'checked'},
+            month_days: {selector:'[name=month_days]', converter: this.monthDaysConverter},
+            time: '[name=time]',
+            command:'[name=command]'
+          };
+      }
+      var time=this.model.get('time').split(':');
+      this.model.set('time',time[0]+':'+time[1]);
+      this._modelBinder = new ModelBinder();
+     
+            
+      this.model.bind('error', function(object, message) {
+        var errorContainer = $('.task-form .errors', this.el);
+        errorContainer.html(JSON.stringify(message));
+        errorContainer.show();
+      });
+    },
+    monthDaysConverter: function(direction, value, attribute, model) {
+      return direction=='ViewToModel' ? value.join(',') : value.split(',');
+    },
+    cycleChangedConverter: function(direction, value, attribute, model) {
+      $('#once, #weekly, #monthly', this.el).addClass('hide');
+      $('#'+model.get('cycle'), this.el).removeClass('hide');
+    },
+    weekdaysConverter: function(direction, value, attribute) {
+      var self = this;
+      if (direction=='ViewToModel') {
+        var weekdays = [];
+        $('[name=weekdays]:checked', self.el).each(function() { weekdays.push(this.value); });
+        return weekdays.join(',');
+      }else{
+        _.forEach(value.split(','), function(day) {
+          $('#weekdays_'+day, self.el).attr('checked', true);
+        });
+      }
+    },
+    executeChangedConverter: function(direction, value, attribute, model){
+      if (value=='now') {
+        this.model.set('cycle', 'once');
+      }
+      return value!='now';
+    },
+    saveModel: function(e) {
+      e.preventDefault();
+      var self = this;
+      if(this.model.get('action')=='poweroff'||this.model.get('action')=='group_poweroff'){
+          var command=this.model.get('command').split(" ");
+          if(this.model.get('allow_message')=='Y'){
+            this.model.set('command',command[0]+" "+command[1]+" "+this.model.get('after_start')+" "+this.model.get('allow_cancel')+" '"+this.model.get('message')+"'")
+          }else{
+            this.model.set('command',command[0]+" "+command[1]+" "+this.model.get('after_start')+" "+this.model.get('allow_cancel'))
+          }
+      }else if(this.model.get('action')=='start_device'||this.model.get('action')=='group_start_device'){
+          this.model.set('command',this.model.get('bootMenu')+"|"+this.model.get('boot_device'))
+      }else if(this.model.get('action')=='action_exam'){
+            this.model.set('command',(this.model.get('confirmStatus')==true?"2|":"1|")+(this.model.get('confirmShutdown')==true?"2|":"1|")+(this.model.get('forceShutdown')==true?"2|":"1|")+(this.model.get('diskShutdown')==true?"2|":"1|")+this.model.get('after_start'));
+      }else if(this.model.get('action')=='menu_switch'||this.model.get('action')=='group_menu_switch'){
+             this.model.set('menu_pack_id',$("[name=menu_pack_id]",this.el).val());
+      }else if(this.model.get('action')=='auto_update'){
+             this.model.set('command',(this.model.get('forceShutdown')==true?"2|":"1|")+(this.model.get('diskShutdown')==true?"2|":"1|")+(this.model.get('operation')==true?"2|":"1|")+this.model.get('after_start'));
+      }
+      console.log(this.model.toJSON());
+      this.model.set('time', $('#time').val()+":00");
+      if (this.model.isValid) {
+            self.model.save({}, {
+              success: function(model, resp) {
+                self.$el.modal('hide');
+                App.vent.trigger("tasks:render");
+              }
+            });
+      }
+      return false;
+    },
+
+    render: function() {
+      var self = this;
+     $(this.el).html(this.template({model:this.model}));
+      this._modelBinder.bind(this.model, this.el, this.bindings);
+      $('.datepicker', this.el).datepicker({dateFormat: 'dd/mm/yy'});
+      return this;
+    }
+  });
+  return BaseServer;
+});

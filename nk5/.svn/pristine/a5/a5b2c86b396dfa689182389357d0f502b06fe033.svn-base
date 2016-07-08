@@ -1,0 +1,60 @@
+<div class="container-fluid min-width">
+  <div class="row-fluid">
+    <div class="container" style="margin-top:30px">
+      <table class="table table-data table-bordered" id="logs-table" style="max-width: 98%">
+        <thead>
+          <tr>
+            <th><%_Time%></th>
+            <th><%_Type%></th>
+            <th><%_Process Owner / User%></th>
+            <th><%_Machine Name%></th>
+            <th><%_Process Name%></th>
+            <th><%_Process/User Type%></th>
+            <th><%_Main Module%></th>
+            <th><%_Start Time%></th>
+            <th><%_Exit Time%></th>
+            <th><%_Exit Code%></th>
+          </tr>
+        </thead>
+        <tbody id="logs-container">
+          <% if (logs != null && logs.length > 0) { %>
+              <% _(logs).each(function(a) { %>
+              <tr>
+                <th><%- a.id %></th>
+                <th><%_Process%></th>
+                <th><%- a.messgae11 %></th>
+                <th><%- a.MachineName %></th>
+                <th><%- a.ProcessName %></th>
+                <th><%- a.Type %></th>
+                <th><%- a.MainModule %></th>
+                <th><%- a.StartTime %></th>
+                <th><%- a.ExitTime %></th>
+                <th><%- a.ExitCode %></th>
+               
+                <th></th>
+                <th></th>
+              
+
+              </tr>
+              <% }) %>
+          <% } %>
+
+        </tbody>
+        <tfoot>
+          <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>

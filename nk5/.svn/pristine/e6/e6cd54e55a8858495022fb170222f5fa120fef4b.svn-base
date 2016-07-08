@@ -1,0 +1,38 @@
+<!-- Room actions -->
+<div class="container-fluid ">
+  <div class="row-fluid">
+
+      <div id="actions" class="navbar">
+        <div class="navbar-inner ">
+            <div style="float:left;">
+                     <ul class="nav">
+              <% if(App.menu['31']) { %>
+              <li style="height:35px">
+                <form class="form-inline">
+                  <div class="styled select" style="width: 230px;">
+                    <select id="group-select">
+                      <%= groupOptions %>
+                    </select>
+                  </div>
+                </form>
+              </li>
+              <% } %>
+          
+            </ul>
+        </div>
+      </div>
+
+  </div><!-- row-fluid -->
+</div>
+<!-- END Room actions -->
+
+<div class="container-fluid ">
+  <div class="row-fluid">
+      <div id="main" class="container-fluid">
+      </div>
+  </div>
+</div>
+
+<!-- Boottom menu -->
+
+

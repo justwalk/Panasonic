@@ -1,0 +1,12 @@
+var config = require('../../config/config');
+var rest   = require('../helpers/rest_helper');
+
+module.exports = function(socket) {
+  socket.on('directories:read', function(req, res) {
+    config.checkPass('admin', req, res, function() {
+      rest.getJSON(config.restHost()+'/ioservers/'+req.server_id+'/directories?Type=BaseDisk', function(err, resp, body) {
+          res(err,body);
+      });
+    });
+  });
+};

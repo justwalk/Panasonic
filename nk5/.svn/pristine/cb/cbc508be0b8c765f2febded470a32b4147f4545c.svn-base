@@ -1,0 +1,27 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'models/home',
+  'views/home/home'
+], function($, _, Backbone,HomeModel, HomeView){
+    var homeRouter = Backbone.Router.extend({
+        routes:{
+            'home' : 'select',
+            'home/' : 'select'
+        },
+
+        initialize: function(){
+          var homeModel = new HomeModel();
+          this.homeView = new HomeView({router: this, model: homeModel});
+        },
+        
+        select: function(){
+          this.homeView.model.fetch();
+          $('#content-body').html(this.homeView.el);
+          this.homeView.delegateEvents();
+        }
+    });
+    
+  return homeRouter;
+});

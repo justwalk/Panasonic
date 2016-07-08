@@ -1,0 +1,25 @@
+<form class="storage-form form-vertical" method="post" accept-charset="utf-8" id="add-computer-form ">
+  <div class="modal-header">
+    <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+    <h3><%_rollback%> <%_image%></h3>
+  </div>
+
+  <div class="modal-body">
+  	<div class="control-group">
+  		<span class="restore-point" for="Parent"><%_Version%></span>
+      <span class="restore-point" for="Parent"><%_Time%></span>
+      <span class="restore-point" for="Parent"><%_Desc%></span>
+  		<div class="controls">
+        <input type="radio" name="Version" id="Version" />
+        <span class="restore-point"> <%=model.get('Version')%></span>
+        <span class="restore-point"> <%=model.get('Time')%></span>
+        <span class="restore-point"> <%=model.get('Desc')%></span>
+  		</div>
+  	</div>
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" title="Close" data-dismiss="modal"><%_Cancel%></a>
+    <input type="submit" value="<%_Save%>" class="submit btn btn-primary" class="span12">
+  </div>
+</form>

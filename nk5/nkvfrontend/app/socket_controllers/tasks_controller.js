@@ -1,0 +1,87 @@
+var Task = require('../models/task').Task;
+var User = require('../models/User').User;
+var TaskLogFile = require('../../config/db.js').TaskLogFile;
+
+module.exports = function(socket) {
+  
+  socket.on('tasks:read', function (req, res) {
+  User.checkAuthorization('admin', req, res, function() {
+    Task.all(function(error, tasks) {
+      res(error, tasks);
+    });
+	});
+  });
+  
+  socket.on('task:create', function(req, res) {
+  User.checkAuthorization('teacher', req, res, function() {
+    var task = new Task(req);
+    task.save(function(error, taskCopy) {
+      if (!error) {
+        socket.emit('task:create', taskCopy);
+        socket.broadcast.emit('tasks:create', taskCopy);
+      }
+      res(taskCopy.errors, taskCopy);
+    });
+  });
+  });
+
+  socket.on('task:delete', function(req, res) {
+    User.checkAuthorization('admin', req, res, function() {
+      Task.find(req.id, function(error, task) {
+        task.destroy(function(error) {
+          if (!error) {
+           socket.emit('task/' + task.id + ':delete', task);
+           socket.broadcast.emit('task/' + task.id + ':delete', task);
+           res(null, task);
+          } else {
+            res(error);
+          }
+        });
+      });
+
+      Task.deleteFile(req,function(){
+        TaskLogFile.all({where:{taskid:req.id}},function(error,data){
+          if(data.length > 0){
+            data.forEach(function(taskLogFile){
+              taskLogFile.destroy()
+            })
+          }
+        })
+      });
+
+      
+
+    });
+  });
+
+  socket.on('task:update', function(req, res) {
+   User.checkAuthorization('admin', req, res, function() {
+    var task = new Task(req);
+      task.updateAttributes(req, function(err, data) {
+        if (data.execute == 'now') {
+          data.executeTask()
+        } 
+        res(err, data);
+      });
+    });
+  });
+  
+    socket.on('task:removeBydate', function(req, res) {
+      User.checkAuthorization('admin', req, res, function() {
+          if(req.date){
+           Task.queryDeleteByDate(req.date,function(err,date){
+             res(err, date);
+           })
+          }
+          
+      });
+    });
+
+     socket.on('task:log', function(req, res) {
+      User.checkAuthorization('admin', req, res, function() {
+        Task.readFile(req.task,function(err,log){
+          res(null,log);
+        })  
+      });
+    });
+};

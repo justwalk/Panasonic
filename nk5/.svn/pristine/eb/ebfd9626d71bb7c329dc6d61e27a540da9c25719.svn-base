@@ -1,0 +1,351 @@
+var Computer = require('../../config/db.js').Computer;
+
+var rest   = require('../helpers/rest_helper');
+var config = require('../../config/config.js');
+var computersURL = config.restHost() + '/computers/';
+
+Computer.dball = Computer.all;
+Computer.all = function(options, callback) {
+    console.log("Computer.all===开始======","======options============"+JSON.stringify(options));
+  if (options.where.group_id && options.where.group_id != 0) {
+    rest.getJSON(config.restHost()+'/groups/'+options.where.group_id, function(err, resp, group) {
+	    if(err)
+			return callback(err);
+			Computer.arrayFromCGI(group.Computers, function (err, result) {
+				callback(err, result);
+			});
+    });
+  } else {
+    if (options.where.group_id) {
+      rest.getJSON(computersURL, function(err, resp, body) {
+        if (err)
+          return callback(err);
+          Computer.arrayFromCGI(body, function(err, result) {
+            callback(err, result);
+          });
+      });
+    }
+  }
+};
+
+Computer.dbfind = function(id, callback) {
+    console.log("Computer.dbfind====开始====","======id======"+id);
+	Computer.dball({where: {cid: id}}, function(err, data) {
+		if(err)
+			callback(err);
+		else {
+			if(data.length === 0)
+				callback(null, null);
+			else {
+				callback(null, data[0]);
+			}
+		}
+	});
+};
+
+Computer.find = function(computer_id, callback) {
+    console.log("Computer.find========开始=======","==========computer_id========"+computer_id);
+  rest.getJSON(computersURL+computer_id, function(err, resp, body) {
+    if(err)
+		return callback(err, null);
+	var computer = Computer.fromCGI(body);
+	Computer.dbfind(computer_id, function (err, data) {
+        console.log("Computer.find=====Computer.dbfind==返回值===","=====data==="+JSON.stringify(data));
+		if(!data) {
+			Computer.dbcreate({cid: computer_id}, function(err, data) {
+                console.log("Computer.dbfind====Computer.dbcreate====返回值=======","====data==="+JSON.stringify(data)+"===err=="+err);
+				if(err)
+					return callback(err, null);
+				console.log('find created computer');
+				
+				for(var a in computer)
+					data[a] = computer[a];
+				callback(err, data);
+			});
+		} else {
+			for(var a in data)
+				computer[a] = data[a];
+			callback(err, computer);
+		}
+	});
+  });
+};
+
+Computer.findRewrite = function(computer_id,callback) {
+    rest.getJSON(computersURL+computer_id+'/', function(err, res, data) {
+       var computer = Computer.fromCGI(data);
+        callback(err, computer);
+    });
+};
+
+Computer.olddbcreate = Computer.create;
+Computer.dbcreate = function(record, callback) {
+	rest.getJSON(computersURL+record.cid, function(err, resp, body) {
+		if(err)
+			return callback(err);
+		var computer = Computer.fromCGI(body);
+        //判断是否 computer template
+        console.log("Computer.dbcreate====","======computer========"+JSON.stringify(computer));
+		if(computer.group_id != 0){
+            rest.getJSON(config.restHost()+'/groups/'+computer.group_id, function(err, resp, group) {
+                if(err)
+                    return callback(err);
+
+                group.Computers.sort(function(a, b){
+                    return a.Id - b.Id;
+                });
+
+                var i=0;
+                for(i=0;i<group.Computers.length;i++)
+                    if(group.Computers[i].Id == record.cid)
+                        break;
+
+                if(i >= group.Computers.length)
+                    return callback('Consistency error');
+
+                record.x = (i%7) * 125;
+                // >> forces it to be integer
+                record.y = ((i/7) >> 0) * 90;
+
+                Computer.dbfind(record.cid, function (err, data) {
+                    if(err)
+                        return callback(err);
+                    if(!data) {
+                        console.log('create ', record);
+                        Computer.olddbcreate(record, callback);
+                    }
+                });
+            });
+        }else{
+            return callback(null,computer);
+        }
+	});
+};
+
+Computer.create = function(params, callback) {
+  // var createParams = {'Name': params.name, 'HardwareAddress': params.mac_address};
+  
+  console.log('group_id', params.group_id);
+  console.log('Computer.toCGI',computersURL+'create');
+  rest.postData(computersURL+'create', Computer.toCGI(params) , function(err, resp, body) {
+    var topErr = err;
+    if(err)
+      callback(err, null);
+    else {
+      Computer.dbcreate({cid: body.ID, x: params.x, y: params.y, locked: false }, function(err, data) {
+        params.x = data.x;
+        params.y = data.y;
+        params.locked = data.locked;
+        params.id = body.ID;
+        callback(topErr, params);
+      });
+	  }
+  });
+};
+
+Computer.prototype.addToGroup = function(group_id, callback) {
+  var self = this;
+  var groupURL = config.restHost()+'/groups/'+group_id+'/add';
+  rest.postData(groupURL, {CUID: this.id}, function(err, resp, body) {
+    callback(err, params);
+  });
+};
+
+Computer.prototype.dbupdateAttributes = Computer.prototype.updateAttributes;
+Computer.prototype.updateAttributes = function(params, callback) {
+  var computer_id = params.id;
+  var keys = [];
+  //sorry for the hack
+  //store values from params in dbValues if the cid exists
+  var dbValues = {};
+    console.log("Computer.prototype.updateAttributes====开始====","======computer_id========"+computer_id);
+      var dbc = Computer.dbfind(computer_id, function(err, computer){
+          console.log("Computer.prototype.updateAttributes====","Computer.dbfind===返回值===computer======"+JSON.stringify(computer));
+        if(err || !computer)
+            return console.log(err || 'cid ' + computer_id + 'not found');
+
+        dbValues.x = params.x;
+        dbValues.y = params.y;
+        dbValues.locked = params.locked;
+        dbValues.cid = params.cid;
+        if(params.x !== null) {
+          computer.x = params.x;
+        }
+        if(params.y !== null) {
+          computer.y = params.y;
+        }
+        computer.locked = params.locked;
+        computer.save();
+      });
+  /*if(position.x || position.y) {
+	console.log('Updating position');
+	this.dbupdateAttributes(position, function(){});
+  }*/
+  
+  var changed = false;
+  
+  for (var key in params) {
+    if (params[key] !== undefined) {
+	  if(key != 'x' && key != 'y')
+		changed= true;
+      this[key] = params[key];
+    }
+  }
+
+  var computer = Computer.toCGI(this);
+    console.log("computer======="+JSON.stringify(computer));
+    if(changed)
+	  rest.postData(computersURL+computer_id+'/update', computer, function(err, resp, body) {
+        var current = Computer.fromCGI(computer);
+        //add the dbValues to the current variable before sending
+        current.x = dbValues.x;
+        current.y = dbValues.y;
+        current.cid = dbValues.cid;
+        current.locked = dbValues.locked;
+        if (! err) {
+		  body.ID = computer_id;
+		  return callback(err, current);
+		} else
+			return callback(err);
+	  });
+  else
+	return callback(null, computer);
+};
+
+Computer.prototype.dbdestroy = Computer.prototype.destroy;
+Computer.prototype.destroy = function(callback) {
+  var self = this;
+  
+  rest.postData(computersURL+self.cid+'/delete',{}, function(err, resp, body) {
+    if(err)
+			callback(err, body);
+		else {
+			Computer.dbfind(self.cid, function(err, computer){
+				
+				if(err || !computer)
+					return;
+				computer.dbdestroy();
+			});
+			callback(err, body);
+		}
+  });
+};
+
+var each = require('each');
+
+Computer.arrayFromCGI = function(computers, callback) {
+  /*var mappedComputers = []
+  computers.forEach(function(computer) {
+    mappedComputers.push(Computer.fromCGI(computer))
+  });
+  return mappedComputers;*/
+    console.log("Computer.arrayFromCGI=======开始=======","======computers====="+JSON.stringify(computers));
+  var result = [];
+  each(computers)
+	.on('item', function(data, index, next){
+		var computer = Computer.fromCGI(data);
+		Computer.dbfind(computer.id, function (err, data) {
+			if(err)
+				return next(err);
+			if(!data) {
+				Computer.dbcreate({cid: computer.id}, function(err, data) {
+                    console.log("Computer.arrayFromCGI=======Computer.dbcreate=======","====返回值===data====="+JSON.stringify(data));
+					if(err) {
+						next(err);
+					} else {
+						console.log('arrayFromCGI created computer');
+						for(var a in data)
+							if(a != 'id')
+								computer[a] = data[a];
+						result.push(computer);
+						next();
+					}
+				});
+			} else {
+				console.log(data.cid, data.x, data.y);
+				for(var a in data)
+					if(a != 'id')
+						computer[a] = data[a];
+				result.push(computer);
+				next();
+			}
+		});
+	})
+	.on('error', function(err){
+		callback(err);
+	})
+	.on('end', function(){
+		callback(null, result);
+	});
+};
+
+Computer.fromCGI = function(computer) {
+  var mappedComputer = new Computer();
+  for (var item in  mapping) {
+    mappedComputer[mapping[item]] = computer[item];
+  }
+  return mappedComputer;
+};
+
+Computer.toCGI = function(computer) {
+  var mappedComputer = {};
+  for (var attribute in mapping) {
+    if (!(attribute==='DefaultMenu' && computer.default_menu==='') ){ //hack for jack sdk.
+          mappedComputer[attribute] = computer[mapping[attribute]];
+    }
+    
+  }
+  return mappedComputer;
+};
+
+var mapping = {
+    '8021X': '8021X',
+    'AD': 'ad',
+    'Boot': 'boot',
+    'BootFile': 'boot_file',
+    'BootMenuTimeout': 'bootmenu_timeout',
+    'BootRename': 'boot_rename',
+    'ConcurrentPackTimeout': 'concurrent_pack_timeout',
+    'DefaultMenu': 'default_menu',
+    'Disable': 'disable',
+    'DisableUSBDevices': 'disable_usb_devices',
+    'DisableUSBStorage': 'disable_usb_storage',
+    'DiskCacheSyncSpeed': 'disk_cache_sync_speed',
+    'EnableMenu': 'enable_menu',
+    'Gateway': 'gateway',
+    'Group': 'group_id',
+    'HardwareAddress': 'mac_address',
+    'IP': 'ip',
+    'Id': 'id',
+    'LDC_SYNC': 'ldc_sync',
+    'MaxDataTransfer': 'max_data_transfer',
+    'MemoryCache': 'memory_cache',
+    'MultiAD': 'multi_ad',
+    'Name': 'name',
+    'Netmask': 'netmask',
+    'PersistFiles': 'persist_files',
+    'PersistRegistry': 'persist_registry',
+    'PersistSSID': 'persist_ssid',
+    'Private': 'private',
+    'ReadLimit': 'read_limit',
+    'ScreenX': 'screen_x',
+    'ScreenY': 'screen_y',
+    'SecludeNetwork': 'seclude_network',
+    'SyncTime': 'sync_time',
+    'UPDTBoot': 'updt_boot',
+    'UpdateMode': 'update_mode',
+    'WMEMCH': 'wmemch',
+    'WriteLimit': 'write_limit',
+    'UpdateDisk':'update_disk',
+    //xiongpanan add start 20160324
+    'UpdateDefault':'update_default',
+    //xiongpanan add start 20160324
+};
+
+
+Computer.command = function(uuid, cmd, callback){
+	console.log(computersURL + uuid + ', COMID='+cmd);
+	rest.postData(computersURL + uuid +'/command', 'COMID='+cmd, callback);
+};
+
+module.exports.Computer = Computer;

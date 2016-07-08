@@ -1,0 +1,18 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'views/commands/base_group_restart_command',
+  'text!templates/commands/restart_group.html'
+  ], function($, _, Backbone, BaseCommandView, RestartGroupTemplate){
+  RestartGroup = BaseCommandView.extend({
+    id:'restart-group-modal',
+    template: _.template(underi18n.template(RestartGroupTemplate, msgFactory)),
+    initialize: function() {
+      this.constructor.__super__.initialize.apply(this, ['options']);
+      this.model.set('action', 'group_restart');
+    }
+    
+  });
+  return RestartGroup;
+});

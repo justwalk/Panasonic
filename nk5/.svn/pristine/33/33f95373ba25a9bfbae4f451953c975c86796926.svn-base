@@ -1,0 +1,84 @@
+<div class="modal-dialog modal-sm">
+    <div class="form-horizontal no-margins " >
+        <div class="modal-header">
+            <button class="close">&times;</button>
+            <h3><%_Edit Directory%></h3>
+        </div>
+            <div class="modal-body" >
+                <ul id="myTab" class="nav nav-tabs" >
+                    <li class="active" style="text-align:center;font-size:11px;" ><a href="#baseDisk" data-toggle="tab"><%_BaseDiskFolder%>  </a> </li>
+                    <li><a href="#exportDisk"  style="text-align:center;font-size:11px;"data-toggle="tab"><%_ExportDiskFolder%></a></li>
+                    <li><a href="#storageDisk" style="text-align:center;font-size:11px;" data-toggle="tab"><%_StorageDiskFolder%></a></li>
+                    <li id="lIChannelAddress"><a href="#channelAddress" style="text-align:center;font-size:11px;" data-toggle="tab"><%_IOChannel%></a></li>
+                </ul>
+                <div id="myTabContent" class="tab-content">
+                    <div class="tab-pane fade in active" id="baseDisk">
+                        <div class="control-group">
+                            <div id="add-directory-group-base">
+                                <input type="text" name="nameBase" id="directory-name-base" style="margin-right:5px; width:190px" placeholder='<%_Directory name%>'>
+                                <button type="button" id="add-directory-base" style="margin-right:5px" class="btn" a='1'> + <%_Add%></button>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                                <table class="table table-bordered table-striped table-condensed" id="baseTable">
+                                </table>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="exportDisk">
+                        <div class="control-group">
+                            <div id="add-directory-group-export">
+                                <input type="text" name="nameExport" id="directory-name-export" style="margin-right:5px; width:190px" placeholder='<%_Directory name%>'>
+                                <button type="button" id="add-directory-export" style="margin-right:5px" class="btn"> + <%_Add%></button>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <table class="table table-bordered table-striped table-condensed" id="exportTable">
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="storageDisk">
+                        <div class="control-group">
+                            <div id="add-directory-group-storage">
+                                <input type="text" name="name" id="directory-name-storage" style="margin-right:5px; width:190px" placeholder='<%_Directory name%>'>
+                                <button type="button" id="add-directory-storage" style="margin-right:5px" class="btn"> + <%_Add%></button>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <table class="table table-bordered table-striped table-condensed" id="storageTable">
+                            </table>
+                        </div>
+
+                    </div>
+
+                    <div class="tab-pane fade" id="channelAddress">
+                        <div class="control-group">
+                            <div id="add-group-channelAddress">
+                                <input type="text" name="channelAddress-name" id="channelAddress-name" style="margin-right:5px; width:190px" placeholder='<%_I/O Channel Address%>'>
+                                <input type="text" name="port-name" id="port-name" style="margin-right:5px; width:190px" placeholder='<%_Port%>'>
+                                <button type="button" id="add-channelAddress" style="margin-right:5px" class="btn"> + <%_Add%></button>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <table class="table table-bordered table-striped table-condensed" id="channelAddressTable">
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <a href="#" class="btn" title="Close" data-dismiss="modal"><%_Cancel%></a>
+                    <a href="#" class="btn" title="Close" data-dismiss="modal" class="btn btn-primary"><%_Ok%></a>
+                </div>
+    </div>
+</div>
+<style type="text/css">
+    .modal-lg{
+        width: 560px;
+    }
+    .max-height{
+        max-height: none;
+    }
+</style>

@@ -1,0 +1,43 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/logs/log.html',
+  'modelBinder'
+], function($, _, Backbone, tableItem, ModelBinder){
+    TaskView = Backbone.View.extend({
+      tagName: 'tr',
+      _modelBinder: undefined,
+    
+     events: {
+            'click .removeTask': 'removeTask'
+        },
+    
+    template: _.template(underi18n.template(tableItem, msgFactory)),
+
+      initialize: function() {
+        this.task = this.options.task;
+        this._modelBinder = new ModelBinder();
+        _.bindAll(this, 'render');
+      },
+    
+    removeTask: function() {
+    this.task.serverDelete();
+    this.task.destroy();
+    },
+      
+      render: function() {
+        var html = this.template({
+          task: this.task,
+          action: App.msgFactory(this.task.get('action')),
+          cycle: App.msgFactory(this.task.get('cycle')),
+          last_run_status: App.msgFactory(this.task.get('last_run_status')),
+        });
+        $(this.el).html(html);
+        this._modelBinder.bind(this.task, this.el);
+        return this;
+      }
+      
+    });
+    return TaskView;
+});

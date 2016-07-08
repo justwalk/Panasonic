@@ -1,0 +1,22 @@
+#include "home.h"
+
+#define NO_FCGI_DEFINES
+
+#include <fcgi_stdio.h>
+
+#include "output.h"
+
+#include "computer.h"
+
+#include <Windows.h>
+
+
+extern char **FCGI_environ;
+
+HomeResource::HomeResource(){
+	prefix = "home";
+}
+ULONG nid;
+void HomeResource::run(const std::map<std::string, std::string>& params) const{
+	printHomeData(nid);
+}

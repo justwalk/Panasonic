@@ -1,0 +1,39 @@
+<form class="computer-form form-horizontal no-margins" method="post" accept-charset="utf-8" id="option-settings-computer-menu-modal">
+    <div class="modal-header">
+        <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+        <h3><%_OptionSettings%></h3>
+    </div>
+    <p class="errors"></p>
+    
+ <div class="modal-body">
+        <div class="control-group">
+            <label class="control-label" for="name"><%_Name%></label>
+            <div class="controls">
+                <input type="text" id="task_name" class="span10" name="name"/>
+                <input type="hidden" id="computer" class="span10" name="computer"/>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="memo"><%_Memo%></label>
+            <div class="controls">
+                <input type="text" id="task_memo" class="span10" name="memo"/>
+            </div>
+        </div>
+        
+        <div class="control-group">
+            <label class="control-label" for="memo"><%_Menu%></label>
+            <div class="controls">
+                   <select name="default_menu" id="default_menu" class="">
+            <%= menus %>
+          </select>
+            </div>
+        </div>
+        
+ 
+    </div>
+    <input type="hidden" id="verbose" class="span10" name="verbose"/>
+    <div class="modal-footer">
+      <a href="#" class="btn" title="Close" data-dismiss="modal"><%_Cancel%></a>
+      <input type="button" value="<%_Save%>" class="btn btn-primary">
+    </div>
+</form>

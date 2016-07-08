@@ -1,0 +1,30 @@
+<div style="height: 14px;"></div><table class="table table-data table-striped table-bordered" id="schedules-table" style="max-width: 98%">
+  <thead>
+    <div style="float: right;margin-right: 100px;">&nbsp;</div>
+    <div style="float: right;"><img  class='refreshlogs' src="../../images/Refresh.png" style="cursor: pointer;" title="Resh2"></div>
+    <tr>
+      <th><%_Type%></th>
+      <th><%_Host_Name%></th>
+      <th><%_Time%></th>
+      <th><%_User_Name%></th>
+      <th><%_OS%></th>
+      <th><%_Process_Id%></th>
+      <th><%_Application%></th>
+      <th><%_Msg%></th>
+    </tr>
+  </thead>
+  <tbody id="schedules-container"> </tbody>
+  <tfoot>
+   <tr>
+     <th></th>
+     <th></th>
+     <th></th>
+     <th></th>
+     <th></th>
+     <th></th>
+     <th></th>
+     <th></th>
+   </tr>
+  </tfoot>
+
+</table>

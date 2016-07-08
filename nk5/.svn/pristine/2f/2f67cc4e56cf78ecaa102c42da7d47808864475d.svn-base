@@ -1,0 +1,101 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/logs/logs.html',
+  'touchPunch',
+  'bootstrapDatatables'
+], function($, _, Backbone ,logsTemplate){
+    
+    var LogsView = Backbone.View.extend({
+        template : _.template(underi18n.template(logsTemplate, msgFactory)),
+                
+        initialize: function() {
+          var self = this;
+          socket.emit('logs:read', {}, function(err, data) {
+            self.logs = data;
+            self.render();
+          });
+        },
+
+        getDate: function(date) {
+          return date.getFullYear()+'/'+(date.getMonth()+1)+'/'+date.getDate()+' '+date.getHours()+':'+date.getMinutes();
+        },
+
+        capitalize: function (string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        },
+
+        render: function() {
+          var self = this;
+          var processEvents = []; 
+          var processedTime;
+
+          _(this.logs.processes).each(function(process) {
+            _(self.logs.events).each(function(processEvent) {
+              if (process.id == processEvent.pid) {
+                processedTime = self.getDate(new Date(processEvent.Time));
+                processEvents.push({
+                  Time: processedTime, Type: App.msgFactory(self.capitalize(processEvent.Type)),
+                  ExitCode: process.ExitCode, ExitTime: self.getDate((new Date(process.ExitTime*1000))),
+                  MachineName: process.MachineName, MainWindowTitle: process.MainWindowTitle,
+                  ProcessName: process.ProcessName, StartTime: self.getDate((new Date(process.StartTime*1000))),
+                  ProcessOwner: process.ProcessOwner, MainModule: process.MainModule
+                  });
+              }
+            });
+          });
+
+          _(this.logs.user_events).each(function(userEvent) {
+            userEvent.Time = self.getDate(new Date(userEvent.Time));
+            userEvent.Type = App.msgFactory(self.capitalize(userEvent.Type));
+          });
+          
+          $(this.el).html(this.template({ processEvents: processEvents, userEvents: self.logs.user_events }));
+      
+          $('#logs-table', this.el).dataTable({
+
+          'sDom': 'R<\'row-fluid table-data-search\'<\'datatable-part pull-left\'l>r <\'datatable-part pull-right\' f> > t<\'row-fluid\'<\'datatable-part-medium pull-left\'i><\'datatable-part-medium padding-remove-a pull-right\'p><\'datatable-part-small\' T>>',
+          'sPaginationType': 'bootstrap',
+          'oLanguage': {
+           'sUrl': '/dt.' + App.locale + '.js'
+          },
+          oTableTools: {
+            'sSwfPath': 'javascripts/vendor/datatable/copy_csv_xls_pdf.swf',
+            'aButtons': ['csv', 'xls', 'pdf']
+          },
+          'bAutoWidth': false,
+          'bDestroy': true,
+          'bFilter': true,
+          'nTFoot': true,
+          'aoColumns' : [
+          {sWidth: '9%'},
+          {sWidth: '10%'},
+          {sWidth: '9%'},
+          {sWidth: '9%'},
+          {sWidth: '9%'},
+          {sWidth: '9%'},
+          {sWidth: '9%'},
+          {sWidth: '9%'},
+          {sWidth: '9%'},
+          {sWidth: '9%'}
+          ]
+        }).columnFilter({
+          aoColumns: [
+          {type: 'date-range'},
+          {type: 'select', values: [App.msgFactory('Process'), App.msgFactory('User')]},
+          {type: 'text'},
+          {type: 'text'},
+          {type: 'text'},
+          {type: 'text'},
+          {type: 'text'},
+          {type: 'date-range'},
+          {type: 'date-range'},
+          {type: 'text'}
+          ]
+        });
+      }
+    });
+       
+    return LogsView;
+});

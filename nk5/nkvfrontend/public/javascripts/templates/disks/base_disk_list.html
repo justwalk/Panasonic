@@ -1,0 +1,5 @@
+<optgroup label="<%- disk.get('IP') %>">
+<% disk.get('disks').forEach(function(exportDisk){ %>
+  <option value="<%- disk.get('ID') %>|<%- exportDisk.ID %>"> <%- exportDisk.Name %></option>
+<% }) %>
+</optgroup>

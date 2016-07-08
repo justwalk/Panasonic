@@ -1,0 +1,23 @@
+<table class="table table-data table-striped table-bordered" id="table-view">
+  <thead>
+    <tr>
+      <th><%_Pc name%></th>
+      <th><%_Update Mode%></th>
+      <th><%_Power%></th>
+      <th><%_IP%></th>
+      <th><%_Menu%></th>
+      <th><%_MenuDetail%></th>
+      <th><%_Image%></th>
+      <th><%_OS%></th>
+      <th><%_LogonUser%></th>
+      <th><%_RunningTime%></th>
+      <th><%_LoginTime%></th>
+      
+    </tr>
+  </thead>
+  <tbody id="computers-container">
+  </tbody>
+</table>
+
+
+

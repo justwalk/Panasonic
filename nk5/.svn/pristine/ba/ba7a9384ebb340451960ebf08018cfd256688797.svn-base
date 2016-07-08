@@ -1,0 +1,22 @@
+<div class="navbar-inner min_width_menu">
+  <div class="container" >
+    <a class="brand" href="index.html"></a>
+
+      <div class="nav pull-right">
+		<%= links %>
+	  
+	   <% if(user === 'admin') { %>
+		<li><a href="javascript:void(0)" id="menu-home"><%_Home%></a></li>
+        <li><a href="javascript:void(0)" id="menu-servers"><%_Server%></a></li>
+        <li><a href="javascript:void(0)" id="menu-storages"><%_Storage%></a></li>
+	   <% } %>
+        <li><a href="javascript:void(0)" id="menu-clients"><%_Clients%></a></li>
+		 <% if(user === 'admin') { %>
+		  <li><a href="javascript:void(0)" id="menu-schedule"><%_Activity%></a></li>
+		 <% } %>
+     <% if(user === 'admin') { %>
+      <li><a href="javascript:void(0)" id="menu-logs"><%_Logs%></a></li>
+     <% } %>
+      </div>
+  </div>
+</div>

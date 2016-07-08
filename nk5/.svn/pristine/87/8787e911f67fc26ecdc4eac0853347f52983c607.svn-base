@@ -1,0 +1,37 @@
+<div class="navbar-inner min_width_menu">
+  <div class="container" >
+    <a class="brand" href="index.html"></a>
+      <div class="nav pull-left"  >
+       <li  style="margin-top: 20px;color: white"><%_Ver%> 1.01</li>
+       <li  style="margin-top: 20px;color: white;margin-left: 10px;" ><% if(App.user){%> <%- App.user%><% }%></li>
+      </div>
+      <div class="nav pull-right">
+	   <%= links %>
+	   <% if(App.menu['2']) { %>
+		    <li><a href="javascript:void(0)" id="menu-home"><%_Home%></a></li>
+       <% } %>
+       <% if(App.menu['21']) { %>
+        <li><a href="javascript:void(0)" id="menu-various_setting"><%_EnvSetting%></a></li>
+       <% } %>
+       <% if(App.menu['3']) { %>
+        <li><a href="javascript:void(0)" id="menu-servers"><%_Server%></a></li>
+       <% } %>
+       <% if(App.menu['4']) { %>
+        <li><a href="javascript:void(0)" id="menu-storages"><%_Storage%></a></li>
+	     <% } %>
+       <% if(App.menu['5']) { %>
+        <li><a href="javascript:void(0)" id="menu-clients"><%_Clients%></a></li>
+         <% } %>
+        <% if(App.menu['6']) { %>
+		    <li><a href="javascript:void(0)" id="menu-schedule"><%_Activity%></a></li>
+         <% } %>
+        <% if(App.menu['7']) { %>
+        <li><a href="javascript:void(0)" id="menu-logs"><%_Logs%></a></li>
+        <% } %>
+         <% if(App.menu['8']) { %>
+        <li><a href="javascript:void(0)" id="menu-users"><%_Users%></a></li>
+        <% } %>
+    
+      </div>
+  </div>
+</div>

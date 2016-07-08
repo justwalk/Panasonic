@@ -1,0 +1,13 @@
+<table class="table table-data table-striped table-bordered" id="table-view">
+  <thead>
+    <tr>
+      <th><%_Pc name%></th>
+      <th><%_MAC%></th>
+      <th><%_IP%></th>
+      <th><%_Menu%></th>
+      <th><%_Update Mode%></th>
+    </tr>
+  </thead>
+  <tbody id="computers-container">
+  </tbody>
+</table>

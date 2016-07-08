@@ -1,0 +1,66 @@
+#!CMDSWITCHES +s
+#!CMDSWITCHES +d
+.SUFFIXES: .cpp
+
+VHDSDK_LIB="sdk\32\ebLib.lib"
+FCGI_LIB="libfcgi\libfcgi.lib"
+BOOST="D:\boost_1_55_0"
+
+#CL_OPTIONS="/Isdk" "/I$(BOOST)" "/I$(BOOST)\boost" "/Ilibfcgi\include" /EHsc /Zi /bigobj
+CL_OPTIONS="/Isdk" "/I$(BOOST)" "/Ilibfcgi\include" /nologo /EHsc /Zi /bigobj /w
+#LINK_OPTIONS="/LIBPATH:sdk\32" "/LIBPATH:$(BOOST)\stage\lib" /RELEASE /INCREMENTAL:NO advapi32.lib
+LINK_OPTIONS= "/SUBSYSTEM:CONSOLE" "/MACHINE:X86" "/LIBPATH:libfcgi" "/LIBPATH:skd\32" "/LIBPATH:$(BOOST)\stage\lib"   /nologo /RELEASE /INCREMENTAL:NO advapi32.lib
+
+EXE_OUT=cgi.exe backup.exe restore.exe
+
+all: gendep.exe $(EXE_OUT) deps
+rebuild:
+	$(MAKE) /nologo clean all
+deploy: killall
+	copy cgi.exe C:\NKV
+	copy D:\Alonso\trabajos\NetKaleido\src\nkvclienttools\nk5-nkvclienttools\NkVClientTools\bin\Debug\NkVClientTools.exe client-tools
+	copy D:\Alonso\trabajos\NetKaleido\src\nkvclienttools\nk5-nkvclienttools\NkVClientTools\bin\Debug\*.dll client-tools
+	copy D:\Alonso\trabajos\NetKaleido\src\nkvclienttools\nk5-nkvclienttools\NkVClientToolsConsole\bin\Debug\NkVClientToolsConsole.exe client-tools
+	copy D:\Alonso\trabajos\NetKaleido\src\nkvclienttools\nk5-nkvclienttools\NkVClientToolsAppMonitor\bin\Debug\NkVClientToolsAppMonitor.exe client-tools
+
+killall:
+	-taskkill /im aliveserver.exe /f /t 2>NUL >NUL
+	-taskkill /im cgi.exe /f /t 2>NUL >NUL
+
+$(EXE_OUT):
+	IF EXIST $@	type <<
+Building $@ because of $?
+<<
+	echo $@
+	link $(LINK_OPTIONS) $(**) /OUT:"$@"
+
+clean:
+	-del *.obj 2>NUL
+	-del *.exe 2>NUL
+	-del *.dll 2>NUL
+	-del *.lib 2>NUL
+	-del *.exp 2>NUL
+	-del *.dep 2>NUL
+	-del *.ilk 2>NUL
+	-del *.pdb 2>NUL
+	copy NUL deps.tmp > NUL
+
+.cpp.obj:
+	IF EXIST $@	type <<
+Building $@ because of $?
+<<
+	IF NOT EXIST "$(<R).d" copy NUL "$(<R).d" >NUL
+	-cl $(CL_OPTIONS) @"$(<R).d" /c "$<" /Fo"$@" /showIncludes >"$(<R).tdep"
+	gendep "$(<R)"
+
+cgi.exe: main.obj route.obj error.obj login.obj json.obj group.obj computer.obj diag.obj menu.obj pack.obj ioserver.obj basedisk.obj disk.obj settings.obj alive.obj directory.obj output.obj file.obj $(VHDSDK_LIB) $(FCGI_LIB)
+backup.exe: backup.obj loginNoCGI.obj $(VHDSDK_LIB)
+restore.exe: restore.obj loginNoCGI.obj $(VHDSDK_LIB)
+
+gendep.exe: gendep.obj
+	link $(LINK_OPTIONS) $(**F) /OUT:$@
+
+deps:
+	type *.dep >deps.tmp
+
+!INCLUDE deps.tmp

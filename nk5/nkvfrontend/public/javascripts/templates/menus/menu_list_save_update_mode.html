@@ -1,0 +1,12 @@
+<tr><th><%- menu.get('name') %></th></tr>
+<% menu.packs.each(function(pack){ %>
+  <tr>
+    <% if (pack.get('state') == "Update") { %>
+      <td><label class="pack-update-mode"><input type="radio" name="menu_pack_id" value="<%- menu.id %>|<%- pack.id %>"> <%- pack.get('name')%> : <%- pack.get('type') %> Disk </label></td>
+    <% } else { %> 
+    <!--xiongpanan change start 20160322-->
+      <td><label class="pack-not-update-mode"><input type="radio"  name="menu_pack_id" value="<%- menu.id %>|<%- pack.id %>"> <%- pack.get('name')%> : <%- pack.get('type') %> Disk </label></td>
+      <!--xiongpanan change end 20160322-->
+    <% } %>
+  </tr>
+<% }) %>

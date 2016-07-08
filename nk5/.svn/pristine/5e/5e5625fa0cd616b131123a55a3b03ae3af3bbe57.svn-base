@@ -1,0 +1,115 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'modelBinder',
+  'models/task',
+  'models/server'
+  ], function($, _, Backbone, ModelBinder, Task,Server,BaseServer){
+ BaseServer = Backbone.View.extend({
+    className: 'modal fade',
+    events:{
+      'submit .task-form ': 'saveModel',
+      'hidden' : 'remove' //the "hidden" event is from bootstrap modal dismiss
+    },
+
+    initialize: function(options) {
+      var self = this;
+     // this.servers = this.options.servers;
+  //alert(this.servers[0].get('IP'));
+      
+    this.server = this.options.server;
+      //alert(this.server.get('IP'));
+      _.bindAll(this, 'render', 'weekdaysConverter', 'cycleChangedConverter', 'executeChangedConverter');
+      this.model = this.options.task || new Task();
+      this.model.set('IP', this.server.get('IP'));
+      //this.model.set('Port', this.server.get('Port'));
+      this._modelBinder = new ModelBinder();
+      this.bindings = {
+        IP: '[name=IP]',
+        memo: '[name=memo]',
+        execute:[
+          {selector: '[name=execute]'},
+          {selector: '#schedule-details', elAttribute:'displayed', converter: this.executeChangedConverter}
+        ],
+        cycle: [{selector: '[name=cycle]'}, {selector: '.cycle', converter: this.cycleChangedConverter}],
+        date: '[name=date]',
+        weekdays: {selector:'[name=weekdays]', converter: this.weekdaysConverter, elAttribute:'checked'},
+        month_days: {selector:'[name=month_days]', converter: this.monthDaysConverter},
+        time: '[name=time]'
+      };
+      
+            
+      this.model.bind('error', function(object, message) {
+        var errorContainer = $('.task-form .errors', this.el);
+        errorContainer.html(JSON.stringify(message));
+        errorContainer.show();
+      });
+    },
+    
+    monthDaysConverter: function(direction, value, attribute, model) {
+      return direction=='ViewToModel' ? value.join(',') : value.split(',');
+    },
+
+    cycleChangedConverter: function(direction, value, attribute, model) {
+      $('#once, #weekly, #monthly', this.el).addClass('hide');
+      $('#'+model.get('cycle'), this.el).removeClass('hide');
+    },
+
+    weekdaysConverter: function(direction, value, attribute) {
+      var self = this;
+      if (direction=='ViewToModel') {
+        var weekdays = [];
+        $('[name=weekdays]:checked', self.el).each(function() { weekdays.push(this.value); });
+        return weekdays.join(',');
+      }else{
+        _.forEach(value.split(','), function(day) {
+          $('#weekdays_'+day, self.el).attr('checked', true);
+        });
+      }
+      
+    },
+
+    executeChangedConverter: function(direction, value, attribute, model){
+      if (value=='now') {
+        this.model.set('cycle', 'once');
+      }
+      return value!='now';
+    },
+    
+    saveModel: function(e) {
+      e.preventDefault();
+      var self = this;
+      if (this.model.isValid) {
+        console.log(this.model);
+        if (this.server.length > 1) {
+          _(this.server).forEach(function(comp) {
+            self.model.save({name: comp.get('IP'),computer_name:this.server.get('IP'),computer_uuid: this.server.id}, {
+              success: function(model, resp) {
+                self.$el.modal('hide');
+              }
+            });
+          });
+
+        } else {
+        this.model.save({name: this.server.get('IP'),computer_name:this.server.get('IP'),computer_uuid: this.server.id}, {
+          success: function(model, response) {
+            self.$el.modal('hide');
+          }
+        });
+        }
+      }
+      return false;
+    },
+
+
+    render: function() {
+      var self = this;
+      $(this.el).html(this.template({model:this.model}));
+      this._modelBinder.bind(this.model, this.el, this.bindings);
+      $('.datepicker', this.el).datepicker({dateFormat: 'dd/mm/yy'});
+      return this;
+    }
+  });
+  return BaseServer;
+});

@@ -1,0 +1,47 @@
+#ifndef GROUP_H
+#define GROUP_H
+
+#include "route.h"
+#include "commonJSON.h"
+
+class AddCommandGroupResource : public Route::SubResource{
+public:
+	AddCommandGroupResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+class UpdateGroupResource : public Route::SubResource{
+public:
+	UpdateGroupResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+class UUIDGroupResource : public Route::ParameterResource{
+public:
+	UUIDGroupResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+class CreateGroupResource : public Route::SubResource{
+public:
+	CreateGroupResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+class DestroyGroupResource : public Route::SubResource{
+public:
+	DestroyGroupResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+class GroupResource : public Route::SubResource{
+public:
+	GroupResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+JSON::Value* GroupToJSON(const GRP_OBJ& info);
+JSON::Array* GroupEnumToJSON();
+JSON::Value* ExtendedGroupToJSON(ULONG id);
+
+#endif

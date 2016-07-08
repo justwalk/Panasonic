@@ -1,0 +1,77 @@
+<div class="container-fluid min-width">
+  <div class="row-fluid">
+    <div class="container" style="margin-top:30px">
+      <table class="table table-data table-bordered" id="logs-table" style="max-width: 98%">
+        <thead>
+          <tr>
+            <th><%_Time%></th>
+            <th><%_Type%></th>
+            <th><%_Process Owner / User%></th>
+            <th><%_Machine Name%></th>
+            <th><%_Process Name%></th>
+            <th><%_Process/User Type%></th>
+            <th><%_Main Module%></th>
+            <th><%_Start Time%></th>
+            <th><%_Exit Time%></th>
+            <th><%_Exit Code%></th>
+          </tr>
+        </thead>
+        <tbody id="logs-container">
+          <% if (processEvents != null && processEvents.length > 0) { %>
+              <% _(processEvents).each(function(processEvent) { %>
+              <tr>
+                <th><%- processEvent.Time %></th>
+                <th><%_Process%></th>
+                <th><%- processEvent.ProcessOwner %></th>
+                <th><%- processEvent.MachineName %></th>
+                <th><%- processEvent.ProcessName %></th>
+                <th><%- processEvent.Type %></th>
+                <th><%- processEvent.MainModule %></th>
+                <th><%- processEvent.StartTime %></th>
+                <% if (!_.isNull(processEvent.ExitCode)) { %>
+                  <th><%- processEvent.ExitTime %></th>
+                  <th><%- processEvent.ExitCode %></th>
+                <% } else { %>
+                  <th></th>
+                  <th></th>
+                <% } %>
+
+              </tr>
+              <% }) %>
+          <% } %>
+          <% if (userEvents != null && userEvents.length > 0) { %>
+              <% _(userEvents).each(function(userEvent) { %>
+              <tr>
+                <th><%- userEvent.Time %></th>
+                <th><%_User%></th>
+                <th><%- userEvent.UserName %></th>
+                <th><%- userEvent.MachineName %></th>
+                <th></th>
+                <th><%- userEvent.Type %></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+              </tr>
+              <% }) %>
+          <% } %>
+
+        </tbody>
+        <tfoot>
+          <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>

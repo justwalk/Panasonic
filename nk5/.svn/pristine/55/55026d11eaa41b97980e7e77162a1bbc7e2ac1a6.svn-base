@@ -1,0 +1,55 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/modals/pass_prompt.html',
+  'msgFactory'
+], function($, _, Backbone, tmpl, msgFactory){
+  var PassPrompt = Backbone.View.extend({
+    id:'login-modal',
+    template: _.template(underi18n.template(tmpl, msgFactory)),
+  events: {
+    'submit form':  'submitPass',
+    'click #submit-pass':  'submitPass',
+    'change select': function(ev) {
+  
+      if (this.$('#language-select').val() != App.locale) {
+        App.locale = this.$('#language-select').val();
+        App.vent.trigger('change:locale');
+      }
+  }
+  },
+
+    submitPass: function() {
+      App.user = this.$('#user-input').val();
+      App.pass = this.$('#password-input').val();
+	  
+	   App.vent.trigger('change:user');
+
+      this.$el.modal('hide');
+      App.vent.trigger('change:pass');
+      if (this.$('#language-select').val() != App.locale) {
+        App.locale = this.$('#language-select').val();
+        App.vent.trigger('change:locale');
+      }
+      return false;
+    },
+
+    render: function() {
+      this.$el.html(this.template()).modal({
+        backdrop: 'static'
+      });
+      this.$('option').each(function() {
+        if ($(this).val() == App.locale) $(this).prop('selected', true);
+      });
+      return this;
+    },
+
+    show: function() {
+
+      this.$el.modal('show');
+    }
+  });
+  return PassPrompt;
+});
+

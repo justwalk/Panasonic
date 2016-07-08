@@ -1,0 +1,7 @@
+
+<td class='context'><%- task.get('id') %></td>
+<td class='context'><%- task.get('username') %></td>
+<td class='context'><%- task.get('password') %></td>
+<td class='context'><%- task.get('name') %></td>
+<td class='context'><%- task.get('role') %></td>
+

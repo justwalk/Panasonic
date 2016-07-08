@@ -1,0 +1,11 @@
+var Restore = require('../models/rollback').RestoreDisk;
+
+module.exports = function(socket) {
+	socket.on('restore:read', function(req, res) {
+		require('../../config/config').checkPass('admin', req, res, function() {
+			Restore.getRestore(req,function(err, data) {
+				res(err, data);
+			});
+		});
+	})
+}

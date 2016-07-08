@@ -1,0 +1,19 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'views/commands/base_command',
+  'text!templates/commands/restart_computer.html'
+  ], function($, _, Backbone, BaseCommandView, restartComputerTemplate){
+  RestartComputer = BaseCommandView.extend({
+    id:'restart-computer-modal',
+    template: _.template(underi18n.template(restartComputerTemplate, msgFactory)),
+    
+    initialize: function() {
+      this.constructor.__super__.initialize.apply(this, ['options']);
+      this.model.set('action', 'restart');
+    }
+    
+  });
+  return RestartComputer;
+});

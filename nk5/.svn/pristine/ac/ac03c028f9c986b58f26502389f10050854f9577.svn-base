@@ -1,0 +1,296 @@
+var db = require('../../config/db.js');
+var Task = db.Task;
+var Computer = require('./computer.js').Computer;
+var rest   = require('../helpers/rest_helper');
+var config = require('../../config/config.js');
+var computersURL = config.restHost()+'/computers/';
+var cron = require('cron');
+var fs = require('fs'); 
+var client= db.Schema.client;
+
+Task.validatesPresenceOf('name');
+Task.cronSchedules = {};
+
+// Filters
+Task.beforeSave = function(next) {
+  this.setNextExecDate();
+  next();
+};
+
+Task.afterCreate = function(next) {
+  if (this.execute == 'now') {this.executeTask();}
+  next();
+};
+
+Task.afterSave = function(next) {
+  this.scheduleTask();
+  next();
+};
+
+Task.afterInitialize = function() {
+  this.setNextExecDate();
+  console.log('next exec date', this.next_execution_date);
+};
+
+// Task execution
+
+Task.prototype.scheduleTask = function() {
+  console.log('scheduleTask', this.id, this.cronTime());
+  var self = this;
+  //Kill previous schedule for this task
+  if (Task.cronSchedules[self.id]) {
+    Task.cronSchedules[self.id].stop();
+  }
+  if (this.available()) {
+    console.log('sheduled', this.id)
+    var cronJob = new cron.CronJob(this.cronTime(), function() {return self.executeTask(self);}, null, true, null);
+    Task.cronSchedules[self.id] = cronJob;
+  }else{
+    console.log('task expired', this.id);
+  }
+};
+
+Task.prototype.available = function() {
+  console.log('task available? ', 
+    this.enable!==false&&this.execute!=='now' && this.cronTime(), "|", 
+    this.execute!=='now' && this.cronTime() && cron.sendAt(this.cronTime()), 
+  "|", new Date());
+  
+  return (this.enable!==false)&&(this.execute!=='now') && this.cronTime() && cron.sendAt(this.cronTime()) > new Date();
+};
+
+Task.prototype.executeTask = function() {
+  console.log('executeTask', this.id);
+  this.writeFile(this.currentDate()+" ||    TASK   "+this.id+"      execute-start"+"\r\n");//log
+  var self = this;
+ /* this.last_run_date = new Date((new Date()).getTime() - (new Date()).getTimezoneOffset() * 60000);*/
+ this.last_run_date = new Date();
+
+  try{
+    self.executeCommand();
+  }catch(err){
+    self.taskComplete(err);
+  }
+};
+
+// 修改  ioServer,bootServer重启；ioServer关闭
+Task.prototype.executeCommand = function() {
+  var self = this;
+  var url;
+  var params;
+  this.writeFile(this.currentDate()+" ||    DATA   "+JSON.stringify(self)+"\r\n");//log
+  if (self.action=='start' || self.action=='stop' || self.action == 'logout' || self.action == 'restart') {
+    url = computersURL+self.computer_uuid+'/command';
+    params = { COMID: self.action };
+  }else if (self.action=='send_command') {
+    url = computersURL+self.computer_uuid+'/command/cmd';
+    params = { COM: self.command };
+  }else if (self.action=='send_message') {//byt add start 20160328
+	if(self.computer_uuid.indexOf("|")>-1){
+	  self.computer_uuid.split('|').forEach(function(id){
+		url = computersURL+id+'/command/msg';
+	    params = { MSG: self.memo };	 
+	  });
+	}else{
+	  url = computersURL+self.computer_uuid+'/command/msg';
+	  params = { MSG: self.memo };
+	}	                            //byt add end 20160328
+  }else if(self.action=='group_start'){//byt add start 20160321
+	url = config.restHost()+'/groups/'+self.computer_uuid+'/start';
+	params = { COMID: self.action };
+  }else if(self.action=='group_stop'){
+	url = config.restHost()+'/groups/'+self.computer_uuid+'/stop';
+	params = { COMID: self.action };
+  }else if(self.action=='group_restart'){
+	url = config.restHost()+'/groups/'+self.computer_uuid+'/restart';
+	params = { COMID: self.action };
+  }else if(self.action=='group_send_message'){
+	url = config.restHost()+'/groups/'+self.computer_uuid+'/msg';
+	params = { MSG: self.memo };//byt add end 20160321
+  }else if(self.action=='group_send_command'){//byt add start 20160331
+	url = config.restHost()+'/groups/'+self.computer_uuid+'/cmd';
+	params = { COM: self.command };	  
+  }else if(self.action=='group_logout'){
+	url = config.restHost()+'/groups/'+self.computer_uuid+'/logout';
+	params = { COMID: self.action };	  //byt add end 20160331
+  }else if(self.action=='ioserver_restart'){
+    computersURL = config.restHost()+'/ioservers/';
+    url = computersURL+self.computer_uuid+'/restart';
+    params = { COMID: self.action };
+  }else if(self.action=='bootserver_restart'){
+    computersURL = config.restHost()+'/ioservers/';
+    url = computersURL+'bootRestart';
+    params = { COMID: self.action };
+  }else if(self.action=='ioserver_stop'){
+    computersURL = config.restHost()+'/ioservers/';
+    url = computersURL+self.computer_uuid+'/stop';
+    params = { COMID: self.action };
+  }else if(self.action=='start_update'){
+    //computersURL = config.restHost()+'/update/';
+    url = computersURL+self.computer_uuid+'/start_update';
+    params = { COMID: self.action };
+  }else if(self.action=='end_update'){
+    //computersURL = config.restHost()+'/update/';
+    url = computersURL+self.computer_uuid+'/end_update';
+    params = { COMID: self.action };
+  }
+  this.writeFile(this.currentDate()+" ||    URL   "+url+"\r\n");//log
+  this.writeFile(this.currentDate()+" ||    PARAMS   "+JSON.stringify(params)+"\r\n");//log
+  if (url && params) {
+    rest.postData(url, params, function(err, resp, body) {
+      var status = err || body;
+      self.taskComplete(status);
+      console.log('execresponse', err, body, self.action, self.computer_uuid, url, params);
+    });
+  }
+  
+  if (self.action=='update_mode' || self.action=='save_update_mode') {
+    var menu_id = self.menu_pack_id.split('|')[0];
+    var pack_id = self.menu_pack_id.split('|')[1];
+    var packURL = computersURL + self.computer_uuid +'/menus/'+menu_id+'/packs/'+pack_id+'/update';
+    params = {};
+    params.Mode = self.update_mode;
+    params.ExitUpdateMode = false;
+    if (self.action == 'save_update_mode') {
+      params.ExitUpdateMode = true;
+      params.Description = self.snapshot_comment;
+    }
+    console.log('packURL',packURL);
+    rest.postData(packURL, params, function(err, resp, body) {
+      console.log('update_complete', err,'--', body);
+      var status = err || body;
+      self.taskComplete(status);
+    });
+  }
+  
+};
+
+Task.prototype.updateDisks = function(type, params, callback) {
+  var self = this;
+  var menu_id = this.menu_pack_id.split('|')[0];
+  var pack_id = this.menu_pack_id.split('|')[1];
+  var disksURL = computersURL + self.computer_uuid +'/menus/'+menu_id+'/packs/'+pack_id+'/disks/';
+  console.log('disksURL', disksURL);
+  
+  var error = '';
+
+  
+  //Get all disks of the menu  
+  rest.getJSON(disksURL, function(err, resp, disks) {
+    var waiting = disks.length;
+        
+    disks.forEach(function(disk) {
+      var diskURL = disksURL+disk.ID+'/'+type;
+      console.log('diskURL', diskURL, params);
+      //Update each disk and set update type
+      rest.postData(diskURL, params, function(err, resp, body) {
+        console.log('disk updated'+ err + body);
+        waiting--;
+        if (body!='done' && body.error) {error+=body.error;}
+        if (!waiting) {
+          callback(error);
+        }
+      });
+    });
+  });
+  
+};
+
+Task.prototype.taskComplete = function(status) {
+  console.log('taskComplete', this.id, status, this.last_run_date);
+  this.writeFile(this.currentDate()+" ||    STATUS   "+JSON.stringify(status)+"\r\n");//log
+  this.setNextExecDate();
+  
+  this.last_run_log = status;
+  this.last_run_status = (this.last_run_log=='done') ? 'success' : 'failed';
+  this.save();
+  this.writeFile(this.currentDate()+" ||    TASK   "+this.id+"      execute-end"+"\r\n\r\n");//log
+};
+
+// Utility functions
+
+Task.prototype.setNextExecDate = function() {
+  var nextDate;
+  if (this.cronTime()) {
+    nextDate = cron.sendAt(this.cronTime());
+  }
+  this.next_execution_date = (nextDate && (nextDate > new Date())) ? nextDate : null;
+};
+
+Task.prototype.cronTime = function() {
+  var cronTime = '00 ';
+  if (!this.time || this.execute=='now') {
+    return false;
+  }
+  var time = this.time.split(':').reverse().join(' '); // mm hh
+
+  if (this.cycle=='once') {
+    cronTime = this.onceDate();
+  }else if (this.cycle=='daily') {
+    cronTime += time+' * * *';
+  }else if (this.cycle=='weekly') {
+    cronTime += time + ' * * ' + this.weekdays;
+  }else if (this.cycle=='monthly') {
+    cronTime += time + ' ' +this.month_days+ ' * * ';
+  }
+  return cronTime;
+};
+
+Task.prototype.onceDate = function() {
+  var date = this.date.split('/');  //  dd/mm/yyyy
+  var time = this.time.split(':');  //  hh:mm
+  return new Date(date[2], date[1]-1, date[0], time[0], time[1], time[2]); // new Date(year, month, day, hours, minutes, seconds, milliseconds)
+};
+
+Task.startScheduler = function(callback) {
+  console.log('Starting scheduler');
+  this.all(function(err, tasks) {
+    tasks.forEach(function(task) {
+      task.scheduleTask();
+    });
+    console.log('Tasks scheduled', Task.cronSchedules);
+  });
+};
+Task.prototype.writeFile=function(str){
+    fs.appendFile(config.logPath("Taks-"+this.id), str, function(err){  
+        if(err)  
+            console.log("fail " + err);  
+    }); 
+ }
+ Task.readFile=function(task,callback){
+    var content=undefined;
+        if(fs.existsSync(config.logPath("Taks-"+task.id))) {
+            content = fs.readFileSync(config.logPath("Taks-"+task.id),'utf-8');
+        }
+    callback(null,content);
+ }
+ Task.queryDeleteByDate=function(dateStr,rc){
+     if(dateStr){
+        strs=dateStr.split('/')
+       var  dataformat= strs[2]+"-"+strs[1]+"-"+strs[0];
+        var sql="DELETE FROM" +'"'+this.modelName+'"'+ "WHERE to_timestamp(date,'dd/mm/yyyy') < '"+dataformat+"'";
+            client.query(sql,function(err,a){
+              rc(err,a);
+            })
+      }else{
+       rc({error : "date is not null"},null);
+      }
+ }
+ Task.prototype.currentDate=function() {
+    var date = new Date();
+    var seperator1 = "-";
+    var seperator2 = ":";
+    var month = date.getMonth() + 1;
+    var strDate = date.getDate();
+    if (month >= 1 && month <= 9) {
+        month = "0" + month;
+    }
+    if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+    }
+    var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate
+            + " " + date.getHours() + seperator2 + date.getMinutes()
+            + seperator2 + date.getSeconds();
+    return currentdate;
+}
+module.exports.Task = Task;

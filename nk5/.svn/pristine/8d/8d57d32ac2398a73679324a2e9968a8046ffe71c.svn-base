@@ -1,0 +1,152 @@
+<!-- Room actions -->
+<div class="container-fluid min_width">
+  <div class="row-fluid">
+    <div class="container">
+
+      <div id="actions" class="navbar">
+        <div class="navbar-inner " style="width: 1200px;">
+            <div style="width:700px;;float:left;">
+                     <ul class="nav">
+              <li style="height:35px">
+                <form class="form-inline">
+                  <div class="styled select" style="width: 230px;">
+                    <select id="group-select">
+                      <%= groupOptions %>
+                    </select>
+                  </div>
+                </form>
+              </li>
+              <% if (user === 'admin') { %> 
+                <li class="group-actions" style="font-weight: bold; border-right-width: 5px;border-left-width: 5px;width: 130px;height: 19px;padding-left: 5px;padding-top: 10px; padding-right: 5px; color: #35b0f0;">
+                <input class="operate-group" type="checkbox" id="operate_group" name="operate_group" value="true"><%_Group Coperation%>
+                </li>
+                <li class="group-actions">
+                <button class="add-group">+<%_Add group%></button>
+                </li>
+                <li class="group-actions">
+                <button class="remove-group">-<%_Remove group%></button>
+                </li>
+                <li class="group-actions">
+                <button class="reset-computers">-<%_Reset positions%></button>
+                </li>
+                <li class="group-actions">
+                    <button class="edit-computersT"><%_EditTemplate%></button>
+                </li>
+                <li class="group-actions">
+                    <button class="edit-bootMenuT"><%_TemplateBootMenu%></button>
+                </li>
+              <% } %>
+
+            </ul>
+            </div>
+            <ul class="nav pull-right">
+              <li><a href="javascript:void(0)"><%_Select%>:</a></li>
+              <li><a href="javascript:void(0)" class="select-all"><%_All%></a></li>
+              <li><a href="javascript:void(0)" class="select-none" id="select-none"><%_None%></a></li>
+              <li><a href="javascript:void(0)" class="select-invert" id="select-invert"><%_Invert%></a></li>
+                <li class="list-view">
+                    <a id="switch-list" class="switch-view no_padding" href="javascript:void(0);" >
+                    <i class="icon-bar"></i>
+                    <i class="icon-bar"></i>
+                    <i class="icon-bar"></i>
+                    <i class="icon-bar"></i>
+                    </a>
+                </li>
+                <li class="list-view">
+                    <a id="switch-grid" class="switch-view  no_padding hide_item" href="javascript:void(0);">
+                    <i class="icon-square"></i>
+                    <i class="icon-square"></i>
+                    <i class="icon-square"></i>
+                    <br />
+                    <i class="icon-square"></i>
+                    <i class="icon-square"></i>
+                    <i class="icon-square"></i>    
+                    <div class="clearfix"></div>
+                    </a>
+                </li>
+                <li><a href="javascript:void(0)" class="select-Refresh"style="width:41px;height:35px;padding-top:5px; "><img src="../../images/Refresh.png" style="margin-bottom:10px;"></a></li>
+            </ul>
+        </div>
+      </div>
+
+    </div><!-- page container -->
+  </div><!-- row-fluid -->
+</div>
+<!-- END Room actions -->
+
+<div class="container-fluid min_width">
+  <div class="row-fluid">
+    <div class="container">
+      <div id="main" class="container-fluid">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Boottom menu -->
+<div id="bottom-top-navbar" class="navbar navbar-fixed-bottom min_width">
+  <div class="navbar-inner">
+    <div class="container">
+      <ul class="nav" id="context-commands">
+        <li class="start edge-margin"><button><%_Start%></button></li>
+        <li class="stop"><button><%_Stop%></button></li>
+        <li class="restart"><button><%_Restart%></button></li>
+        <li class="send-cmd"><button><%_Send Cmd%></button></li>
+        <!-- <li class="auto-login"><button><%_Auto Login%></button></li> -->
+        <li class="logout hide_item"><button><%_Logout%></button></li>
+        <!--<li class="change-mac"><button><%_Change Mac%></button></li> -->
+        <!--<li class="naming-pattern"><button><%_Naming Pattern%></button></li> -->
+       <!--  <% if(user === 'admin') { %>
+		    
+        <li class="lock-position"><button><%_Lock Position%></button></li>
+        <li class="unlock-position"><button><%_Unlock Position%></button></li>
+		    <% } %> -->
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- CRUD Actions -->
+<div id="bottom-navbar" class="navbar navbar-fixed-bottom min_width">
+  <div class="navbar-inner">
+    <div class="container">
+        <% if(user === 'admin') { %>
+		<ul class="nav" id="computer-commands">
+          <li class="add-computer edge-margin">
+          <button><i class="icon-white icon-plus"></i><%_Add%></button>
+          </li>
+          <li class="divider-vertical"></li>
+
+          <li class="update-mode">
+          <button><%_Update Mode%></button>
+          </li>
+          <li class="save-update-mode">
+          <button><%_Save Update%></button>
+          </li>
+<!--          <li class="test-update-mode">
+<button><%_Test Update%></button>
+          </li>
+-->
+          <li class="edit-computer">
+          <button><%_Edit computer%></button>
+          </li>
+          <li class="delete-computer">
+          <button><%_Delete computer%></button>
+          </li>
+          <li class="boot-menu"><button><%_Boot Menu%></button></li>
+        <li class="lock-position"><button><%_Lock Position%></button></li>
+        <li class="unlock-position"><button><%_Unlock Position%></button></li>
+       
+        
+            
+        </ul>
+		<% } %>
+
+<!--        <ul class="nav pull-right">
+          <li class=""><a href="#" title="Update Mode">Allow clients to automaticaly join</a></li>
+        </ul>
+-->        
+    </div>
+  </div>
+</div><!-- CRUD Actions -->
+<!-- END Boottom menu -->

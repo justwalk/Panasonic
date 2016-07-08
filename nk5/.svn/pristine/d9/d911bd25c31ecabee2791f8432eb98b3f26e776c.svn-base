@@ -1,0 +1,15 @@
+<tbody colspan="4">
+  <tr>
+    <th><%- Name %></th>
+    <th><%- Type %></th>
+    <th><%- State %></th>
+    <th><button type="button" class="remove btn">-<%_Remove%></button></th>
+  </tr>
+  <tr>
+    <td></td>
+    <td></td>
+    <td><select name="export_disk" class="disk-selection"></select></td>
+    <td><button class="btn add-disk">+<%_Add disk%></button></td>
+  </tr>
+</tbody>
+

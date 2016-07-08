@@ -1,0 +1,59 @@
+
+<td><%- memo %></td>
+<td><%- action %></td>
+<td><%- cycle %></td>
+<td><%- task.getDate('next_execution_date')||'-' %></td>
+<td><%- task.getDate('last_run_date')||'-' %></td>
+<td><%- last_run_status ||'-' %> <i class="pull-right status <%- task.get('last_run_status') %>"></i> </td>
+<td>
+	<% if(task.getDate('next_execution_date')) { %>
+		<<input type="button" value="<%_Remove%>"  class="removeTask btn btn-default" />
+		<% if(task.get('enable')) { %>
+		<!-- <%- task.get('enable') %> -->
+			<input type="button" value="<%_Disable%>"  class=" btn btn-default enable "/>
+			<% }else{ %>
+			<!-- <%- task.get('enable') %> -->
+			<input type="button" value="<%_Enable%>"  class=" btn btn-default enable "/>
+      <% if(task.get('action')!='bootserver_restart') { %>
+        <input type="button" value="<%_Copy%>"  class="copy btn btn-default"/>
+      <% } %>
+		<% } %>
+	<% } %>
+	
+	<input type="button" value="<%_Edit%>" class="edit btn btn-default" />
+		<!-- modal -->
+		<div class="modal fade copy_modal" tabindex="-1" role="dialog" 
+           aria-labelledby="myModalLabel" aria-hidden="true">
+           <div class="modal-dialog">
+              <div class="modal-content">
+                 <div class="modal-header">
+                    <button type="button" class="close" 
+                       data-dismiss="modal" aria-hidden="true">
+                          &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                      Copy
+                    </h4>
+                 </div>
+                 <div class="modal-body">
+                    <div id ="servers-container"></div>
+                    <div id ="storages-container"></div>
+                    <div id ="clients-container"></div>
+                 </div>
+                 </div>
+                 <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" 
+                       data-dismiss="modal"><%_Cancel%>
+                    </button>
+                     <input type="button" value="<%_Enter%>" class="btn btn-primary copy_save" />
+                 </div>
+              </div><!-- /.modal-content -->
+        </div>
+      </div>
+
+
+</td>
+	<td><% if(App.menu['27']) { %><input type="button" value="<%_Log%>" class="btn btn-default logTask" /> <% } %>
+</td>
+<td  style="display: none;"><%- date %></td>
+<td style="display: none;" ><%- task.get('id') %></td>

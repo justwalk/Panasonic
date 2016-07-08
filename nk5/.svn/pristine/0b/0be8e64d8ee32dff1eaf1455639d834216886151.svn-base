@@ -1,0 +1,33 @@
+ <div style="height: 30px;"></div>
+<table class="table table-data table-striped table-bordered" id="schedules-table" style="max-width: 98%;">
+     <thead >
+       <div style="float: right;margin-right: 100px;">&nbsp;</div>
+    <div style="float: right;"><img  class='refreshtask' src="../../images/Refresh.png" style="cursor: pointer;" title="Resh2"></div>
+      <th style="display: none;" ><%_id%></th>
+      <th><%_ID%></th>
+      <th><%_UserName%></th>
+      <th><%_PassWord%></th>
+      <th><%_Name%></th>
+      <th><%_Role%></th>
+    </tr>
+  </thead>
+  <tbody id="schedules-container"> </tbody>
+  <tfoot>
+   <tr>
+     <th></th>
+     <th></th>
+     <th></th>
+     <th></th>
+     <th></th>
+     
+   </tr>
+  </tfoot>
+
+</table>
+<style type="text/css">
+  .selected{
+    cursor: pointer;
+    color: #ffffff;
+    background: #237dad!important;
+  }
+</style>

@@ -1,0 +1,15 @@
+var config = require('../../config/config.js');
+var cron = require('cron');
+var fs = require('fs'); 
+
+var logFile = {};
+
+logFile.readStream=function(){
+    var fileContent = fs.readFileSync(config.logPath('executeLog'),'utf-8');
+	var arr = fileContent.trim().split('\r\n');
+	arr.forEach(function(item,index){arr[index] = JSON.parse(item)});
+	arr.sort(function(a,b){ return a.executeTime < b.executeTime});
+	return arr;    
+}
+ 
+module.exports.logFile = logFile;

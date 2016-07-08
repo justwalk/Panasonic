@@ -1,0 +1,23 @@
+var VariousSetting = require('../models/various_setting').VariousSetting;
+var User = require('../models/User').User;
+
+module.exports = function(socket) {
+  socket.on('various_setting:read', function(req, res) {
+    User.checkAuthorization('admin', req, res, function() {
+    	var data = VariousSetting.readFile();
+    	res(null, data);
+    });
+  });
+
+  socket.on('various_setting:update', function(req, res) {
+    User.checkAuthorization('admin', req, res, function() {
+      if(req.rePassword&&req.PassWD!=req.rePassword){
+          res({'error': 'Invalid password'}, null);
+      }else{
+    	  VariousSetting.writeFile(req, function(err, data) {
+            res(err, data);
+          });
+      }
+    });
+  });
+};

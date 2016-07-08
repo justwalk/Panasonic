@@ -1,0 +1,99 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'views/computers/computer_form',
+  'models/computer',
+  'views/commands/update_mode',
+  'views/commands/save_update_mode',
+  'views/commands/test_update_mode',
+], function($, _, Backbone, ComputerForm, Computer){
+  var ComputerCommands = Backbone.View.extend({
+    events:{
+      'click .add-computer': 'addComputer',
+      'click .edit-computer': 'editComputer',
+      'click .update-mode' : 'updateMode',
+      'click .save-update-mode' : 'saveUpdateMode',
+      'click .delete-computer' : 'deleteComputer'
+    },
+    initialize: function(options) {
+      this.computersView = this.options.computersView;
+      this.clickedComputer = this.options.clickedComputer;
+
+      this.clickedComputer.bind('reset', this.toggleCommandAvailability, this);
+      this.collection.bind('toggleSelected', this.toggleCommandAvailability, this);
+		  this.groups = this.options.groups;
+    },
+    
+    addComputer: function(e) {
+      if (!this.computerForm) {
+        this.computerForm = new ComputerForm({groups: this.groups});
+      }
+      this.computerForm.model = new Computer();
+      if (this.groups.group_id){
+        this.computerForm.model.set('group_id', this.groups.group_id);
+      }
+
+      this.computerForm.render().$el.appendTo($('#modal-container')).modal();
+      
+      $('input:visible:first', this.computerForm.el).focus();
+    },
+    
+    updateMode: function() {
+      var updateModeView = new (require('views/commands/update_mode'))({computersView: this.computersView,groupView: this.groups,computers: this.getActiveComputers()});
+      updateModeView.render().$el.appendTo($('#modal-container')).modal();
+    },
+
+    saveUpdateMode: function() {
+      var saveUpdateModeView = new (require('views/commands/save_update_mode'))({computersView: this.computersView ,groupView: this.groups, computers: this.getActiveComputers()});
+      saveUpdateModeView.render().$el.appendTo($('#modal-container')).modal();
+    },
+    
+    editComputer: function() {
+      if (this.getActiveComputers()) {
+        if (this.getActiveComputers().length==1) {
+          this.computerForm = new ComputerForm({groups: this.groups, model: this.getActiveComputers()[0]});
+        }else{
+          this.computerForm = new ComputerForm({groups: this.groups, model: this.getActiveComputers()});
+        }
+        this.computerForm.render().$el.appendTo($('#modal-container')).modal();
+
+        $('input:visible:first', this.computerForm.el).focus();
+      }
+    },
+    
+    deleteComputer: function() {
+      var ja = underi18n.MessageFactory(locale);
+      var r=confirm(ja('Are you sure you want to delete it?'));
+      if (r===true) {
+        var computers = this.getActiveComputers();
+        _(computers).each(function(computer) {
+          computer.destroy({error: function(model, response) {
+            alert('An error occured when deleting Computer '+model.get('name')+'. Error:'+response);
+          }});
+        });
+      }
+    },
+    
+    getActiveComputers: function() {
+      if (this.collection.selectedComputers().length) {
+        return this.collection.selectedComputers();
+      }else if(this.clickedComputer.length) {
+        return this.clickedComputer.models;
+      }else{
+        return false;
+      }
+    },
+    
+    toggleCommandAvailability: function() {
+      if (this.getActiveComputers()){
+        $('button', this.el).removeAttr('disabled');
+      } else{
+        $(':not(.add-computer) button', this.el).attr('disabled', 'disabled');
+      }
+    }
+
+  });
+
+  return ComputerCommands;
+});

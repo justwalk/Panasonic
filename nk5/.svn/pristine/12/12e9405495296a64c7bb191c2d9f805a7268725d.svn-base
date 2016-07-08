@@ -1,0 +1,26 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/various_setting/various_setting.html',
+  'touchPunch',
+  'bootstrapDatatables'
+], function($, _, Backbone ,homeTemplate){
+    
+    var HomeView = Backbone.View.extend({
+        template : _.template(underi18n.template(homeTemplate, msgFactory)),
+                
+        initialize: function() {
+          var self = this;
+          _.bindAll(this, 'render');
+          
+        },
+
+        render: function() {
+          $(this.el).html(this.template());
+          return this;
+    },
+    });
+       
+    return HomeView;
+});

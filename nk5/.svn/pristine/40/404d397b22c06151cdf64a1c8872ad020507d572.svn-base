@@ -1,0 +1,157 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'modelBinder',
+  'models/task',
+  'collection/base_disks'
+  ], function($, _, Backbone, ModelBinder, Task,BaseDiskCollection){
+ BaseCommand = Backbone.View.extend({
+    className: 'modal fade',
+    events:{
+      'submit .task-form ': 'saveModel',
+      'hidden' : 'remove',
+      'click .isImport': 'isImport'
+    },
+
+    initialize: function() {
+        _.bindAll(this);
+      var self = this;
+
+
+      _.bindAll(this, 'render', 'weekdaysConverter', 'cycleChangedConverter', 'executeChangedConverter');
+      this.model = this.options.task || new Task();
+      this._modelBinder = new ModelBinder();
+        this.bindings = {
+            memo: '[name=memo]',
+            execute:[
+                {selector: '[name=execute]'},
+                {selector: '#schedule-details', elAttribute:'displayed', converter: this.executeChangedConverter}
+            ],
+            cycle: [{selector: '[name=cycle]'}, {selector: '.cycle', converter: this.cycleChangedConverter}],
+            date: '[name=date]',
+            weekdays: {selector:'[name=weekdays]', converter: this.weekdaysConverter, elAttribute:'checked'},
+            month_days: {selector:'[name=month_days]', converter: this.monthDaysConverter},
+            time: '[name=time]'
+        };
+      this.model.bind('error', function(object, message) {
+        var errorContainer = $('.task-form .errors', this.el);
+        errorContainer.html(JSON.stringify(message));
+        errorContainer.show();
+      });
+        this.parentDisks = new BaseDiskCollection();
+        this.parentDisks.bind('add remove reset', self.renderParentDisks);
+    },
+     // 选择 isImport##########################
+     isImport: function(e) {
+         var isImport =$("input[name='isImport']:checked").val();
+         if(isImport==1){
+             $('#disk_copy_target').show();
+             $('#import_target').hide();
+
+         }else if(isImport==2){
+             $('#disk_copy_target').hide();
+             $('#import_target').show();
+         }
+     },
+
+     // 获取 disk 列表  ##########################
+     renderParentDisks: function(collection) {
+         var self=this;
+         options = '<option value="0">' + App.msgFactory('No parent') + '</option>';
+         collection.each(function(server) {
+             self.model.set('command', server.get('ID'));
+             _(server.get('disks')).each(function(disk) {
+                 options += '<option value="' + disk.ID + '">' + server.get('IP') + ' | ' + disk.Name + '</option>';
+             });
+         });
+         this.$('#disk_copy_base').html(options);
+         this.$('#disk_copy_target').html(options);
+     },
+
+    // when  时间帅选 ###############################
+    monthDaysConverter: function(direction, value, attribute, model) {
+      return direction=='ViewToModel' ? value.join(',') : value.split(',');
+    },
+
+    cycleChangedConverter: function(direction, value, attribute, model) {
+      $('#once, #weekly, #monthly', this.el).addClass('hide');
+      $('#'+model.get('cycle'), this.el).removeClass('hide');
+    },
+
+    weekdaysConverter: function(direction, value, attribute) {
+      var self = this;
+      if (direction=='ViewToModel') {
+        var weekdays = [];
+        $('[name=weekdays]:checked', self.el).each(function() { weekdays.push(this.value); });
+        return weekdays.join(',');
+      }else{
+        _.forEach(value.split(','), function(day) {
+          $('#weekdays_'+day, self.el).attr('checked', true);
+        });
+      }
+      
+    },
+
+    executeChangedConverter: function(direction, value, attribute, model){
+      if (value=='now') {
+        this.model.set('cycle', 'once');
+      }
+      return value!='now';
+    },
+    // 保存 #########################################
+    saveModel: function(e) {
+        e.preventDefault();
+        var self = this;
+        //获取isImport选中值
+        var isImportValue =$("input[name='isImport']:checked").val();
+        //获取base选中值
+        var baseValue=$("#disk_copy_base :selected").val();
+        //获取base text
+        var baseValueText=$("#disk_copy_base :selected").text();
+        //获取target选中值
+        var targetValue=$("#disk_copy_target :selected").val();
+        //获取target text
+        var targetValueText=$("#disk_copy_target :selected").text();
+        //获取target输入值
+        var import_target=$("#import_target").val();
+        var name = '';
+        var computer_uuid ='';
+        if(isImportValue==1){
+            // choise  source
+            if(baseValueText.split("|").length>1 && targetValueText.split("|").length>1){
+                name=baseValueText.split("|")[1]+"|"+targetValueText.split("|")[1];
+            }
+            computer_uuid =isImportValue+'|'+ baseValue+'|'+targetValue;
+        }else if(isImportValue==2){
+            //input source
+            if(baseValueText.split("|").length>1 &&  null != import_target){
+                name=baseValueText.split("|")[1]+"|"+import_target;
+            }
+            computer_uuid =isImportValue+'|'+ baseValue+'|'+baseValue;
+        }
+        this.model.set('name', name);
+        this.model.set('computer_name', name);
+        this.model.set('computer_uuid', computer_uuid);
+        if (this.model.isValid) {
+                this.model.save({action: "disk_copy"}, {
+                    success: function (model, response) {
+                        self.$el.modal('hide');
+                    }
+                });
+        }
+        return false;
+    },
+
+
+    render: function() {
+      var self = this;
+      $(this.el).html(this.template({model:this.model}));
+      this._modelBinder.bind(this.model, this.el, this.bindings);
+      $('.datepicker', this.el).datepicker({dateFormat: 'dd/mm/yy'});
+        this.parentDisks.fetch();
+      return this;
+    }
+  });
+  return BaseCommand;
+});

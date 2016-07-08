@@ -1,0 +1,7 @@
+<ul class="unstyled">
+	<li class="pull-left"><%= this.groupname %></li>
+	<li class="li-margin">
+		<%= this.groupAliveLength %>/
+		<%= this.groupLength %>
+	</li>
+</ul>

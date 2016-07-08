@@ -1,0 +1,8 @@
+<section id="top">
+    <div id="group-filter"><label>Select Group: </label>
+        <select id="group-select">
+        </select>
+    </div>
+</section>
+
+<section id="main"></section>

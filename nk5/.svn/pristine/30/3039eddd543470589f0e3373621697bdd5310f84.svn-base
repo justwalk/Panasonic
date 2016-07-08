@@ -1,0 +1,121 @@
+#pragma once
+
+#ifndef EB_CLIEX
+#define EXPORT_C extern "C" __declspec(dllexport)
+#else
+#define EXPORT_C 
+#endif
+					
+#define ENUM_HANDLE							VOID*
+
+#define MAX_ESECSQL_NUM						64
+
+
+#define RECONNECT_TIMES						1
+
+#define MAX_IO_SERVERS_PER_CLIENT 			8
+#define IO_ALIVE_IO_STATUS_COUNT			8
+
+#define ITEM_TYPE_PATH						5
+#define ITEM_TYPE_CHANNEL4					6
+#define ITEM_TYPE_GROUP						7
+#define ITEM_TYPE_MENU						8
+#define ITEM_TYPE_PACK						9
+#define ITEM_TYPE_COMP						10
+#define ITEM_TYPE_USER						11
+#define ITEM_TYPE_PACK_MODE					17
+#define ITEM_TYPE_BASE_DISK					18
+#define ITEM_TYPE_EXPORT_DISK				19
+#define ITEM_TYPE_DISK_SNAPSHOT				20
+
+/*
+//the types for pack  
+#define PACK_TYPE_SIMPLE					0
+#define PACK_TYPE_BALANCE					1
+#define PACK_TYPE_CONCURRENT				2
+//#define PACK_TYPE_CACHE						3
+#define PACK_TYPE_STORAGE					4
+#define PACK_TYPE_SMART						5
+
+//the types for pack's mode 
+#define PACK_MODE_UNDO						0
+#define PACK_MODE_RW						1
+#define PACK_MODE_UPDATE					2
+#define PACK_MODE_RW_READY					3
+#define PACK_MODE_UNDO_READY				4
+#define PACK_MODE_UPDATE_2					5
+#define PACK_MODE_UPDATE_ALIVE				6
+#define PACK_MODE_SYNC						7
+#define PACK_MODE_CACHE						8
+
+
+#define PACK_CACHE_FLAG_DISABLE				1   
+#define PACK_CACHE_FLAG_FILE_MODE			2   
+#define PACK_CACHE_FLAG_SPACE_MODE			3   
+#define PACK_CACHE_FLAG_DISK_MODE			4   
+
+
+#define PACK_CACHE_FLAG_ACCESS_RW			1   
+#define PACK_CACHE_FLAG_ACCESS_WO			2   
+#define PACK_CACHE_FLAG_ACCESS_RO			3   
+*/
+
+#define SET_PACK_CACHE_DISABLE				0   
+#define SET_PACK_CACHE_RESET				1   
+#define SET_PACK_CACHE_MODE_FILE			2   
+#define SET_PACK_CACHE_MODE_SPACE       	3   
+#define SET_PACK_CACHE_MODE_DISK        	4   
+#define SET_PACK_CACHE_ACCESS_RW			5   
+#define SET_PACK_CACHE_ACCESS_WO			6   
+#define SET_PACK_CACHE_ACCESS_RO			7	
+
+/*
+#define ACNT_FLAG_DISABLE				((ULONG)0x00000001)
+#define ACNT_FLAG_ENABLE_MENU			((ULONG)0x00000002)
+#define ACNT_FLAG_DISABLE_USB_STOR		((ULONG)0x00000004)
+#define ACNT_FLAG_BOOT_RENAME			((ULONG)0x00000008)
+#define ACNT_FLAG_WMEMCH				((ULONG)0x00000010)
+#define ACNT_FLAG_LDC_SYNC				((ULONG)0x00000020)
+#define ACNT_FLAG_SYNC_TIME				((ULONG)0x00000040)
+#define ACNT_FLAG_AD					((ULONG)0x00000080)
+#define ACNT_FLAG_PRIVATE				((ULONG)0x00000100)
+#define ACNT_FLAG_BOOT_MASK				((ULONG)0x00000600)
+#define ACNT_FLAG_BOOT_VIRTUAL			((ULONG)0x00000000)
+#define ACNT_FLAG_BOOT_LOCAL			((ULONG)0x00000200)
+#define ACNT_FLAG_BOOT_CACHE			((ULONG)0x00000600)
+#define ACNT_FLAG_BOOT_SELECT			((ULONG)0x00000400)
+#define ACNT_FLAG_DISABLE_USB_DEV		((ULONG)0x00000800)
+#define ACNT_FLAG_UPDATE_MODE			((ULONG)0x00001000)
+#define ACNT_FLAG_8021X					((ULONG)0x00002000)
+#define ACNT_FLAG_REG_PERSIST			((ULONG)0x00004000)
+#define ACNT_FLAG_FILE_PERSIST			((ULONG)0x00008000)
+#define ACNT_FLAG_SSID_PERSIST			((ULONG)0x00010000)
+#define ACNT_FLAG_NET_SECLUDE			((ULONG)0x00020000)
+#define ACNT_FLAG_MULTI_AD				((ULONG)0x00040000)
+#define ACNT_FLAG_UPDT_BOOTIMG			((ULONG)0x00080000)
+
+#define ACNT_TYPE_COMPUTER					0
+#define ACNT_TYPE_USER						1
+
+//the types for  basic/export disk.
+#define DISK_TYPE_BASE					0
+#define DISK_TYPE_EXPORT				1
+#define DISK_TYPE_RESTOR_POINT			2
+#define DISK_TYPE_STORAGE				3
+#define DISK_TYPE_SNAPSHOT				4
+#define DISK_TYPE_PROXY					5
+#define DISK_TYPE_ALIVE					6
+#define DISK_TYPE_CACHE					7
+#define DISK_TYPE_DELETE_PENDING		8
+#define DISK_TYPE_NONE					81927
+
+
+#define INVALID_DISK_VER					0xffffffff
+*/
+#define MAX_MENUS_PER_ACNT					64
+#define MAX_PACKS_PER_MENU					7
+#define MAX_DISKS_PER_PACK					7
+
+
+
+

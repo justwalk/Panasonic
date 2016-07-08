@@ -1,0 +1,36 @@
+<form action="options-cmd-url" id="options-cmd-form" class="form-horizontal no-margins">
+    <div class="modal-header">
+        <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+        <h3>Options</h3>
+    </div>
+    
+    <div class="modal-body">
+        <div class="control-group">
+            <label class="control-label" for="alive">Alive period</label>
+            <div class="controls">
+                <select id="alive" name="alive" class="input-width">
+                    <option>20s</option>
+                </select>
+                <span class="help-inline">(15 ~ 120)</span>
+            </div>
+        </div>
+        
+        <fieldset>
+            <legend>Disk usage</legend>
+        
+            <div class="control-group">
+                Alert when the disk usage is more than
+                    <select id="alert" name="alive" class="input-width pull-right">
+                        <option>80%</option>
+                    </select>
+                    <div class="clearfix"></div>
+                    <span class="help-inline pull-right">Use 0% for no alerts</span>
+            </div>
+        </fieldset>
+    </div>
+    
+    <div class="modal-footer">
+        <a href="#" class="btn" title="Close" data-dismiss="modal">Close</a>
+        <a href="#" class="btn btn-primary" title="Save" data-dismiss="modal" onclick="Computers.cmd( $(this).closest('form') )">Save</a>
+    </div>
+</form>

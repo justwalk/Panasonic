@@ -1,0 +1,55 @@
+<td class="select <%- model.isSelected ? 'selected' : '' %>" ><%- model.get('name') %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>" style="width:80px;"><%- update_disk %></td>
+<% if(model.get("online") == true) { %>
+<td class="select <%- model.isSelected ? 'selected' : '' %>" style="width:80px;"><%_ON%></td>
+<% } else{%>
+<td class="select <%- model.isSelected ? 'selected' : '' %>" style="width:80px;"><%_OFF%></td>
+<% }%>
+<td class="select <%- model.isSelected ? 'selected' : '' %>" ><%- model.get('ip') %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>">
+<select name="default_menu" id="default_menu">
+<%this.model.menus.models.forEach(function(el){%>
+	<option value="0"><%= App.msgFactory('None') %></option>
+	<option value=<%=el.get('id')%> >
+		<%= el.get('name') %>
+	</option>
+<%})%>
+</select>
+</td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>" >
+	<select name="default_menu" id="default_menu" class="" style="width:150px;">
+		<%if(model.get('menu_detail')!=undefined){%>
+			<% var aa=model.get('menu_detail').split(",");
+			for(var i in aa) {%>
+					<option><%- aa[i]%></option>
+
+				<% }%>
+
+	   <% } else{%>
+	  <option></option>
+	   <% }%>
+
+	</select>
+	<!-- <input type="botton" value="菜单详细"class="menu_detail"> -->
+	   </td>
+
+<% if(model.get("online") == true) { %>	
+	<td class="select <%- model.isSelected ? 'selected' : '' %>"  style="width:80px;">
+	<%- model.get('boot_image_name')||'' %>
+	</td>
+	<td class="select <%- model.isSelected ? 'selected' : '' %>"  style="width:80px;"><%- model.get('os')||'' %></td>
+	<td class="select <%- model.isSelected ? 'selected' : '' %>" style="width:80px;"><%- model.get('logon_user')||'' %></td>
+	<td class="select <%- model.isSelected ? 'selected' : '' %>" style="width:80px;"><%- model.get('boot_time')||'' %></td>
+	<td class="select <%- model.isSelected ? 'selected' : '' %>" style="width:80px;"><%- model.get('logon_time')||'' %></td>
+<% } else{%>
+
+	<td class="select <%- model.isSelected ? 'selected' : '' %>"  style="width:80px;"></td>
+	<td class="select <%- model.isSelected ? 'selected' : '' %>"  style="width:80px;"></td>
+	<td class="select <%- model.isSelected ? 'selected' : '' %>" style="width:80px;"></td>
+	<td class="select <%- model.isSelected ? 'selected' : '' %>" style="width:80px;"></td>
+	<td class="select <%- model.isSelected ? 'selected' : '' %>" style="width:80px;"></td>
+<% }%>
+
+
+
+

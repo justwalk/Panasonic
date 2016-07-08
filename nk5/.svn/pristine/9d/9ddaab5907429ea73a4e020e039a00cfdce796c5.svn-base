@@ -1,0 +1,11 @@
+<div class="modal">
+  <div class="modal-header">
+    <h3><%_Error%></h3>
+  </div>
+  <div class="modal-body">
+    <p><%- error%> <% if (param) { %>: <%- param %><% } %> </p>
+  </div>
+  <div class="modal-footer">
+    <input id="close_error" type="button" value="<%_Ok%>" data-dismiss="modal" class="btn btn-primary"/>
+  </div>
+</div>

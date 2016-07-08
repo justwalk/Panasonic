@@ -1,0 +1,76 @@
+2/17 2016
+	1.Release
+
+2/27 2015
+	1.Fixed some bugs.
+	2.Released with the laster osv.
+
+11/18 2014
+	1.Fixed some bugs.
+
+9/3 2014
+	1. Added a ULONG ImportDriverFile(IN const char *pchZipFilePath, IN const char *pch7zaFilePath).
+
+
+6/24 2014
+	1. Added a "ULONG nOptionDriveGb" for EDIT_COMP_OBJ, OBJ_COMP.
+	please check these functions: AddComputer, EditComputer, GetNextComputer.
+
+4/18 2014
+	1. Added output EBLIB_BOOT_DISCONNECT error code(ebError.h).
+
+4/09 2014
+	1. Added SLV_ALIVE structure(idata.h) for call back.
+
+4/04 2014
+	1. FIXED. GetFirstDiskSnapshot cannot get the snap shot.
+
+4/02 2014
+	1. AddBaseDisk. Add a cache or proxy disk, should ignore nVer input.
+
+3/17 2014
+	1. AliveRestore. Ignore nIoID, nDiskSize, pBaseDiskName, pBaseDiskPath inputs.
+
+3/10 2014
+	1. AddBaseDisk. For add a differencing disk, ignore nsrvID, nType, nSizeMb inputs.
+
+2/24 2014
+	1. Fixed issues GetProxyDiskSync, SetProxyDiskSync.
+
+1/20 2014
+	1. Add GetFirstBootServer,GetNextBootServer,AddToBootServer, RemoveFromBootServer
+           for provide ¡°ebIoPanel.exe¡±.
+
+1/09 2014
+	1.FIXED: AddExportDiskToPack cannot add DISK_TYPE_SNAPSHOT disk.
+	2.Not export API V2.
+
+1/06 2014
+	1.added EditBaseDiskEx. 
+	2.added DiskIsHaveProxyDisk. 
+	3.added GetFirstProxyDiskFromDisk,GetNextProxyDiskFromDisk.
+	4.added "CHAR pchDomain[64]" for _EDIT_COMP_OBJ, _OBJ_COMP.  
+
+
+12/4 2013
+	1.added error code definition in the ebError.h.
+	2.released with vs2013.
+
+
+10/30 2013
+	1.added error code definition in the ebError.h.
+	2.added new some flags in the 'idef.h'. 
+	3.added nComputerStartNumber, nComputerNameLength for GENERAL structure.
+	4.fixed some defects.
+	5.added output error code for some functions.(please check ebexport.h)
+
+	Initeblib() 		       -->  Initeblib(OUT ULONG *pErrorCode = NULL)
+	ENUM_HANDLE GetFirstIoServer() -->  ENUM_HANDLE GetFirstIoServer(OUT ULONG *pErrorCode=NULL)
+	......
+
+	Example for Initeblib:
+	ULONG nErr = EBLIB_UNKNOWN;
+	if ( FALSE==Initeblib(&nErr) )
+	{
+     	  printf("Init Faile, err is %d", nErr);
+	}

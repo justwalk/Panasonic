@@ -1,0 +1,90 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'models/settings',
+  'text!templates/servers/settings.html',
+  'modelBinder'
+    ], function($, _, Backbone, Settings, settingsTemplate, ModelBinder) {
+    
+      ServerSettingsView = Backbone.View. extend({
+        id: 'server-settings-modal',
+        className: 'modal fade modal-lg ',
+        model: Settings,
+        template: _.template(underi18n.template(settingsTemplate, msgFactory)),
+
+        events: {
+          'submit form': 'updateModel',
+          'click .close': 'closeModal'
+        },
+
+        initialize: function(settings) {
+          this.model = settings || new Settings();
+          this.model.fetch({success: function(data){
+            //alert(data.get('Ndate'));
+             if(data.get('Ndate')>0){
+              data.set({'Ndate':data.get('Ndate')-1,'OldPassWD':data.get('PassWD')})
+             }
+             this.model=data;
+             console.log(this.model)
+            // alert(this.model.get('Ndate'))
+          }});
+
+          this._modelBinder = new Backbone.ModelBinder();
+          this.model.on('change:ActiveUpdate',function(m,value){
+            if(value){
+                $(".span10").attr('disabled',true); 
+            }else{
+                $(".span10").removeAttr("disabled");    
+            }
+          });
+          this.model.on('change:Backup',function(m,value){
+            if(value){
+                $(".span8").removeAttr("disabled");    
+            }else{
+                $(".span8").attr('disabled',true);
+            }
+          });
+          this.model.on('change:DhcpProxy',function(m,value){
+            if(value){
+                $(".span6").attr('disabled',true);
+            }else{
+              $(".span6").removeAttr("disabled");    
+            }
+          });
+        },
+
+        render: function() {
+          this.$el.html(this.template({model: this.model}));
+          this._modelBinder.bind(this.model, this.el);
+          return this;
+        },
+
+        updateModel: function(ev) {
+          var self =this;
+           self.closeModal();
+          ev.preventDefault(); 
+          $('input[type=submit]', self.el).attr('alt',$('input[type=submit]',self.el).val());
+          $('input[type=submit]', self.el).attr('disabled', 'disabled').val(App.msgFactory('Please wait...'));
+           this.model.set({'BootServer1':this.model.get('BootSrv')})
+          if(this.model.get('PassWD')==this.model.get('rePassword')&&this.model.get('PassWD')&&this.model.get('rePassword')){
+            
+          }else{
+            this.model.set({'PassWD':this.model.get('OldPassWD')})
+          }
+          this.model.save({}, {
+            success: function(model, response) {
+              self.closeModal();
+            }
+          });
+          return false;
+        },
+
+        closeModal: function() {
+          this.$el.modal('hide');
+        }
+      });
+
+      return ServerSettingsView;
+    });
+

@@ -1,0 +1,252 @@
+#include "ioserver.h"
+
+#include <iostream>
+#include <sstream>
+
+#include "login.h"
+#include "output.h"
+
+#include "basedisk.h"
+#include "directory.h"
+#include "file.h"
+
+IOServerResource::IOServerResource(){
+	prefix = "ioservers";
+	children.push_back(new CreateIOServerResource());
+	children.push_back(new UUIDIOServerResource());
+}
+
+void IOServerResource::run(const std::map<std::string, std::string>& params) const{
+	JSON::Value* data = IOServerEnumToJSON();
+
+	printHeaders();
+	data->render();
+
+	delete data;
+}
+
+UUIDIOServerResource::UUIDIOServerResource(){
+	param = "iid";
+	validator = &numberRegex;
+	children.push_back(new DeleteIOServerResource());
+	children.push_back(new RestartIOServerResource());
+	children.push_back(new IOServerChannelResource());
+	children.push_back(new BaseDiskResource());
+	children.push_back(new DirectoryResource());
+	children.push_back(new FileResource());
+}
+
+void UUIDIOServerResource::run(const std::map<std::string, std::string>& params) const{
+	die("Not supported");
+}
+
+DeleteIOServerResource::DeleteIOServerResource(){
+	prefix = "delete";
+}
+
+void DeleteIOServerResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG id;
+
+	std::istringstream(params.find("iid")->second) >> id;
+
+	ULONG error;
+	if(!(DelIOServer(id, &error)))
+		return SDKError("DelIOServer", error);
+
+	printDone();
+}
+
+RestartIOServerResource::RestartIOServerResource(){
+	prefix = "restart";
+}
+
+void RestartIOServerResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG id;
+
+	std::istringstream(params.find("iid")->second) >> id;
+
+	ULONG error;
+	if(!(RebootIOServer(id, &error)))
+		return SDKError("RebootIOServer", error);
+
+	printDone();
+}
+
+CreateIOServerResource::CreateIOServerResource(){
+	prefix = "create";
+}
+
+void CreateIOServerResource::run(const std::map<std::string, std::string>& params) const{
+	ADD_IOSRV_OBJ info;ADD_DIR_OBJ addDir;
+
+	CopyInteger(nPort4, "Port");
+
+	CHECK_PARAM("Type");
+	if(params.find("Type")->second == "Primary")
+		info.nType = 0;
+	else if(params.find("Type")->second == "Secondary")
+		info.nType = 1;
+	else
+		invalidParameter("Type");
+
+
+	CopyString(pchAddr4, "IP");
+	CopyString(pchPasswd, "Password");
+
+	// 修改代码
+	//cout<<"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"<<endl;
+	//printf("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+	//freopen("C:\\log.txt", "wt",stderr);
+	//log("aaaaaaaaaaaaaaaaaaaaaaaaaaa");
+
+	ULONG nid;
+	ULONG error;
+	if(!(AddIOServer(&info, &nid, &error)))
+		return SDKError("AddIOServer", error);
+			//添加目录 *********** 1
+			 addDir.nType =0;
+			//CopyString(pchPath, "base");
+			strcpy(addDir.pchPath, clamp(params.find("base")->second, sizeof(addDir.pchPath)).c_str());
+			addDir.nSrvID =nid;
+			ULONG nOudId;
+			if(!(AddDirectory(&addDir, &nOudId,&error)))
+				return SDKError("AddDirectory", error);
+
+			//添加目录 ************ 2
+			addDir.nType =1;
+			strcpy(addDir.pchPath, clamp(params.find("export")->second, sizeof(addDir.pchPath)).c_str());
+			addDir.nSrvID =nid;
+			if(!(AddDirectory(&addDir, &nOudId,&error)))
+				return SDKError("AddDirectory", error);
+
+			//添加目录 ************** 3
+			addDir.nType =2;
+			strcpy(addDir.pchPath, clamp(params.find("storage")->second, sizeof(addDir.pchPath)).c_str());
+			addDir.nSrvID =nid;
+			if(!(AddDirectory(&addDir, &nOudId,&error)))
+				return SDKError("AddDirectory", error);
+
+			//printID(nid);
+			printID(nOudId);
+}
+
+IOServerChannelResource::IOServerChannelResource(){
+	prefix = "channels";
+	children.push_back(new CreateIOServerChannelResource());
+	children.push_back(new UUIDIOServerChannelResource());
+}
+
+void IOServerChannelResource::run(const std::map<std::string, std::string>& params) const{
+	JSON::Value* data = IOServerChannelEnumToJSON(GetInt(iid));
+
+	printHeaders();
+	data->render();
+
+	delete data;
+}
+
+UUIDIOServerChannelResource::UUIDIOServerChannelResource(){
+	param = "cid";
+	validator = &numberRegex;
+	children.push_back(new DeleteIOServerChannelResource());
+	children.push_back(new UpdateIOServerChannelResource());
+}
+
+void UUIDIOServerChannelResource::run(const std::map<std::string, std::string>& params) const{
+	die("Not supported");
+}
+
+DeleteIOServerChannelResource::DeleteIOServerChannelResource(){
+	prefix = "delete";
+}
+
+void DeleteIOServerChannelResource::run(const std::map<std::string, std::string>& params) const{
+	ULONG error;
+	if(!(DelChannel(GetInt(cid), &error)))
+		return SDKError("DelChannel", error);
+
+	printDone();
+}
+
+UpdateIOServerChannelResource::UpdateIOServerChannelResource(){
+	prefix = "update";
+}
+
+void UpdateIOServerChannelResource::run(const std::map<std::string, std::string>& params) const{
+	CHECK_PARAM("IP");
+	CHECK_PARAM("Port");
+
+	std::string ip = params.find("IP")->second;
+
+	ULONG error;
+	if(!(EditChannel(GetInt(cid), GetInt(Port), ip.c_str(), &error)))
+		return SDKError("EditChannel", error);
+
+	printDone();
+}
+
+CreateIOServerChannelResource::CreateIOServerChannelResource(){
+	prefix = "create";
+}
+
+void CreateIOServerChannelResource::run(const std::map<std::string, std::string>& params) const{
+	ADD_CHANNEL_OBJ info;
+
+	CopyInteger(nPort4, "Port");
+	CopyString(pchAddr4, "IP");
+	info.nSrvID = GetInt(iid);
+
+	ULONG nid;
+
+	ULONG error;
+	if(!(AddChannel(&info, &nid, &error)))
+		return SDKError("AddChannel", error);
+
+	printID(nid);
+}
+
+JSON::Value* IOServerToJSON(const IOSRV_OBJ& info){
+	JSON::Object* data = new JSON::Object();
+
+	data->add(new JSON::String("ID"), new JSON::Integer(info.nID));
+	data->add(new JSON::String("Port"), new JSON::Integer(info.nPort4));
+	data->add(new JSON::String("IP"), new JSON::IP(info.pchAddr4));
+	//data->add(new JSON::String("Password"), new JSON::String(info.pwszIoManagerPassword)); //Do not send this
+	switch(info.nType) {
+		case 0:
+			data->add(new JSON::String("Type"), new JSON::String("Primary"));
+			break;
+		case 1:
+			data->add(new JSON::String("Type"), new JSON::String("Secondary"));
+			break;
+	}
+	//freopen("C:\\log.txt", "dddddddddddddddddddddddddd", stderr);
+	//修改代码
+	//data->add(new JSON::String("base"), new JSON::String(info.pchBase));
+	//data->add(new JSON::String("export"), new JSON::String(info.pchExport));
+	//data->add(new JSON::String("storage"), new JSON::String(info.pchStorage));
+
+	return data;
+}
+
+JSON::Value* IOServerChannelToJSON(const CHANNEL_OBJ& info){
+	JSON::Object* data = new JSON::Object();
+
+	data->add(new JSON::String("ID"), new JSON::Integer(info.nID));
+	data->add(new JSON::String("IP"), new JSON::IP(info.pchAddr4));
+	data->add(new JSON::String("Server"), new JSON::Integer(info.nSrvID));
+	data->add(new JSON::String("Port"), new JSON::Integer(info.nPort4));
+	return data;
+}
+
+JSON::Array* IOServerEnumToJSON(){
+	ENUM_HANDLE EnumObj = GetFirstIoServer();
+
+	return enumToJSON<IOSRV_OBJ, IOServerToJSON, GetNextIoServer>(EnumObj);
+}
+
+JSON::Array* IOServerChannelEnumToJSON(ULONG iid){
+	ENUM_HANDLE EnumObj = GetFirstChannel(iid);
+
+	return enumToJSON<CHANNEL_OBJ, IOServerChannelToJSON, GetNextChannel>(EnumObj);
+}

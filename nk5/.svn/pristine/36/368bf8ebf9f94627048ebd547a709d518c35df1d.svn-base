@@ -1,0 +1,6 @@
+<td class="select"><%- model.get('IP') %></td>
+<td class="select"><%- model.get('Port')%></td>
+<td class="select"><%- Type %></td>
+<td class="select"><ul style="margin: 0;padding:0;list-style: none;"><%= model.get('aBaseDisk') %></ul></td>
+<td class="select"><ul style="margin: 0;padding:0;list-style: none;"><%= model.get("aExport") %></ul></td>
+<td class="select"><ul style="margin: 0;padding:0;list-style: none;"><%= model.get("aStorage") %></ul></td>

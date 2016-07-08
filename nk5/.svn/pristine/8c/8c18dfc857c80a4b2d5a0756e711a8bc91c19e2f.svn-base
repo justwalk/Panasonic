@@ -1,0 +1,11 @@
+<td><%- task.get('id') %></td>
+<td><%- task.get('message') %></td>
+<td><%- task.get('type') %></td>
+<td><%- task.get('host_name') %></td>
+<td><%- task.getDate('time')||'-' %></td>
+<td><%- task.get('user_name') %></td>
+<td><%- task.get('os') %></td>
+<td><%- task.get('process_id') %></td>
+<td><%- task.get('application') %></td>
+
+

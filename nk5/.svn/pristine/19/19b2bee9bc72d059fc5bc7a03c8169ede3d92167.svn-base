@@ -1,0 +1,29 @@
+var config = require('../../config/config.js');
+var cron = require('cron');
+var fs = require('fs'); 
+
+VariousSetting = {};
+
+VariousSetting.writeFile=function(str){
+	fs.appendFile(config.confPath(), str, function(err){  
+	    if(err)  
+	        console.log("fail " + err);  
+    }); 
+}
+VariousSetting.readFile=function(){
+    var content = fs.readFileSync(config.confPath(),'utf-8');
+    console.log(content);
+    var regexjing = /\s*(#+)/;
+	var regexkong = /\s*=\s*/;
+	var keyvalue = {};
+	var arr_case = null;
+	var regexline = /.+/g;
+	while(arr_case=regexline.exec(content)) { 
+		if (!regexjing.test(arr_case)) 
+			keyvalue[arr_case.toString().split(regexkong)[0]] = arr_case.toString().split(regexkong)[1];
+	}
+	console.log(keyvalue);
+	return keyvalue;
+}
+ 
+module.exports.VariousSetting = VariousSetting;

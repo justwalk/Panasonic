@@ -1,0 +1,35 @@
+var config = require('../../config/config');
+var rest   = require('../helpers/rest_helper');
+
+module.exports = function(socket) {
+  socket.on('directories:read', function(req, res) {
+    config.checkPass('admin', req, res, function() {
+      var typeValue="BaseDisk";
+      if(req.type!=null && req.type!=""){
+        typeValue=req.type;
+      }
+      rest.getJSON(config.restHost()+'/ioservers/'+req.server_id+'/directories?Type='+typeValue, function(err, resp, body) {
+          res(err,body);
+      });
+    });
+  });
+
+  socket.on('directory:create', function(req, res) {
+    console.log('directories:create##################');
+    require('../../config/config').checkPass('admin', req, res, function() {
+      rest.postData(config.restHost()+'/ioservers/'+req.Server+'/directories/create',{Type:req.Type,Path:req.Path}, function(err, resp, body) {
+        res(err,body);
+      });
+    });
+  });
+
+  socket.on('directory:delete', function(req, res) {
+    console.log('directories:delete##################');
+    require('../../config/config').checkPass('admin', req, res, function() {
+      rest.postData(config.restHost()+'/ioservers/'+req.Server+'/directories/'+req.ID+'/delete',{}, function(err, resp, body) {
+        res(err,body);
+      });
+    });
+  });
+
+};

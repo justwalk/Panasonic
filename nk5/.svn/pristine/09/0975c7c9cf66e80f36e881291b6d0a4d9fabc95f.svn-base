@@ -1,0 +1,45 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'views/servers/server',
+  'text!templates/servers/grid_view.html',
+  'text!templates/servers/list_view.html',
+], function($, _, Backbone, ServerView, serversGrid, serversList){
+    var ServersView = Backbone.View.extend({
+      template: _.template(underi18n.template(serversGrid, msgFactory)),
+     
+      initialize: function(options) {
+        var self = this;
+        _.bindAll(this);
+        self.router = self.options.router;
+        self.list = false;
+        self.template = self.list ? _.template(underi18n.template(serversList, App.msgFactory)) : _.template(underi18n.template(serversGrid, App.msgFactory));
+        self.collection.bind('add reset', function(servers){
+          self.render();
+        });
+        this.serverViews = [];
+      },
+
+      render: function() {
+        var self = this;
+        self.template = self.list ? _.template(underi18n.template(serversList, App.msgFactory)) : _.template(underi18n.template(serversGrid, msgFactory));
+        self.$el.html(self.template());
+        this.serverViews = [];
+        this.collection.each(function(server) {
+            var win=this;
+            var serverView = new ServerView({
+                model: server,
+                list: self.list,
+                tagName: self.list ? 'tr' : 'div',
+                className: self.list ? '' : 'server-logo pull-left'
+            });
+            win.$('#servers-container').append(serverView.render().el);
+            self.serverViews.push(serverView);
+
+        });
+        return self;
+      },
+    });
+    return ServersView;
+});

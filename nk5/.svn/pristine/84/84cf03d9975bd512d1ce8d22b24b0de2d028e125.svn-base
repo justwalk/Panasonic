@@ -1,0 +1,51 @@
+<!-- Room actions 
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div class="container">
+
+      <div id="actions" class="navbar">
+        <div class="navbar-inner">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".room-actions">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+
+		  
+          <div class="nav-collapse collapse room-actions">
+            <ul class="nav">
+              <li>
+                <form class="form-inline">
+                  <div class="styled select" style="width: 260px;">
+                    <select id="group-select"></select>
+                  </div>
+                </form>
+              </li>
+            </ul>
+
+            <ul class="nav pull-right">
+              <li><a href="javascript:void(0)"><%_Upcomming%></a></li>
+                <li><a href="javascript:void(0)"><%_Successful%></a></li>
+                <li><a href="javascript:void(0)"><%_Failed%></a></li>
+            </ul>
+          </div>
+		 
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+ END Room actions -->
+<br />
+ 
+<!-- Page content -->
+<div class="container-fluid min_width">
+  <div class="row-fluid">
+    <div id="main" class="container">
+
+      </div>
+    </div><!-- page container -->
+  </div><!-- row-fluid -->
+</div>
+<!-- END Page content -->
+

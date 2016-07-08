@@ -1,0 +1,4 @@
+<ul class="unstyled">
+	<li><%= model.get('name') %></li>
+	
+</ul>

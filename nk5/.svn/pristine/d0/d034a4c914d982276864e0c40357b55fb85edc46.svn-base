@@ -1,0 +1,73 @@
+var Menu = require('../models/menu').Menu;
+
+
+module.exports = function(socket) {
+  
+  socket.on('menus:read', function (req, res) {
+require('../../config/config').checkPass('admin', req, res, function() {
+   console.log('menus:read');
+    var conditions = {};
+    if(req.computer_id){
+      conditions.computer_id = req.computer_id;
+    }
+    
+    Menu.all({where: conditions}, function(error, menus) {
+      res(null, menus);
+    });
+	});
+  });
+
+  socket.on('menu:create', function(req, res) {
+    console.log('menu:create');
+require('../../config/config').checkPass('admin', req, res, function() {
+    Menu.create(req, function(error, menuCopy) {
+      if (!error) {
+        console.log('menu:create emit', menuCopy);
+        socket.emit('menus:create', menuCopy);
+        socket.broadcast.emit('menus:create', menuCopy);
+      }
+      res(error, menuCopy);
+    });
+	});
+  });
+
+  socket.on('menu:update', function(req, res) {
+    console.log('menu:update');
+	require('../../config/config').checkPass('admin', req, res, function() {
+    Menu.find(req.id, function(error, menu) {
+      if (!error) {
+        menu.updateAttributes(req, function(error, menuCopy) {
+          if (!error) {
+            socket.emit('menus:update', menu);
+            socket.broadcast.emit('menus:update', menu);
+          }
+          console.log('err', menu.errors);
+          res(menu.errors, menu);
+        });
+      }
+    });
+	});
+  });
+  
+  socket.on('menu:delete', function(req, res) {
+    console.log('menu:delete');
+    require('../../config/config').checkPass('admin', req, res, function() {
+    Menu.find(req.computer_id, req.id, function(error, menu) {
+      console.log('menu found', menu);
+      if (!error) {
+        menu.destroy(function(err, menu) {
+          if(!err){
+            socket.emit('menus:delete', menu);
+            socket.broadcast.emit('menus:delete', menu);
+          }
+          console.log('destroy called', menu);
+
+          res(err, menu);
+        });
+      }else{
+        res('Menu, not found', null);
+      }
+    });
+	});
+  });
+};

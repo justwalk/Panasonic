@@ -1,0 +1,276 @@
+  <div class="modal-dialog modal-sm">
+  <div class="form-horizontal no-margins " >
+    <div class="modal-header">
+      <button class="close">&times;</button>
+      <h3><%_Settings%></h3>
+    </div>
+      <form action="">
+        <div class="modal-body  max-height" >
+          <ul id="myTab" class="nav nav-tabs" >
+             <li class="active" style="text-align:center;font-size:11px;" ><a href="#general" data-toggle="tab"><%_General%>  </a> </li>
+             <li><a href="#dhcp"  style="text-align:center;font-size:11px;"data-toggle="tab"><%_DHCP%></a></li>
+             <li><a href="#storagedisk" style="text-align:center;font-size:11px;" data-toggle="tab"><%_StorageDisk%></a></li>
+             <li><a href="#activeUpdate" style="text-align:center;font-size:11px;" data-toggle="tab"><%_ActiveUpdate%></a></li>
+             <li><a href="#activedirectpry" style="text-align:center;font-size:11px;" data-toggle="tab"><%_ActiveDirectory%></a></li>
+          </ul>
+          <div id="myTabContent" class="tab-content">
+            <div class="tab-pane fade in active" id="general">
+              <div class="control-group">
+              <label for="auto-join" class="checkbox my-label"><%_Recognize New Computer%></label>
+              <div class="my-controls">
+                <input type="checkbox" name="AutoJoin" id="auto-join" />
+              </div>
+            </div>
+            <div class="control-group">
+              <label for="Prefix" class="my-label"><%_Prefix%></label>
+              <div class="my-controls"><input type="" name='Prefix' id='prefix-input' /></div>
+            </div>
+        <div class="control-group">
+              <label for="prefix-length" class="my-label"><%_Start No.%></label>
+              <div class="my-controls"><input type="Number" name="PrefixStart"  /></div>
+            </div>
+        <div class="control-group">
+              <label for="prefix-start" class="my-label"><%_Length Of Number%></label>
+              <div class="my-controls"><input type="Number" name="PrefixLength"  /></div>
+            </div>
+            <div class="control-group hide_item">
+              <label for="Backup" class="my-label"><%_Backup%></label>
+              <div class="my-controls"><input type="checkbox" name='Backup' /></div>
+            </div>
+            <div class="control-group hide_item">
+              <label for="days" class="my-label"><%_Days%></label>
+              <div class="my-controls"><input type="" name="Days" /></div>
+            </div>
+            <div class="control-group hide_item">
+              <label for="Hour" class="my-label"><%_Hour%></label>
+              <div class="my-controls"><input type="" name="Hour" /></div>
+            </div>
+            <div class="control-group hide_item">
+              <label for="backup-level" class="my-label"><%_Backup level%></label>
+              <div class="my-controls"><input type="Number" name="BackupLevel"  /></div>
+            </div>
+             <div class="control-group">
+              <label for="Prefix" class="my-label"><%_Secondary boot Server Alive Ticks(Seconds)%></label>
+              <div class="my-controls"><input type="" name='sbsats'  /></div>
+             </div>
+        </div>
+                 
+                 <div class="tab-pane fade" id="dhcp">
+
+                    <div class="control-group " style="margin-bottom: 10px;">
+                      <label for="auto-join" class="checkbox my-label"><%_Enable DHCP Server%></label>
+                        <div class="my-controls">
+                          <input type="checkbox" name="DhcpStatus"  />
+                        </div>
+                    </div>
+                    <div class="control-group " style="margin-bottom: 10px;">
+                      <label for="auto-join" class="checkbox my-label"   ><%_Proxy Mode%></label>
+                        <div class="my-controls">
+                          <input type="checkbox" name="DhcpProxy"/>
+                        </div>
+                    </div>
+                    <div class="control-group max-height" style="margin-bottom: 10px;">
+                      <label for="Prefix" class="my-label"><%_IP(From)%></label>
+                      <div class="my-controls"><input type="" name='DhcpSIP4' class="proxym"   /></div>
+                     </div>
+                    <div class="control-group max-height" style="margin-bottom: 10px;">
+                      <label for="Prefix" class="my-label"><%_IP(To)% </label>
+                      <div class="my-controls"><input type="" name='DhcpEIP4' class="proxym"     /></div>
+                    </div>
+                    <div class="control-group max-height" style="margin-bottom: 10px;">
+                      <label for="Prefix" class="my-label"><%_Net Mask%></label>
+                      <div class="my-controls"><input type="" name='DhcpNetmask' class="proxym"   /></div>
+                    </div>
+                    <div class="control-group max-height"  style="margin-bottom: 10px;">
+                      <label for="Prefix" class="my-label"><%_Gateway%></label>
+                      <div class="my-controls"><input type="" name='DhcpGetway' class="proxym"    /></div>
+                    </div>
+                    <div class="control-group max-height"  style="margin-bottom: 10px;">
+                      <label for="Prefix" class="my-label"><%_DNS1%></label>
+                      <div class="my-controls"><input type="" name='DhcpDns1'  class="proxym"   /></div>
+                    </div>
+                    <div class="control-group max-height" style="margin-bottom: 10px;" >
+                      <label for="Prefix" class="my-label"><%_DNS2%></label>
+                      <div class="my-controls"><input type="" name='DhcpDns2' class="proxym"    /></div>
+                    </div>
+                  <div class="control-group" style="margin-bottom: 10px;">
+                    <label for="Prefix" class="my-label"><%_Boot Server Address%></label>
+                    <div class="my-controls"><input type="" name='BootSrv' id='BootServer1'   /></div>
+                   </div>
+                   <div class="control-group max-height" style="margin-bottom: 16px;">
+                      <label for="Prefix" class="my-label"><%_Boot File%></label>
+                      <div class="my-controls">
+                        <select   name="BootFile">
+                         <option value="boot.bin">bootbin</option>
+                          <option value="allin1.bin">allin1bin</option>
+                          <option value="3c595.bin">3c595bin</option>
+                          <option value="amd8111e.bin">amd8111ebin</option>
+                          <option value="ath9k.bin">ath9kbin</option>
+                          <option value="ath5k.bin">ath5kbin</option>
+                          <option value="atl1ebin">atl1ebin</option> 
+                          <option value="b44bin">b44bin</option>
+                          <option value="bnx2bin">bnx2bin</option>
+                          <option value="davicombin">davicombin</option>
+                          <option value="dmfebin">dmfebin</option>
+                          <option value="eepro100bin">eepro100bin</option>
+                          <option value="epic100bin">epic100bin</option>
+                          <option value="etherfabricbin">etherfabricbin</option>
+                          <option value="forcedethbin">forcedethbin</option>
+                          <option value="igbvf_mainbin">igbvf_mainbin</option>
+                          <option value="intelbin">intelbin</option>
+                          <option value="igbvf_mainbin">igbvf_mainbin</option>
+                          <option value="intelbin">intelbin</option>
+                          <option value="jmebin">jmebin</option>
+                          <option value="myri10gebin">myri10gebin</option>
+                          <option value="mysonbin">mysonbin</option>
+                          <option value="natsemibin">natsemibin</option>
+                          <option value="ns8390bin">ns8390bin</option>
+                          <option value="pcnet32bin">pcnet32bin</option>
+                          <option value="phantombin">phantombin</option>
+                          <option value="pnicbin">pnicbin</option>
+                          <option value="prism2_pcibin">prism2_pcibin</option>
+                          <option value="prism2_plxbin">prism2_plxbin</option>
+                          <option value="realtekbin">realtekbin</option> 
+                          <option value="rtl8168bin">rtl8168bin</option>
+                          <option value=" rtl18139.bin"> rtl18139bin</option>
+                          <option value=" rtl18180.bin">  rtl18180bin</option>
+                          <option value=" rtl18185.bin">  rtl18185bin</option>
+                          <option value=" rtl1818x.bin">  rtl1818xbin</option>
+                          <option value=" sis190.bin">  sis190bin</option>
+                          <option value=" sis900.bin">  sis900bin</option>
+                          <option value=" skeleton.bin">  skeletonbin</option>
+                          <option value=" skge.bin">  skgebin</option>
+                          <option value=" sky2.bin">  sky2bin</option>
+                          <option value=" sundance.bin">  sundancebin</option>
+                          <option value=" tg3.bin">  tg3bin</option>
+                          <option value=" tlan.bin">  tlanbin</option>
+                          <option value=" tulip.bin">  tulipbin</option>
+                          <option value=" via-rhine.bin">  via-rhinebin</option>
+                          <option value=" via-velocity.bin">  via-velocitybin</option>
+                          <option value=" vmxnet3.bin">  vmxnet3bin</option>
+                          <option value=" vxge.bin">  vxgebin</option>
+                          <option value=" w89c840.bin">  w89c840bin</option>
+                      </select>
+                  </div>
+                    </div>
+
+                 </div>
+
+                 <div class="tab-pane fade" id="storagedisk">
+
+                    <div class="control-group">
+                      <label for="auto-join" class="checkbox my-label"><%_Enable Basedisk Atuo Backup%></label>
+                        <div class="my-controls">
+                          <input type="checkbox" name="Backup" id="Backup" />
+                        </div>
+                    </div>
+                    <div class="control-group">
+                      <label for="Prefix" class="my-label"><%_Backup Interval(Day)%></label>
+                      <div class="my-controls"><input type="" name='Days' class="backup" /></div>
+                    </div>
+                    <div class="control-group">
+                      <label for="Prefix" class="my-label"><%_Start Time(0-23)%></label>
+                      <div class="my-controls"><input type="" name='Hour' class="backup"   /></div>
+                    </div>
+                     <div class="control-group">
+                      <label for="Prefix" class="my-label"><%_Largest Snapshot(1-7)%></label>
+                      <div class="my-controls"><input type="" name='BackupLevel' class="backup"  /></div>
+                    </div>
+
+                 </div>
+
+                 <div class="tab-pane fade" id="activeUpdate">
+
+                    <div class="control-group">
+                      <label for="auto-join" class=" my-label"><%_Update after Basedisk Merge%></label>
+                        <div class="my-controls">
+                          <input type="checkbox" name="ActiveUpdate" id="Backup" />
+                        </div>
+                    </div>
+                 <div class="control-group">
+                    <label class="my-label" for="type"><%_Updatep Interval%></label>
+                      <div class="my-controls">
+                        <select id="type"  name="Ndate" class="activeUpdate">
+                          <option value="0"><%_Select%></option> 
+                          <option value="1"><%_Sun%></option>
+                          <option value="2"><%_Mon%></option>
+                          <option value="3"><%_Tue%></option>
+                          <option value="4"><%_Wed%></option>
+                          <option value="5"><%_Thu%></option>
+                          <option value="6"><%_Fri%></option>
+                          <option value="7"><%_Sat%></option>
+                         
+                      </select>
+                  </div>
+                </div>
+                <div class="control-group">
+                    <label class="my-label" for="type"> <%_each%></label>
+                      <div class="my-controls" >
+                       <select id="type" name="Ntime" style="width: 100px;" class="activeUpdate">
+                          <%= model.timeOptions() %>
+                      </select> 
+                      <span style="line-height: 30px;"><%_o'clock%></span> 
+                    </div>
+                </div>                    
+                     
+
+                 </div>
+
+                 <div class="tab-pane fade" id="activedirectpry">
+
+                    <div class="control-group" style="text-align: center;">
+                     
+                      
+                        <h5><%_Domain users login by password%></h5>
+                     
+                    </div>
+                    <div class="control-group">
+                      <label for="Prefix" class="my-label"><%_Domain%></label>
+                      <div class="my-controls"><input type="" name='Domain'  /></div>
+                    </div>
+                    <div class="control-group">
+                      <label for="Prefix" class="my-label"><%_Name%></label>
+                      <div class="my-controls"><input type="" name='PassPT'  /></div>
+                    </div>
+                    <div class="control-group">
+                      <label for="Prefix" class="my-label"><%_Passwrod%></label>
+                      <div class="my-controls"><input type="password" name='PassWD'  /></div>
+                    </div>
+                    <div class="control-group">
+                      <label for="Prefix" class="my-label"><%_Confirm Password%></label>
+                      <div class="my-controls"><input type="password" name='rePassword'  value="" /></div>
+                    </div>
+              
+
+                 </div>
+      </div>
+            
+        <div class="modal-footer">
+          <a href="#" class="btn" title="Close" data-dismiss="modal"><%_Cancel%></a>
+          <input type="submit" value="<%_Save%>" class="submit btn btn-primary" class="span12">
+        </div>
+    </form>
+  </div>
+  </div>
+  <style type="text/css">
+    .modal-lg{
+      width: 650px;
+    }
+    .max-height{
+      max-height: none;
+    }
+   .control-group{
+
+   }
+   .my-label{
+    float: left;
+    text-align: right;
+     width: 40%;
+   }
+   .my-controls{
+     float: left;
+     padding-left: 20px;
+     margin-left: 20px;
+
+   }
+  </style>

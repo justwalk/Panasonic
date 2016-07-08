@@ -1,0 +1,31 @@
+识别virtual，物理，差分盘
+上述盘的 type=0
+
+smt=0   virtual
+smt=1   物理
+ pid不等于0的是差分
+
+ 设置
+ 差分盘
+ pid 《- Parent
+Proxy盘
+xid 〈-  Parent
+
+
+storage作成的改进点
+如果没有选中某个盘，点击作成的话，Differencing和Proxy不可选择
+如果有选中某个盘，在save时要将这个盘的id作为Parent参数传出去
+如果是作成物理盘，参数format要设成1传出去
+
+
+type=0 and fmt=0 and pid=0 ->virtual
+type=0 and fmt=1 and pid=0 ->物理
+type=0 and pid<>0  ->  差分
+type=5   ->Proxy
+
+差分 proxy cache  有且必有父盘
+物理不能做父盘
+
+
+
+ 如果是物理盘，提交前将Format设为1，画面不显示父盘

@@ -1,0 +1,27 @@
+<div class="modal">
+  <div class="modal-header">
+    <h3><%_Message%></h3>
+  </div>
+  <form >
+  <div class="modal-body">
+	<textarea style="width: 80%" rows="6" name="message" id="message-input">
+<%- msg %>
+	</textarea>
+  </div>
+  <div class="modal-footer">
+   <div style="float: left;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+    <% if(App.info.isopen){%>
+        <input type="checkbox" id='isopen' checked="checked" />
+    <% }else{%>
+        <input type="checkbox" id='isopen' />
+    <% }%><%_Display only when changed%>
+   </div>
+    <% if(App.info.width&&App.info.height&&App.info.height!=118&&App.info.height!=434){%>
+       <input type="button" value="<%_ReSet%>" class="btn btn-rest"/>
+    <% }%>
+    <input type="button" value="<%_Close%>" class="btn btn-close"/>
+    <input type="submit" value="<%_Save%>" class="btn btn-primary"/>
+  </div>
+  
+  </form>
+</div>

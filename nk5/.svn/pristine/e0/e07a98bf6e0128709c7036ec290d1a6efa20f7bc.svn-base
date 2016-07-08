@@ -1,0 +1,59 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'views/home/serverlist',
+  'views/home/tasklist',
+  'text!templates/home/home.html',
+  'collection/servers',
+  'collection/logfile'
+], function($, _, Backbone, ServerView,TaskList, serversGrid,ServerCollection,LogFileCollection){
+    var HomeView = Backbone.View.extend({
+      template: _.template(underi18n.template(serversGrid, msgFactory)),
+     
+      initialize: function(options) {
+        var self = this;
+        _.bindAll(this);
+        self.router = self.options.router;
+        self.list = false;
+        this.serverCollection = new ServerCollection();
+        this.serverCollection.fetch();
+        this.serverCollection.bind('add reset', function(){
+          self.render();
+        });
+
+        this.logFileCollection = new LogFileCollection();
+        this.logFileCollection.fetch();
+        console.log(this.logFileCollection,'------------------------');
+        this.logFileCollection.bind('add reset', function(){
+          self.render();
+        });
+        
+        this.serverViews = [];
+      },
+
+      render: function() {
+        var self = this;
+        self.$el.html(self.template());
+        this.serverViews = [];
+        this.serverCollection.each(function(server) {
+            var win=this;
+            var serverView = new ServerView({
+                model: server
+            });
+            win.$('#servers-container').append(serverView.render().el);
+            self.serverViews.push(serverView);
+
+        });
+        this.logFileCollection.each(function(logfile) {
+            var win=this;
+            var taskList = new TaskList({
+                model: logfile
+            });
+            win.$('#logfile-container').append(taskList.render().el);
+        });
+        return self;
+      },
+    });
+    return HomeView;
+});

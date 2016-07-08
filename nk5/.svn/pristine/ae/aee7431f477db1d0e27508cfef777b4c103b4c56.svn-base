@@ -1,0 +1,12 @@
+#ifndef HOME_H
+#define HOME_H
+
+#include "route.h"
+
+class HomeResource : public Route::SubResource{
+public:
+	HomeResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+#endif

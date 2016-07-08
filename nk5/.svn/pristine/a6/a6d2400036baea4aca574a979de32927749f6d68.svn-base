@@ -1,0 +1,70 @@
+var Task = require('../models/task').Task;
+
+module.exports = function(socket) {
+  
+  socket.on('tasks:read', function (req, res) {
+  require('../../config/config').checkPass('admin', req, res, function() {
+    Task.all(function(error, tasks) {
+      res(error, tasks);
+    });
+	});
+  });
+  
+  socket.on('task:create', function(req, res) {
+  require('../../config/config').checkPass('teacher', req, res, function() {
+    var task = new Task(req);
+    console.log('task---', task.computer_uuid);
+    task.save(function(error, taskCopy) {
+      if (!error) {
+        socket.emit('task:create', taskCopy);
+        socket.broadcast.emit('tasks:create', taskCopy);
+      }
+      res(taskCopy.errors, taskCopy);
+    });
+  });
+  });
+
+  socket.on('task:delete', function(req, res) {
+    require('../../config/config').checkPass('admin', req, res, function() {
+	Task.find(req.id, function(error, task) {
+      task.destroy(function(error) {
+        if (!error) {
+         socket.emit('task/' + task.id + ':delete', task);
+         socket.broadcast.emit('task/' + task.id + ':delete', task);
+         res(null, task);
+        } else {
+			res(error);
+		}
+      });
+    });
+  });
+  });
+
+  socket.on('task:update', function(req, res) {
+   require('../../config/config').checkPass('admin', req, res, function() {
+    var task = new Task(req);
+      task.updateAttributes(req, function(err, data) {
+        res(err, data);
+      });
+    });
+  });
+  
+    socket.on('task:removeBydate', function(req, res) {
+      require('../../config/config').checkPass('admin', req, res, function() {
+          if(req.date){
+           Task.queryDeleteByDate(req.date,function(err,date){
+             res(err, date);
+           })
+          }
+            
+        });
+    });
+
+     socket.on('task:log', function(req, res) {
+      require('../../config/config').checkPass('admin', req, res, function() {
+        Task.readFile(req.task,function(err,log){
+          res(null,log);
+        })  
+      });
+    });
+};

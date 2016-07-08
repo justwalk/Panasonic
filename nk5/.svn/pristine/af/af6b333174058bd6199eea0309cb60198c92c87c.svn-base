@@ -1,0 +1,9 @@
+<ul class="unstyled">
+	<li class="pull-left"><%= model.get('groupname') %></li>
+	<li class="li-margin">
+		<%= model.get('groupAliveLength') %>/
+		<%= model.get('groupLength') %>
+	</li>
+	
+
+</ul>

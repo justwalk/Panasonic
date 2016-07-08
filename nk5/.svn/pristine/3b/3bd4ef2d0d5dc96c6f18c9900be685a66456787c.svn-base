@@ -1,0 +1,72 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/schedules/task.html',
+  'modelBinder'
+], function($, _, Backbone, tableItem, ModelBinder){
+    TaskView = Backbone.View.extend({
+      tagName: 'tr',
+      _modelBinder: undefined,
+	  
+	   events: {
+            'click .removeTask': 'removeTask',
+            'click .logTask':'logTask',
+            'click .enable' :'updateEnable'
+        },
+		
+		template: _.template(underi18n.template(tableItem, msgFactory)),
+
+
+      initialize: function() {
+        this.task = this.options.task;
+        if(this.task.get('enable')==null){
+          this.task.set({'enable':true});
+        }
+        this._modelBinder = new ModelBinder();
+        _.bindAll(this, 'render');
+      },
+	  
+	  removeTask: function() {
+		  this.task.serverDelete();
+		  this.task.destroy();
+	  },
+    updateEnable:function(){
+      this.task.set({enable:!this.task.get('enable')});
+      this.task.save();
+      this.render();
+    },
+    logTask:function(){
+      $('#tasklog').modal();
+      socket.emit('task:log',{task:this.task}, function(err, log) {
+        if(log){
+          $('#contentft').width(3100);
+          $('#logcontent').html(log);
+        }else{
+          $('#contentft').width(500);
+          $('#logcontent').html(App.msgFactory('no log'));
+        }
+      })
+    },
+      render: function() {
+		var html = this.template({
+			task: this.task,
+       memo:this.task.get('memo')===null?'':this.task.get('memo'),
+			action: App.msgFactory(this.task.get('action')),
+			cycle: App.msgFactory(this.task.get('cycle')),
+			last_run_status: App.msgFactory(this.task.get('last_run_status')),
+      date:this.dataToLong(this.task.get('date'))
+		  });
+
+        $(this.el).html(html);
+        this._modelBinder.bind(this.task, this.el);
+        return this;
+      },
+      dataToLong:function(dateStr){
+        var arrayDate=dateStr.split('/');
+       var dateformat=arrayDate[2]+'-'+arrayDate[1]+'-'+arrayDate[0];
+       return dateformat;
+      }
+    });
+    return TaskView;
+});

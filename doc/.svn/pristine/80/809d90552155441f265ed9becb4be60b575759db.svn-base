@@ -1,0 +1,21 @@
+端末ID                                    alive info    "ID":79,"    cid
+-----端末名                                    cgi根据ID获取
+----GroupId                                 cgi根据ID获取
+----Group名                                 cgi根据ID获取
+-----管理モード                               cgi根据ID获取
+------電源状態
+更新時間
+IP                                                 alive info               ip
+mac                                               alive info              mac
+起動メニューID					alive info	"Menu":94    boot_menu_id
+起動メニュー名					 cgi根据ID获取               boot_menu_name
+メニュー詳細					cgi根据ID获取    以下拉框方式显示メニュー的DISK    参考“保存终了”功能            menu_detail
+起動イメージId                               alive info  "Parent":120              boot_image_id
+起動イメージ名                               cgi根据ID获取                           boot_image_name
+OS						从pc发送过来
+ログオンユーザ名			从pc发送过来
+ログオン時間				从pc发送过来
+起動時間　　　　　　　　　　　　当前时间-Time":"0:00:01:35
+
+   debug - websocket writing 5:::{"name":"osv-event","args":[{"IOServers":["192.168.1.223"],"Disks":[{"ID":131,"Parent":120}],"Type":"ComputerAlive","IP":"192.168.1.78","ID":79,"Time":"7:23:44:22","Menu":94}]}
+      debug - websocket writing 5:::{"name":"osv-event","args":[{"Type":"ComputerAlive","IOServers":["192.168.1.223"],"Disks":[{"Parent":120,"ID":131}],"ID":79,"IP":"192.168.1.78","Menu":94,"Time":"0:00:01:35"}]}

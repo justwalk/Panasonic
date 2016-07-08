@@ -1,0 +1,43 @@
+<form class="storage-form form-vertical" method="post" accept-charset="utf-8" id="add-menu-model ">
+  <div class="modal-header">
+    <button type="button" class="close" title="Close" data-dismiss="modal">&times;</button>
+    <h3><%- 'Setting' %> <%_Menu%></h3>
+  </div>
+  <p class="errors"></p>
+
+  <div class="modal-body">
+	
+  
+	 <div >
+      <label class="control-label" for="Group"><%_Group%></label>
+      <div class="controls">
+       <input type="text" name="group" id="group">
+      </div>
+    </div>
+
+	<div >
+      <label class="control-label" for="Menu"><%_Menu%></label>
+      <div class="controls">
+        <select name="Menu" id="Menu" class="span12"><option></option></select>
+      </div>
+    </div>
+   
+     
+      <div class="controls">
+       <label class="control-label" for="Operation"><%_Operation%></label>
+        <input type="checkbox" name="addMenu" id="addMenu"> <%_Add Menu%>
+      
+      </div>
+    </div>
+     
+     
+
+	
+	
+
+
+  <div class="modal-footer">
+    <a href="#" class="btn" title="Close" data-dismiss="modal"><%_Cancel%></a>
+    <input type="submit" value="<%_Save%>" class="submit btn btn-primary" class="span12">
+  </div>
+</form>

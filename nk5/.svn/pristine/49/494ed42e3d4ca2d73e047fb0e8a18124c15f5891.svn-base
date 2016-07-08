@@ -1,0 +1,194 @@
+#include "vhd.h"
+
+#include <boost/bimap/bimap.hpp>
+#include <boost/bimap/list_of.hpp>
+#include <boost/bimap/unordered_set_of.hpp>
+#include <string>
+
+template <typename T>
+class EnumMap
+{
+private:
+
+	/* these structures are used as tags for the bimap */
+	struct Bit  {};
+	struct String {};
+
+	/*
+		unordered_set_of uses Hash maps for both sides to make search fast
+		list_of_relation allows for fast search,
+		but makes insertions and deletions slower.
+		The maps are constatn so this is perfect.
+	*/
+    typedef boost::bimaps::bimap
+    <
+        boost::bimaps::unordered_set_of< boost::bimaps::tagged< std::string, String > >,
+        boost::bimaps::unordered_set_of< boost::bimaps::tagged< T, Bit > >,
+        boost::bimaps::list_of_relation
+
+    > enumMap_t;
+
+    enumMap_t enumMap;
+public:
+	EnumMap();
+
+	//check for existance
+	bool exists(std::string string) const{
+		return enumMap.by<String>().find(string) != enumMap.by<String>().end();
+	}
+
+	/* search in both directions */
+	
+	std::string toString(ULONG bit) const{
+		return enumMap.by<Bit>().find((T)bit)->second;
+	}
+	
+	
+    std::string toString(T bit) const{
+		return enumMap.by<Bit>().find(bit)->second;
+	}
+
+	T toBit(std::string string) const{
+		return enumMap.by<String>().find(string)->second;
+	}
+
+	/* standard iterator interface */
+
+	typedef typename enumMap_t::map_by<String>::const_iterator iterator;
+
+	iterator begin() const{
+		return enumMap.by<String>().begin();
+	}
+
+	iterator end() const{
+		return enumMap.by<String>().end();
+	}
+};
+
+inline EnumMap<PACK_TYPE>::EnumMap(){
+	enumMap.push_back(enumMap_t::value_type("Simple",PACK_TYPE_SIMPLE));
+	enumMap.push_back(enumMap_t::value_type("Balance",PACK_TYPE_BALANCE));
+	enumMap.push_back(enumMap_t::value_type("Concurrent",PACK_TYPE_CONCURRENT));
+	// Missing 3
+	enumMap.push_back(enumMap_t::value_type("Storage",PACK_TYPE_STORAGE));
+	enumMap.push_back(enumMap_t::value_type("Smart",PACK_TYPE_SMART));
+}
+
+inline EnumMap<PACK_MODE>::EnumMap(){
+	enumMap.push_back(enumMap_t::value_type("Undo",PACK_MODE_UNDO));
+	enumMap.push_back(enumMap_t::value_type("RW",PACK_MODE_RW));
+	enumMap.push_back(enumMap_t::value_type("Update",PACK_MODE_UPDATE));
+	enumMap.push_back(enumMap_t::value_type("RWReady",PACK_MODE_RW_READY));
+	enumMap.push_back(enumMap_t::value_type("UndoReady",PACK_MODE_UNDO_READY));
+	enumMap.push_back(enumMap_t::value_type("Update2",PACK_MODE_UPDATE_2));
+}
+
+
+
+inline EnumMap<DISK_TYPE>::EnumMap(){
+	enumMap.push_back(enumMap_t::value_type("BaseDisk",DISK_TYPE_BASE));
+	enumMap.push_back(enumMap_t::value_type("Export",DISK_TYPE_EXPORT));
+	enumMap.push_back(enumMap_t::value_type("RestorePoint",DISK_TYPE_RESTOR_POINT));
+	enumMap.push_back(enumMap_t::value_type("Storage",DISK_TYPE_STORAGE));
+	enumMap.push_back(enumMap_t::value_type("Snapshot",DISK_TYPE_SNAPSHOT));
+	enumMap.push_back(enumMap_t::value_type("Proxy",DISK_TYPE_PROXY));
+	enumMap.push_back(enumMap_t::value_type("Existing",DISK_TYPE_EXISTING));
+}
+
+inline EnumMap<ACNT_FLAG>::EnumMap(){
+	enumMap.push_back(enumMap_t::value_type("Disable",ACNT_FLAG_DISABLE));
+	enumMap.push_back(enumMap_t::value_type("EnableMenu",ACNT_FLAG_ENABLE_MENU));
+	enumMap.push_back(enumMap_t::value_type("DisableUSBStorage",ACNT_FLAG_DISABLE_USB_STOR));
+	enumMap.push_back(enumMap_t::value_type("BootRename",ACNT_FLAG_BOOT_RENAME));
+	enumMap.push_back(enumMap_t::value_type("WMEMCH",ACNT_FLAG_WMEMCH));
+	enumMap.push_back(enumMap_t::value_type("LDC_SYNC",ACNT_FLAG_LDC_SYNC));
+	enumMap.push_back(enumMap_t::value_type("SyncTime",ACNT_FLAG_SYNC_TIME));
+	enumMap.push_back(enumMap_t::value_type("AD",ACNT_FLAG_AD));
+	enumMap.push_back(enumMap_t::value_type("Private",ACNT_FLAG_PRIVATE));
+	enumMap.push_back(enumMap_t::value_type("DisableUSBDevices", ACNT_FLAG_DISABLE_USB_DEV));
+	enumMap.push_back(enumMap_t::value_type("UpdateMode",ACNT_FLAG_UPDATE_MODE));
+	enumMap.push_back(enumMap_t::value_type("8021X",ACNT_FLAG_8021X));
+	enumMap.push_back(enumMap_t::value_type("PersistRegistry",ACNT_FLAG_REG_PERSIST));
+	enumMap.push_back(enumMap_t::value_type("PersistFiles",ACNT_FLAG_FILE_PERSIST));
+	enumMap.push_back(enumMap_t::value_type("PersistSSID",ACNT_FLAG_SSID_PERSIST));
+	enumMap.push_back(enumMap_t::value_type("SecludeNetwork",ACNT_FLAG_NET_SECLUDE));
+	enumMap.push_back(enumMap_t::value_type("MultiAD",ACNT_FLAG_MULTI_AD));
+	enumMap.push_back(enumMap_t::value_type("UPDTBoot",ACNT_FLAG_UPDT_BOOTIMG));
+}
+
+inline EnumMap<BOOT_TYPE>::EnumMap(){
+	//enumMap.push_back(enumMap_t::value_type("Mask",BOOT_TYPE_MASK));
+	enumMap.push_back(enumMap_t::value_type("Virtual",BOOT_TYPE_VIRTUAL));
+	enumMap.push_back(enumMap_t::value_type("Local",BOOT_TYPE_LOCAL));
+	enumMap.push_back(enumMap_t::value_type("Cache",BOOT_TYPE_CACHE));
+	enumMap.push_back(enumMap_t::value_type("Select",BOOT_TYPE_SELECT));
+}
+
+inline EnumMap<DIRECTORY_TYPE>::EnumMap(){
+	enumMap.push_back(enumMap_t::value_type("Export", DIRECTORY_TYPE_EXPORT));
+	enumMap.push_back(enumMap_t::value_type("Storage",DIRECTORY_TYPE_STORAGE));
+	enumMap.push_back(enumMap_t::value_type("BaseDisk",DIRECTORY_TYPE_BASE_DISK));
+}
+
+
+/*
+
+//computer
+inline EnumMap<VHD_COMPUTER_STATUS>::EnumMap(){
+	enumMap.push_back(enumMap_t::value_type("Enabled",VHD_CS_ENABLED));
+	enumMap.push_back(enumMap_t::value_type("SyncTime",VHD_CS_CLINETSYNCTIME));
+	enumMap.push_back(enumMap_t::value_type("PersistRegistry",VHD_CS_REGPERSIST));
+	enumMap.push_back(enumMap_t::value_type("LocalDiskCache",VHD_CS_LOCALDISKCACHE));
+	enumMap.push_back(enumMap_t::value_type("MachinePassword",VHD_CS_ENALBEMACHINEPASSWORD));
+	enumMap.push_back(enumMap_t::value_type("MemoryCacheOnlyWrites",VHD_CS_LOCALMEMORYWRITECACHEONLY));
+	enumMap.push_back(enumMap_t::value_type("LocalDiskCacheOnlyWrites",VHD_CS_LOCADISKWRITECACHEONLY));
+}
+
+//account
+inline EnumMap<VHD_ACCOUNT_STATUS>::EnumMap(){
+	enumMap.push_back(enumMap_t::value_type("MenuEnabled",VHD_AS_MENUENABLED));
+	//enumMap.push_back(enumMap_t::value_type("BootVirtualDisk",VHD_AS_BOOTFROM_VIRTUALDISK)); // is the inverse of BootLocalDisk
+	enumMap.push_back(enumMap_t::value_type("BootLocalDisk",VHD_AS_BOOTFROM_LOCALDISK));
+	enumMap.push_back(enumMap_t::value_type("BootUserChoice",VHD_AS_BOOTFROM_MENU));
+	enumMap.push_back(enumMap_t::value_type("DisableUSB",VHD_AS_DISABLEUSBDEVICE));
+	enumMap.push_back(enumMap_t::value_type("DisableUSBStorage",VHD_AS_DISABLEUSBSTORAGE));
+	enumMap.push_back(enumMap_t::value_type("RedirectProfile",VHD_AS_REDIRECTPROFILE));
+	enumMap.push_back(enumMap_t::value_type("AD",VHD_AS_DOMAINAUTHENTICATE));
+	enumMap.push_back(enumMap_t::value_type("DelayMount",VHD_AS_DELAYMOUNTDISK));
+}
+
+//menu
+inline EnumMap<VHD_MENU_STATUS>::EnumMap(){
+	enumMap.push_back(enumMap_t::value_type("Disabled",VHD_MS_MENUDISABLE));
+}
+
+//pack
+inline EnumMap<VHD_EXPORTDISK_STATE>::EnumMap(){
+	enumMap.push_back(enumMap_t::value_type("ReadOnly",VHD_ES_READONLY));
+	enumMap.push_back(enumMap_t::value_type("ReadWrite",VHD_ES_READWRITE));
+	enumMap.push_back(enumMap_t::value_type("Update",VHD_ES_UPDATE));
+	enumMap.push_back(enumMap_t::value_type("Snapshot",VHD_ES_SNAPSHOT));
+	enumMap.push_back(enumMap_t::value_type("DirectUpdate",VHD_ES_DIRECTUPDATE));
+	enumMap.push_back(enumMap_t::value_type("Shadow",VHD_ES_SHADOW));
+	enumMap.push_back(enumMap_t::value_type("DirectUpdateNoSnapshot",VHD_ES_DIRECTUPDATENOSNAPSHOT));
+}
+
+inline EnumMap<VHD_PACK_TYPE>::EnumMap(){
+	enumMap.push_back(enumMap_t::value_type("Simple",VHD_PM_SIMPLE));
+	enumMap.push_back(enumMap_t::value_type("Balance",VHD_PM_BALANCE));
+	enumMap.push_back(enumMap_t::value_type("Concurrent",VHD_PM_CONCURRENT));
+	enumMap.push_back(enumMap_t::value_type("BalanceUpdate",VHD_PM_BALANCEUPDATE));
+	enumMap.push_back(enumMap_t::value_type("BalanceOnly",VHD_PM_BALANCEONLY));
+	enumMap.push_back(enumMap_t::value_type("CacheDisk",VHD_PM_CACHEDISK));
+}
+
+
+//base disk type
+inline EnumMap<VHD_DISK_TYPE>::EnumMap(){
+	enumMap.push_back(enumMap_t::value_type("Raw",VHD_DT_RAW));
+	enumMap.push_back(enumMap_t::value_type("Fixed",VHD_DT_FIXED));
+	enumMap.push_back(enumMap_t::value_type("Dynamic",VHD_DT_DYNAMIC));
+	enumMap.push_back(enumMap_t::value_type("Differential",VHD_DT_DIFFERENCING));
+}
+
+*/

@@ -1,0 +1,74 @@
+#ifndef IOSERVER_H
+#define IOSERVER_H
+
+#include "route.h"
+#include "commonJSON.h"
+
+class IOServerResource : public Route::SubResource{
+public:
+	IOServerResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+class DeleteIOServerResource : public Route::SubResource{
+public:
+	DeleteIOServerResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+class RestartIOServerResource : public Route::SubResource{
+public:
+	RestartIOServerResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+class UUIDIOServerResource : public Route::ParameterResource{
+public:
+	UUIDIOServerResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+class CreateIOServerResource : public Route::SubResource{
+public:
+	CreateIOServerResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+
+class IOServerChannelResource : public Route::SubResource{
+public:
+	IOServerChannelResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+class DeleteIOServerChannelResource : public Route::SubResource{
+public:
+	DeleteIOServerChannelResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+class UpdateIOServerChannelResource : public Route::SubResource{
+public:
+	UpdateIOServerChannelResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+class UUIDIOServerChannelResource : public Route::ParameterResource{
+public:
+	UUIDIOServerChannelResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+class CreateIOServerChannelResource : public Route::SubResource{
+public:
+	CreateIOServerChannelResource();
+	void virtual run(const std::map<std::string, std::string>& params) const;
+};
+
+JSON::Value* IOServerToJSON(const IOSRV_OBJ& info);
+JSON::Value* IOServerChannelToJSON(const CHANNEL_OBJ& info);
+
+JSON::Array* IOServerEnumToJSON();
+JSON::Array* IOServerChannelEnumToJSON(ULONG iid);
+
+#endif

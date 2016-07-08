@@ -1,0 +1,1 @@
+<div><h1><%- this.collection.length%></h1></div>

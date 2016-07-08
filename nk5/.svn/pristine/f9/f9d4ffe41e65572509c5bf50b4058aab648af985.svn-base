@@ -1,0 +1,116 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/servers/grid_item.html',
+  'text!templates/servers/list_item.html',
+  'modelBinder'
+], function($, _, Backbone, gridItem, tableItem, ModelBinder){
+    ServerView = Backbone.View.extend({
+      events:{
+        'click .select': 'toggleSelectDisk',
+        'click div:not(.select)' : 'showDescription'
+      },
+
+
+      initialize: function(){
+        var self = this;
+        self.list = self.options.list;
+        self._modelBinder = new Backbone.ModelBinder();
+        
+        self.isSelected = false;
+        self.DescriptionOn = false;
+       /* self.model.on('change', function() {
+          alert('change');
+          this.render();
+          this.changeSelection(this.isSelected);
+        }, self);*/
+        self.model.on('change:online', function(model, value, event) {
+            self.$el.toggleClass('server-online', value);
+        });
+
+        self.model.on('remove', self.close, self)
+        App.vent.on('servers:change:description', function(ID) {
+          self.changeDescription(ID);
+        });
+
+        App.vent.on('servers:change:selection:invert', function(msg) {
+          self.toggleSelectDisk(!self.isSelected);
+        });
+
+        App.vent.on('servers:change:selection:none', function(msg) {
+          self.toggleSelectDisk(false);
+        });
+
+        App.vent.on('servers:change:selection:all', function(msg) {
+          self.toggleSelectDisk(true);
+        });
+  
+        if (self.list) {
+          self.template = _.template(underi18n.template(tableItem, App.msgFactory));
+        }else{
+          self.template = _.template(underi18n.template(gridItem, App.msgFactory));
+        }
+      },
+
+      showDescription: function() {
+        if(this.list||!this.model.get('aBaseDisk'))
+          return false;
+        App.vent.trigger('servers:change:description', this.model.get('ID'));
+        $('.server-logo').attr('no-hide', true);
+        window.setTimeout(function(){
+          $('.server-logo').attr('no-hide', false);
+        }, 10);
+      },
+
+      changeDescription: function(ip){
+        var newServer = this.model.get('ID') !== ip;
+        if(newServer || this.DescriptionOn){
+          this.$el.removeClass('detailed');
+        }else{
+          this.$el.addClass('detailed');
+          this.$el.attr('title', 'click to hide details');
+        }
+      },
+
+
+      toggleSelectDisk: function(state) {
+         if(!this.isSelected&&this.single){
+            if(self.selfNew){
+                self.selfNew.changeSelection(false);
+            }
+            self.selfNew=this;
+         }
+        //this.changeSelection(!this.isSelected);
+        this.isSelected = typeof state === 'boolean' ? state : !this.isSelected;
+      
+        this.changeSelection(this.isSelected);
+        return false;
+      },
+
+      changeSelection: function(selected){
+        $('.select', this.el).toggleClass('selected', selected);
+       /* if(selected&&this.single){
+          App.vent.trigger('servers:change:selection:none');
+        }*/
+      },
+
+      render: function(){
+        
+        latestView = this;
+        var renderContent = this.template({
+          model: this.model,
+          Type: App.msgFactory(this.model.get('Type'))
+        });
+        this.$el.html(renderContent);
+        return this;
+      },
+      close: function() {
+
+        this.unbind();
+        this.remove();
+      }
+    });
+
+  return ServerView;
+});

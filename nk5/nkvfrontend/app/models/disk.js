@@ -1,0 +1,173 @@
+var Disk = require('../../config/db.js').Disk;
+var rest   = require('../helpers/rest_helper');
+var config = require('../../config/config.js');
+
+Disk.all = function(options, callback) {
+  var where = options.where;
+  var disksURL = config.restHost() + '/computers/'+where.computer_id+'/menus/'+where.menu_id+'/packs/'+where.pack_id+'/disks/';
+  rest.getJSON(disksURL, function(err, resp, body) {
+	if(err)
+		callback(err);
+	else
+		callback(null, Disk.arrayFromCGI(body, where.computer_id, where.menu_id));
+  });
+};
+
+Disk.find = function(computer_id, menu_id, pack_id, disk_id, callback) {
+  var diskURL = config.restHost() + '/computers/' + computer_id + '/menus/' + menu_id + '/packs/' + pack_id + '/disks/' + disk_id;
+  console.log('Disk:find:'+diskURL);
+  rest.getJSON(diskURL, function(err, resp, body) {
+	if(err)
+		callback(err);
+	else {
+		var disk = Disk.fromCGI(body, computer_id, menu_id);
+		callback(err, disk);
+	}
+  });
+};
+
+Disk.create = function(params, callback) {
+  /* Params needed 
+    IOServer=192.168.1.1
+    Channel=0.0.0.0
+    BaseDisk=B2EE1509-4945-4894-B70C-50F68D77BBFB
+    Name=WinXPSP3*/
+    
+  var disksURL = config.restHost() + '/computers/'+params.computer_id+'/menus/'+params.menu_id+'/packs/'+params.pack+'/disks/';
+  console.log('Disk.toCGI', Disk.toCGI(params), 'url', disksURL+'create');
+  rest.postData(disksURL+'create', Disk.toCGI(params) , function(err, resp, body) {
+    if (!err) {
+      params.id = body.ID;
+      callback(err, params);
+    }else{
+      callback(err, params);
+    }
+    
+  });
+};
+
+Disk.prototype.destroy = function(callback) {
+  var self = this;
+  var disksURL = config.restHost() + '/computers/'+self.computer_id+'/menus/'+self.menu_id+'/packs/'+self.pack+'/disks/';
+  rest.postData(disksURL+this.id+'/delete',{}, function(err, resp, body) {
+    callback(err, self);
+  });
+};
+
+Disk.toCGI = function(disk) {
+  var mappedDisk = {};
+  for (var attribute in mapping) {
+    mappedDisk[attribute] = disk[mapping[attribute]];
+  }
+  delete mappedDisk.ID;
+  return mappedDisk;
+};
+
+Disk.arrayFromCGI = function(disks, computer_id, menu_id) {
+  var mappedDisks = [];
+  disks.forEach(function(disk) {
+    mappedDisks.push(Disk.fromCGI(disk, computer_id, menu_id));
+  });
+  return mappedDisks;
+};
+
+Disk.fromCGI = function(disk, computer_id, menu_id) {
+  var mappedDisk = new Disk();
+  for (var item in  mapping) {
+    mappedDisk[mapping[item]] = disk[item];
+  }
+  mappedDisk.computer_id = computer_id;
+  mappedDisk.menu_id = menu_id;
+  return mappedDisk;
+};
+
+Disk.getRestore = function(params, callback) {
+  var restoreURL = config.restHost() + '/ioservers/' + params.IOServer +'/disks/'+ params.ID;
+  rest.getJSON(restoreURL + '/restore', function(err, resp, body) {
+    callback(err, body);
+  });
+};
+
+Disk.rollback = function(params, callback) {
+  var rollbackURL = config.restHost() + '/ioservers/' + params.IOServer +'/disks/'+ params.ID + '/restore';
+  rest.postData(rollbackURL + '/rollback', params , function(err, resp, body) {
+    if (err) {
+      callback(err);
+    }else{
+      params.ID = body.ID;
+      callback(err, params);
+    }
+  });
+};
+
+Disk.merge = function(params, callback) {
+  var mergeURL = config.restHost() + '/ioservers/' + params.IOServer +'/disks/'+ params.ID;
+  rest.getJSON(mergeURL + '/merge', function(err, resp, body) {
+    callback(err, body);
+  });
+};
+
+Disk.proxyDisk = function(params, callback) {
+  var proxyURL = config.restHost() + '/ioservers/' + params.IOServer +'/disks/'+ params.ID;
+  rest.getJSON(proxyURL + '/proxy', function(err, resp, body) {
+    callback(err, body);
+  });
+};
+
+Disk.display = function(params, callback) {
+  var proxyURL = config.restHost() + '/ioservers/' + params.IOServer +'/disks/'+ params.ID;
+  rest.getJSON(proxyURL + '/computers', function(err, resp, body) {
+    callback(err, body);
+  });
+};
+
+Disk.disksync = function(params, callback) {
+  var proxyURL = config.restHost() + '/ioservers/' + params.IOServer +'/disks/'+ params.ID;
+  rest.getJSON(proxyURL + '/disksync', function(err, resp, body) {
+    callback(err, body);
+  });
+};
+
+Disk.synccreate = function(params, callback) {
+  var syncURL = config.restHost() + '/ioservers/' + params.IOServer +'/disks/'+ params.ID + '/disksync';
+  console.log(syncURL);
+  rest.postData(syncURL+'/create', params , function(err, resp, body) {
+    console.log('BaseDisk create', err, body);
+    if (err) {
+      callback(err);
+    }else{
+      params.ID = body.ID;
+      callback(err, params);
+    }
+  });
+};
+
+
+Disk.syncupdate = function(params, callback) {
+  var syncURL = config.restHost() + '/ioservers/' + params.IOServer +'/disks/'+ params.ID + '/disksync';
+  rest.postData(syncURL+'/update', params , function(err, resp, body) {
+    console.log('sync update', err, body);
+    if (err) {
+      callback(err);
+    }else{
+      callback(err, params);
+    }
+  });
+};
+
+
+var mapping = {
+  'ID':'id',
+  'Pack':'pack',
+  'Channel':'channel',
+  'BaseDisk':'base_disk',
+  'Name' : 'name',
+  'Server':'io_server',
+  'Parent':'parent',
+  'Size':'size',
+  'IOServer': 'io_server'
+};
+
+
+
+module.exports.Disk = Disk;

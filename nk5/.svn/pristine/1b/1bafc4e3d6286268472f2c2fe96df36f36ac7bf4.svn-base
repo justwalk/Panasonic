@@ -1,0 +1,4 @@
+<td>&nbsp;</td>
+<td><%- disk.name %></td>
+<td><%- baseDiskIP %></td>
+<td><button class="remove btn">- <%_Remove%></button></td>

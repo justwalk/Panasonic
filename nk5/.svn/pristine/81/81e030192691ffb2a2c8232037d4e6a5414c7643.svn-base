@@ -1,0 +1,67 @@
+var http = require('http');
+var fs = require('fs');
+
+
+restHost = function(){
+
+	return 'http://127.0.0.1:5000/nkv';
+
+};
+
+var password;
+
+uiPassword = function(ret){
+    if(typeof password === 'undefined' || password === null)
+
+		fs.readFile('C:\\NKV\\bootmgr.ip', 'utf8', function(err, data) {
+
+			if(err) {
+				console.log(err);
+				ret(err);
+			} else {
+				var lines = data.split('\n');
+				while(lines[lines.length - 1] === '')
+					lines.splice(-1, 1);
+				password =[lines[lines.length - 2], lines[lines.length - 1]];
+				console.log(password);
+				ret(password);
+			}
+		});
+	else
+		ret(password);
+};
+
+checkPass = function(needs, req, res, fct) {
+	if(typeof res === 'undefined' || res === null)
+		console.log('Missing res');
+	else if(typeof req === 'undefined' || req === null)
+		res('Missing req', null);
+	else if(typeof req.password === 'undefined' || req.password === null)
+		res('Missing password', null);
+	else if(typeof req.user === 'undefined' || req.user === null) {
+		res('Missing user', null);
+	} else uiPassword(function(password) {
+		if(req.user == 'admin')
+			if(req.password == password[0])
+				fct();
+			else
+				res({'error': 'Invalid password'}, null);
+		else if(req.user == 'teacher')
+			if(req.password == password[1])
+				if(needs != 'teacher') {
+					var stack = new Error().stack;
+					console.log( 'tried: ', stack );
+					res({'error': 'Insufficient privileges'}, null);
+				}
+				else
+					fct();
+			else
+				res({'error': 'Invalid password'}, null);
+		else
+			res({'error': 'Invalid user'}, null);
+	});
+};
+
+module.exports.restHost = restHost;
+module.exports.uiPassword = uiPassword;
+module.exports.checkPass = checkPass;

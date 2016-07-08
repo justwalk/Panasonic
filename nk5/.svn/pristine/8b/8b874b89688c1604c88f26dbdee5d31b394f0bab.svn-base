@@ -1,0 +1,46 @@
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'text!templates/various_setting/various_setting.html',
+  'views/various_setting/settings',
+  'models/various_setting',
+  'touchPunch',
+  'bootstrapDatatables'
+], function($, _, Backbone, variousSettingTemplate, ServerSettingsView, Settings){
+    
+    var VariousSetting = Backbone.View.extend({
+        template : _.template(underi18n.template(variousSettingTemplate, msgFactory)),
+        
+        events: {
+        	'click .settings':   'openSettings'
+        },
+        
+        initialize: function() {
+          var self = this;
+          _.bindAll(this, 'render');
+          this.collection.bind('add reset remove', this.render, this);
+		  this.render();
+        },
+        
+        openSettings: function(e) {
+        	var self=this;
+            _.bindAll(this, 'render');
+			console.log(self);
+        	socket.emit('various_setting:read', {}, function(err, data) {
+        		console.log(data);
+        		var settings = new Settings(data);
+        		self.settingsView = new ServerSettingsView({model: settings});
+        		self.settingsView.render().$el.appendTo($('#modal-container')).modal();
+        	    $('input:visible:first', self.settingsView.el).focus();
+        	});
+        }, 
+
+        render: function() {
+          $(this.el).html(this.template());
+          return this;
+        },
+    });
+       
+    return VariousSetting;
+});

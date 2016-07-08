@@ -1,0 +1,5 @@
+<td class="select <%- model.isSelected ? 'selected' : '' %>"><%- model.get('name') %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>"><%- model.get('mac_address') %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>"><%- model.get('ip') %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>"><%- active_menu %></td>
+<td class="select <%- model.isSelected ? 'selected' : '' %>"><%- update_mode %></td>

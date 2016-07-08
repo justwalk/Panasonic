@@ -1,0 +1,54 @@
+10/30 2013
+1.added error code definition in the ebError.h.
+
+2.added new some flags in the 'idef.h'. 
+
+3.added nComputerStartNumber, nComputerNameLength for GENERAL structure.
+
+4.fixed some defects.
+
+5.added output error code for some functions.(please check ebexport.h)
+
+	Initeblib() 		       -->  Initeblib(OUT ULONG *pErrorCode = NULL)
+	ENUM_HANDLE GetFirstIoServer() -->  ENUM_HANDLE GetFirstIoServer(OUT ULONG *pErrorCode=NULL)
+	......
+
+Example for init:
+	ULONG nErr = EBLIB_UNKNOWN;
+	if ( FALSE==Initeblib(&nErr) )
+	{
+     	  printf("Init Faile, err is %d", nErr);
+	}
+
+6.added GetComputerCurrentMenu export function.(Not implement)
+
+7.API SDK V2(exports functions like "eb*").
+
+Example for user:
+	
+	ULONG nGrpID = ebGetDefaultUserGroupID();
+	eblib_struct_V2::USER_OBJECT user;
+	memset(&user, 0, sizeof(eblib_struct_V2::USER_OBJECT));
+	user.nGrpID = nGrpID;
+	strcpy_s(user.pchPasswd, sizeof(user.pchPasswd),"123456");
+	strcpy_s(user.pchPasspt, sizeof(user.pchPasspt),"osv");
+	if (ebAddUser(&user) == EBLIB_SUCCESS)
+	{
+	    printf("new user id is:", user.nID);
+	}
+	else
+	{
+	    return;
+	}
+	
+	strcpy_s(user.pchPasspt, sizeof(user.pchPasspt),"osvtest");
+	//user.nID = nEditedUserID;
+	if( ebSetUser(&user) == EBLIB_SUCCESS)
+	{
+	    printf("Set user success!");	
+	}
+
+	if( ebDeleteUser(user.nID) == EBLIB_SUCCESS)
+	{
+	    printf("Delete user success!");	
+	}
